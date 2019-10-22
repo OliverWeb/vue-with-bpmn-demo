@@ -8,7 +8,16 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "ant-design-vue": "^1.3.16",
+    "axios": "^0.19.0",
+    "bpmn-js": "^4.0.1",
+    "bpmn-js-properties-panel": "^0.32.1",
+    "bpmn-moddle": "^6.0.0",
     "core-js": "^3.1.2",
+    "cross-env": "^5.2.0",
+    "raw-loader": "^3.1.0",
+    "three": "^0.108.0",
+    "three.js": "^0.77.1",
     "vue": "^2.6.10",
     "vue-router": "^3.0.6",
     "vuex": "^3.0.1"
@@ -22,7 +31,7 @@
     "eslint": "^5.16.0",
     "eslint-plugin-prettier": "^3.1.0",
     "eslint-plugin-vue": "^5.0.0",
-    "less": "^3.0.4",
+    "less": "^2.7.3",
     "less-loader": "^5.0.0",
     "prettier": "^1.18.2",
     "vue-template-compiler": "^2.6.10"
