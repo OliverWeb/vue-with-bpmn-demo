@@ -1,6 +1,4 @@
-import {
-  getType as getElementType
-} from '../../util/Elements';
+import { getType as getElementType } from "../../util/Elements";
 
 /**
  * Adds change support to the diagram, including
@@ -15,14 +13,14 @@ import {
  * @param {GraphicsFactory} graphicsFactory
  */
 export default function ChangeSupport(
-    eventBus, canvas, elementRegistry,
-    graphicsFactory) {
-
-
+  eventBus,
+  canvas,
+  elementRegistry,
+  graphicsFactory
+) {
   // redraw shapes / connections on change
 
-  eventBus.on('element.changed', function(event) {
-
+  eventBus.on("element.changed", function(event) {
     var element = event.element;
 
     // element might have been deleted and replaced by new element with same ID
@@ -36,32 +34,31 @@ export default function ChangeSupport(
       return;
     }
 
-    eventBus.fire(getElementType(element) + '.changed', event);
+    eventBus.fire(getElementType(element) + ".changed", event);
   });
 
-  eventBus.on('elements.changed', function(event) {
-
+  eventBus.on("elements.changed", function(event) {
     var elements = event.elements;
 
     elements.forEach(function(e) {
-      eventBus.fire('element.changed', { element: e });
+      eventBus.fire("element.changed", { element: e });
     });
 
     graphicsFactory.updateContainments(elements);
   });
 
-  eventBus.on('shape.changed', function(event) {
-    graphicsFactory.update('shape', event.element, event.gfx);
+  eventBus.on("shape.changed", function(event) {
+    graphicsFactory.update("shape", event.element, event.gfx);
   });
 
-  eventBus.on('connection.changed', function(event) {
-    graphicsFactory.update('connection', event.element, event.gfx);
+  eventBus.on("connection.changed", function(event) {
+    graphicsFactory.update("connection", event.element, event.gfx);
   });
 }
 
 ChangeSupport.$inject = [
-  'eventBus',
-  'canvas',
-  'elementRegistry',
-  'graphicsFactory'
+  "eventBus",
+  "canvas",
+  "elementRegistry",
+  "graphicsFactory"
 ];

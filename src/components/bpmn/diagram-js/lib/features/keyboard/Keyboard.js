@@ -1,24 +1,13 @@
-import {
-  isFunction
-} from 'min-dash';
+import { isFunction } from "min-dash";
 
-import {
-  event as domEvent,
-  matches as domMatches
-} from 'min-dom';
+import { event as domEvent, matches as domMatches } from "min-dom";
 
-import {
-  hasModifier,
-  isCmd,
-  isKey,
-  isShift
-} from './KeyboardUtil';
+import { hasModifier, isCmd, isKey, isShift } from "./KeyboardUtil";
 
-var KEYDOWN_EVENT = 'keyboard.keydown',
-    KEYUP_EVENT = 'keyboard.keyup';
+var KEYDOWN_EVENT = "keyboard.keydown",
+  KEYUP_EVENT = "keyboard.keyup";
 
 var DEFAULT_PRIORITY = 1000;
-
 
 /**
  * A keyboard abstraction that may be activated and
@@ -54,31 +43,28 @@ export default function Keyboard(config, eventBus) {
   this._keyupHandler = this._keyupHandler.bind(this);
 
   // properly clean dom registrations
-  eventBus.on('diagram.destroy', function() {
-    self._fire('destroy');
+  eventBus.on("diagram.destroy", function() {
+    self._fire("destroy");
 
     self.unbind();
   });
 
-  eventBus.on('diagram.init', function() {
-    self._fire('init');
+  eventBus.on("diagram.init", function() {
+    self._fire("init");
   });
 
-  eventBus.on('attach', function() {
+  eventBus.on("attach", function() {
     if (config && config.bindTo) {
       self.bind(config.bindTo);
     }
   });
 
-  eventBus.on('detach', function() {
+  eventBus.on("detach", function() {
     self.unbind();
   });
 }
 
-Keyboard.$inject = [
-  'config.keyboard',
-  'eventBus'
-];
+Keyboard.$inject = ["config.keyboard", "eventBus"];
 
 Keyboard.prototype._keydownHandler = function(event) {
   this._keyHandler(event, KEYDOWN_EVENT);
@@ -90,7 +76,7 @@ Keyboard.prototype._keyupHandler = function(event) {
 
 Keyboard.prototype._keyHandler = function(event, type) {
   var target = event.target,
-      eventBusResult;
+    eventBusResult;
 
   if (isInput(target)) {
     return;
@@ -108,17 +94,16 @@ Keyboard.prototype._keyHandler = function(event, type) {
 };
 
 Keyboard.prototype.bind = function(node) {
-
   // make sure that the keyboard is only bound once to the DOM
   this.unbind();
 
   this._node = node;
 
   // bind key events
-  domEvent.bind(node, 'keydown', this._keydownHandler, true);
-  domEvent.bind(node, 'keyup', this._keyupHandler, true);
+  domEvent.bind(node, "keydown", this._keydownHandler, true);
+  domEvent.bind(node, "keyup", this._keyupHandler, true);
 
-  this._fire('bind');
+  this._fire("bind");
 };
 
 Keyboard.prototype.getBinding = function() {
@@ -129,18 +114,18 @@ Keyboard.prototype.unbind = function() {
   var node = this._node;
 
   if (node) {
-    this._fire('unbind');
+    this._fire("unbind");
 
     // unbind key events
-    domEvent.unbind(node, 'keydown', this._keydownHandler, true);
-    domEvent.unbind(node, 'keyup', this._keyupHandler, true);
+    domEvent.unbind(node, "keydown", this._keydownHandler, true);
+    domEvent.unbind(node, "keyup", this._keyupHandler, true);
   }
 
   this._node = null;
 };
 
 Keyboard.prototype._fire = function(event) {
-  this._eventBus.fire('keyboard.' + event, { node: this._node });
+  this._eventBus.fire("keyboard." + event, { node: this._node });
 };
 
 /**
@@ -171,10 +156,11 @@ Keyboard.prototype.isCmd = isCmd;
 Keyboard.prototype.isShift = isShift;
 Keyboard.prototype.isKey = isKey;
 
-
-
 // helpers ///////
 
 function isInput(target) {
-  return target && (domMatches(target, 'input, textarea') || target.contentEditable === 'true');
+  return (
+    target &&
+    (domMatches(target, "input, textarea") || target.contentEditable === "true")
+  );
 }

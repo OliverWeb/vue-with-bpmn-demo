@@ -1,19 +1,10 @@
-import {
-  setSnapped,
-  isSnapped
-} from '../snapping/SnapUtil';
+import { setSnapped, isSnapped } from "../snapping/SnapUtil";
 
-import { isCmd } from '../keyboard/KeyboardUtil';
+import { isCmd } from "../keyboard/KeyboardUtil";
 
-import {
-  assign,
-  isNumber
-} from 'min-dash';
+import { assign, isNumber } from "min-dash";
 
-import {
-  SPACING,
-  quantize
-} from './GridUtil';
+import { SPACING, quantize } from "./GridUtil";
 
 var LOWER_PRIORITY = 1200;
 var LOW_PRIORITY = 800;
@@ -22,65 +13,68 @@ var LOW_PRIORITY = 800;
  * Basic grid snapping that covers connecting, creating, moving, resizing shapes, moving bendpoints
  * and connection segments.
  */
-export default function GridSnapping(
-    eventBus,
-    config
-) {
-
+export default function GridSnapping(eventBus, config) {
   var active = !config || config.active !== false;
 
   this._eventBus = eventBus;
 
   var self = this;
 
-  eventBus.on('diagram.init', LOW_PRIORITY, function() {
+  eventBus.on("diagram.init", LOW_PRIORITY, function() {
     self.setActive(active);
   });
 
-  eventBus.on([
-    'create.move',
-    'create.end',
-    'bendpoint.move.move',
-    'bendpoint.move.end',
-    'connect.move',
-    'connect.end',
-    'connectionSegment.move.move',
-    'connectionSegment.move.end',
-    'resize.move',
-    'resize.end',
-    'shape.move.move',
-    'shape.move.end'
-  ], LOWER_PRIORITY, function(event) {
-    var originalEvent = event.originalEvent;
+  eventBus.on(
+    [
+      "create.move",
+      "create.end",
+      "bendpoint.move.move",
+      "bendpoint.move.end",
+      "connect.move",
+      "connect.end",
+      "connectionSegment.move.move",
+      "connectionSegment.move.end",
+      "resize.move",
+      "resize.end",
+      "shape.move.move",
+      "shape.move.end"
+    ],
+    LOWER_PRIORITY,
+    function(event) {
+      var originalEvent = event.originalEvent;
 
-    if (!self.active || (originalEvent && isCmd(originalEvent))) {
-      return;
+      if (!self.active || (originalEvent && isCmd(originalEvent))) {
+        return;
+      }
+
+      var context = event.context;
+
+      ["x", "y"].forEach(function(axis) {
+        var options = {};
+
+        // allow snapping with offset
+        if (
+          context.gridSnappingContext &&
+          context.gridSnappingContext.snapLocation
+        ) {
+          assign(options, {
+            offset: getSnapOffset(event, axis)
+          });
+        }
+
+        // allow snapping with min and max
+        var snapConstraints = getSnapConstraints(event, axis);
+
+        if (snapConstraints) {
+          assign(options, snapConstraints);
+        }
+
+        if (!isSnapped(event, axis)) {
+          self.snapEvent(event, axis, options);
+        }
+      });
     }
-
-    var context = event.context;
-
-    [ 'x', 'y' ].forEach(function(axis) {
-      var options = {};
-
-      // allow snapping with offset
-      if (context.gridSnappingContext && context.gridSnappingContext.snapLocation) {
-        assign(options, {
-          offset: getSnapOffset(event, axis)
-        });
-      }
-
-      // allow snapping with min and max
-      var snapConstraints = getSnapConstraints(event, axis);
-
-      if (snapConstraints) {
-        assign(options, snapConstraints);
-      }
-
-      if (!isSnapped(event, axis)) {
-        self.snapEvent(event, axis, options);
-      }
-    });
-  });
+  );
 }
 
 /**
@@ -93,7 +87,7 @@ export default function GridSnapping(
  * @param {number} [options.offset]
  */
 GridSnapping.prototype.snapEvent = function(event, axis, options) {
-  var snappedValue = this.snapValue(event[ axis ], options);
+  var snappedValue = this.snapValue(event[axis], options);
 
   setSnapped(event, axis, snappedValue);
 };
@@ -133,7 +127,7 @@ GridSnapping.prototype.snapValue = function(value, options) {
     min = options.min;
 
     if (isNumber(min)) {
-      min = quantize(min + offset, SPACING, 'ceil');
+      min = quantize(min + offset, SPACING, "ceil");
 
       value = Math.max(value, min);
     }
@@ -143,7 +137,7 @@ GridSnapping.prototype.snapValue = function(value, options) {
     max = options.max;
 
     if (isNumber(max)) {
-      max = quantize(max + offset, SPACING, 'floor');
+      max = quantize(max + offset, SPACING, "floor");
 
       value = Math.min(value, max);
     }
@@ -161,17 +155,14 @@ GridSnapping.prototype.isActive = function() {
 GridSnapping.prototype.setActive = function(active) {
   this.active = active;
 
-  this._eventBus.fire('gridSnapping.toggle', { active: active });
+  this._eventBus.fire("gridSnapping.toggle", { active: active });
 };
 
 GridSnapping.prototype.toggleActive = function() {
   this.setActive(!this.active);
 };
 
-GridSnapping.$inject = [
-  'eventBus',
-  'config.gridSnapping'
-];
+GridSnapping.$inject = ["eventBus", "config.gridSnapping"];
 
 // helpers //////////
 
@@ -186,8 +177,8 @@ GridSnapping.$inject = [
  */
 function getSnapConstraints(event, axis) {
   var context = event.context,
-      createConstraints = context.createConstraints,
-      resizeConstraints = context.resizeConstraints || {};
+    createConstraints = context.createConstraints,
+    resizeConstraints = context.resizeConstraints || {};
 
   var direction = context.direction;
 
@@ -208,27 +199,23 @@ function getSnapConstraints(event, axis) {
 
   // resize
   var minResizeConstraints = resizeConstraints.min,
-      maxResizeConstraints = resizeConstraints.max;
+    maxResizeConstraints = resizeConstraints.max;
 
   if (minResizeConstraints) {
     snapConstraints = {};
 
     if (isHorizontal(axis)) {
-
       if (isWest(direction)) {
         snapConstraints.max = minResizeConstraints.left;
       } else {
         snapConstraints.min = minResizeConstraints.right;
       }
-
     } else {
-
       if (isNorth(direction)) {
         snapConstraints.max = minResizeConstraints.top;
       } else {
         snapConstraints.min = minResizeConstraints.bottom;
       }
-
     }
   }
 
@@ -236,21 +223,17 @@ function getSnapConstraints(event, axis) {
     snapConstraints = {};
 
     if (isHorizontal(axis)) {
-
       if (isWest(direction)) {
         snapConstraints.min = maxResizeConstraints.left;
       } else {
         snapConstraints.max = maxResizeConstraints.right;
       }
-
     } else {
-
       if (isNorth(direction)) {
         snapConstraints.min = maxResizeConstraints.top;
       } else {
         snapConstraints.max = maxResizeConstraints.bottom;
       }
-
     }
   }
 
@@ -267,15 +250,15 @@ function getSnapConstraints(event, axis) {
  */
 function getSnapOffset(event, axis) {
   var context = event.context,
-      shape = event.shape,
-      gridSnappingContext = context.gridSnappingContext || {},
-      snapLocation = gridSnappingContext.snapLocation;
+    shape = event.shape,
+    gridSnappingContext = context.gridSnappingContext || {},
+    snapLocation = gridSnappingContext.snapLocation;
 
   if (!shape || !snapLocation) {
     return 0;
   }
 
-  if (axis === 'x') {
+  if (axis === "x") {
     if (/left/.test(snapLocation)) {
       return -shape.width / 2;
     }
@@ -297,13 +280,13 @@ function getSnapOffset(event, axis) {
 }
 
 function isHorizontal(axis) {
-  return axis === 'x';
+  return axis === "x";
 }
 
 function isNorth(direction) {
-  return direction.charAt(0) === 'n';
+  return direction.charAt(0) === "n";
 }
 
 function isWest(direction) {
-  return direction.charAt(1) === 'w';
+  return direction.charAt(1) === "w";
 }

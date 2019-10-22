@@ -1,79 +1,100 @@
-import { hasPrimaryModifier } from '../../util/Mouse';
+import { hasPrimaryModifier } from "../../util/Mouse";
 
-import { isKey } from '../../features/keyboard/KeyboardUtil';
+import { isKey } from "../../features/keyboard/KeyboardUtil";
 
 var HIGH_PRIORITY = 1500;
-var HAND_CURSOR = 'grab';
+var HAND_CURSOR = "grab";
 
-
-export default function HandTool(eventBus, canvas, dragging, injector, toolManager) {
+export default function HandTool(
+  eventBus,
+  canvas,
+  dragging,
+  injector,
+  toolManager
+) {
   this._dragging = dragging;
 
   var self = this,
-      keyboard = injector.get('keyboard', false);
+    keyboard = injector.get("keyboard", false);
 
-  toolManager.registerTool('hand', {
-    tool: 'hand',
-    dragging: 'hand.move'
+  toolManager.registerTool("hand", {
+    tool: "hand",
+    dragging: "hand.move"
   });
 
-  eventBus.on('element.mousedown', HIGH_PRIORITY, function(event) {
-    if (hasPrimaryModifier(event)) {
-      this.activateMove(event.originalEvent);
+  eventBus.on(
+    "element.mousedown",
+    HIGH_PRIORITY,
+    function(event) {
+      if (hasPrimaryModifier(event)) {
+        this.activateMove(event.originalEvent);
 
-      return false;
-    }
-  }, this);
+        return false;
+      }
+    },
+    this
+  );
 
-  keyboard && keyboard.addListener(HIGH_PRIORITY, function(e) {
-    if (!isSpace(e.keyEvent)) {
-      return;
-    }
+  keyboard &&
+    keyboard.addListener(
+      HIGH_PRIORITY,
+      function(e) {
+        if (!isSpace(e.keyEvent)) {
+          return;
+        }
 
-    if (self.isActive()) {
-      return;
-    }
+        if (self.isActive()) {
+          return;
+        }
 
-    function activateMove(event) {
-      self.activateMove(event);
+        function activateMove(event) {
+          self.activateMove(event);
 
-      window.removeEventListener('mousemove', activateMove);
-    }
+          window.removeEventListener("mousemove", activateMove);
+        }
 
-    window.addEventListener('mousemove', activateMove);
+        window.addEventListener("mousemove", activateMove);
 
-    function deactivateMove(e) {
-      if (!isSpace(e.keyEvent)) {
-        return;
+        function deactivateMove(e) {
+          if (!isSpace(e.keyEvent)) {
+            return;
+          }
+
+          window.removeEventListener("mousemove", activateMove);
+
+          keyboard.removeListener(deactivateMove, "keyboard.keyup");
+
+          dragging.cancel();
+        }
+
+        keyboard.addListener(HIGH_PRIORITY, deactivateMove, "keyboard.keyup");
+      },
+      "keyboard.keydown"
+    );
+
+  eventBus.on(
+    "hand.end",
+    function(event) {
+      var target = event.originalEvent.target;
+
+      // only reactive on diagram click
+      // on some occasions, event.hover is not set and we have to check if the target is an svg
+      if (!event.hover && !(target instanceof SVGElement)) {
+        return false;
       }
 
-      window.removeEventListener('mousemove', activateMove);
+      eventBus.once(
+        "hand.ended",
+        function() {
+          this.activateMove(event.originalEvent, { reactivate: true });
+        },
+        this
+      );
+    },
+    this
+  );
 
-      keyboard.removeListener(deactivateMove, 'keyboard.keyup');
-
-      dragging.cancel();
-    }
-
-    keyboard.addListener(HIGH_PRIORITY, deactivateMove, 'keyboard.keyup');
-  }, 'keyboard.keydown');
-
-  eventBus.on('hand.end', function(event) {
-    var target = event.originalEvent.target;
-
-    // only reactive on diagram click
-    // on some occasions, event.hover is not set and we have to check if the target is an svg
-    if (!event.hover && !(target instanceof SVGElement)) {
-      return false;
-    }
-
-    eventBus.once('hand.ended', function() {
-      this.activateMove(event.originalEvent, { reactivate: true });
-    }, this);
-
-  }, this);
-
-
-  eventBus.on('hand.move.move', function(event) {
+  eventBus.on("hand.move.move", function(event) {
     var scale = canvas.viewbox().scale;
 
     canvas.scroll({
@@ -82,40 +103,44 @@ export default function HandTool(eventBus, canvas, dragging, injector, toolManag
     });
   });
 
-  eventBus.on('hand.move.end', function(event) {
-    var context = event.context,
+  eventBus.on(
+    "hand.move.end",
+    function(event) {
+      var context = event.context,
         reactivate = context.reactivate;
 
-    // Don't reactivate if the user is using the keyboard keybinding
-    if (!hasPrimaryModifier(event) && reactivate) {
+      // Don't reactivate if the user is using the keyboard keybinding
+      if (!hasPrimaryModifier(event) && reactivate) {
+        eventBus.once(
+          "hand.move.ended",
+          function(event) {
+            this.activateHand(event.originalEvent, true, true);
+          },
+          this
+        );
+      }
 
-      eventBus.once('hand.move.ended', function(event) {
-        this.activateHand(event.originalEvent, true, true);
-      }, this);
-
-    }
-
-    return false;
-  }, this);
-
+      return false;
+    },
+    this
+  );
 }
 
 HandTool.$inject = [
-  'eventBus',
-  'canvas',
-  'dragging',
-  'injector',
-  'toolManager'
+  "eventBus",
+  "canvas",
+  "dragging",
+  "injector",
+  "toolManager"
 ];
 
-
 HandTool.prototype.activateMove = function(event, autoActivate, context) {
-  if (typeof autoActivate === 'object') {
+  if (typeof autoActivate === "object") {
     context = autoActivate;
     autoActivate = false;
   }
 
-  this._dragging.init(event, 'hand.move', {
+  this._dragging.init(event, "hand.move", {
     autoActivate: autoActivate,
     cursor: HAND_CURSOR,
     data: {
@@ -125,7 +150,7 @@ HandTool.prototype.activateMove = function(event, autoActivate, context) {
 };
 
 HandTool.prototype.activateHand = function(event, autoActivate, reactivate) {
-  this._dragging.init(event, 'hand', {
+  this._dragging.init(event, "hand", {
     trapClick: false,
     autoActivate: autoActivate,
     cursor: HAND_CURSOR,
@@ -158,5 +183,5 @@ HandTool.prototype.isActive = function() {
 // helpers //////////
 
 function isSpace(keyEvent) {
-  return isKey(' ', keyEvent);
+  return isKey(" ", keyEvent);
 }

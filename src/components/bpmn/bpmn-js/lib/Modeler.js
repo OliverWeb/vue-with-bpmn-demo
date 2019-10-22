@@ -1,61 +1,59 @@
-import inherits from 'inherits';
+import inherits from "inherits";
 
-import Ids from 'ids';
+import Ids from "ids";
 
-import Viewer from './Viewer';
+import Viewer from "./Viewer";
 
-import NavigatedViewer from './NavigatedViewer';
+import NavigatedViewer from "./NavigatedViewer";
 
-import KeyboardMoveModule from './../../diagram-js/lib/navigation/keyboard-move';
-import MoveCanvasModule from './../../diagram-js/lib/navigation/movecanvas';
-import TouchModule from './../../diagram-js/lib/navigation/touch';
-import ZoomScrollModule from './../../diagram-js/lib/navigation/zoomscroll';
+import KeyboardMoveModule from "./../../diagram-js/lib/navigation/keyboard-move";
+import MoveCanvasModule from "./../../diagram-js/lib/navigation/movecanvas";
+import TouchModule from "./../../diagram-js/lib/navigation/touch";
+import ZoomScrollModule from "./../../diagram-js/lib/navigation/zoomscroll";
 
-import AlignElementsModule from './../../diagram-js/lib/features/align-elements';
-import AutoPlaceModule from './features/auto-place';
-import AutoResizeModule from './features/auto-resize';
-import AutoScrollModule from './../../diagram-js/lib/features/auto-scroll';
-import BendpointsModule from './../../diagram-js/lib/features/bendpoints';
-import ConnectModule from './../../diagram-js/lib/features/connect';
-import ConnectionPreviewModule from './../../diagram-js/lib/features/connection-preview';
-import ContextPadModule from './features/context-pad';
-import CopyPasteModule from './features/copy-paste';
-import CreateModule from './../../diagram-js/lib/features/create';
-import DistributeElementsModule from './features/distribute-elements';
-import EditorActionsModule from './features/editor-actions';
-import GridSnappingModule from './features/grid-snapping';
-import KeyboardModule from './features/keyboard';
-import KeyboardMoveSelectionModule from './../../diagram-js/lib/features/keyboard-move-selection';
-import LabelEditingModule from './features/label-editing';
-import ModelingModule from './features/modeling';
-import MoveModule from './../../diagram-js/lib/features/move';
-import PaletteModule from './features/palette';
-import ReplacePreviewModule from './features/replace-preview';
-import ResizeModule from './../../diagram-js/lib/features/resize';
-import SnappingModule from './features/snapping';
-import SearchModule from './features/search';
-
+import AlignElementsModule from "./../../diagram-js/lib/features/align-elements";
+import AutoPlaceModule from "./features/auto-place";
+import AutoResizeModule from "./features/auto-resize";
+import AutoScrollModule from "./../../diagram-js/lib/features/auto-scroll";
+import BendpointsModule from "./../../diagram-js/lib/features/bendpoints";
+import ConnectModule from "./../../diagram-js/lib/features/connect";
+import ConnectionPreviewModule from "./../../diagram-js/lib/features/connection-preview";
+import ContextPadModule from "./features/context-pad";
+import CopyPasteModule from "./features/copy-paste";
+import CreateModule from "./../../diagram-js/lib/features/create";
+import DistributeElementsModule from "./features/distribute-elements";
+import EditorActionsModule from "./features/editor-actions";
+import GridSnappingModule from "./features/grid-snapping";
+import KeyboardModule from "./features/keyboard";
+import KeyboardMoveSelectionModule from "./../../diagram-js/lib/features/keyboard-move-selection";
+import LabelEditingModule from "./features/label-editing";
+import ModelingModule from "./features/modeling";
+import MoveModule from "./../../diagram-js/lib/features/move";
+import PaletteModule from "./features/palette";
+import ReplacePreviewModule from "./features/replace-preview";
+import ResizeModule from "./../../diagram-js/lib/features/resize";
+import SnappingModule from "./features/snapping";
+import SearchModule from "./features/search";
 
 var initialDiagram =
   '<?xml version="1.0" encoding="UTF-8"?>' +
   '<bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ' +
-                    'xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" ' +
-                    'xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" ' +
-                    'xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" ' +
-                    'targetNamespace="http://bpmn.io/schema/bpmn" ' +
-                    'id="Definitions_1">' +
-    '<bpmn:process id="Process_1" isExecutable="false">' +
-      '<bpmn:startEvent id="StartEvent_1"/>' +
-    '</bpmn:process>' +
-    '<bpmndi:BPMNDiagram id="BPMNDiagram_1">' +
-      '<bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_1">' +
-        '<bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">' +
-          '<dc:Bounds height="36.0" width="36.0" x="173.0" y="102.0"/>' +
-        '</bpmndi:BPMNShape>' +
-      '</bpmndi:BPMNPlane>' +
-    '</bpmndi:BPMNDiagram>' +
-  '</bpmn:definitions>';
-
+  'xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" ' +
+  'xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" ' +
+  'xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" ' +
+  'targetNamespace="http://bpmn.io/schema/bpmn" ' +
+  'id="Definitions_1">' +
+  '<bpmn:process id="Process_1" isExecutable="false">' +
+  '<bpmn:startEvent id="StartEvent_1"/>' +
+  "</bpmn:process>" +
+  '<bpmndi:BPMNDiagram id="BPMNDiagram_1">' +
+  '<bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_1">' +
+  '<bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">' +
+  '<dc:Bounds height="36.0" width="36.0" x="173.0" y="102.0"/>' +
+  "</bpmndi:BPMNShape>" +
+  "</bpmndi:BPMNPlane>" +
+  "</bpmndi:BPMNDiagram>" +
+  "</bpmn:definitions>";
 
 /**
  * A modeler for BPMN 2.0 diagrams.
@@ -133,15 +131,23 @@ export default function Modeler(options) {
   Viewer.call(this, options);
 
   // hook ID collection into the modeler
-  this.on('import.parse.complete', function(event) {
-    if (!event.error) {
-      this._collectIds(event.definitions, event.context);
-    }
-  }, this);
+  this.on(
+    "import.parse.complete",
+    function(event) {
+      if (!event.error) {
+        this._collectIds(event.definitions, event.context);
+      }
+    },
+    this
+  );
 
-  this.on('diagram.destroy', function() {
-    this.get('moddle').ids.clear();
-  }, this);
+  this.on(
+    "diagram.destroy",
+    function() {
+      this.get("moddle").ids.clear();
+    },
+    this
+  );
 }
 
 inherits(Modeler, Viewer);
@@ -169,7 +175,7 @@ Modeler.prototype._createModdle = function(options) {
   // attach ids to moddle to be able to track
   // and validated ids in the BPMN 2.0 XML document
   // tree
-  moddle.ids = new Ids([ 32, 36, 1 ]);
+  moddle.ids = new Ids([32, 36, 1]);
   return moddle;
 };
 
@@ -182,8 +188,8 @@ Modeler.prototype._createModdle = function(options) {
  */
 Modeler.prototype._collectIds = function(definitions, context) {
   var moddle = definitions.$model,
-      ids = moddle.ids,
-      id;
+    ids = moddle.ids,
+    id;
 
   // remove references from previous import
   ids.clear();
@@ -228,7 +234,6 @@ Modeler.prototype._modelingModules = [
   SearchModule
 ];
 
-
 // modules the modeler is composed of
 //
 // - viewer modules
@@ -238,4 +243,5 @@ Modeler.prototype._modelingModules = [
 Modeler.prototype._modules = [].concat(
   Modeler.prototype._modules,
   Modeler.prototype._interactionModules,
-  Modeler.prototype._modelingModules);
+  Modeler.prototype._modelingModules
+);

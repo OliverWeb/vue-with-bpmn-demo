@@ -1,30 +1,23 @@
-import {
-  setLabel,
-  getLabel
-} from '../LabelUtil';
+import { setLabel, getLabel } from "../LabelUtil";
 
 import {
   getExternalLabelMid,
   isLabelExternal,
   hasExternalLabel,
   isLabel
-} from '../../../util/LabelUtil';
+} from "../../../util/LabelUtil";
 
-import {
-  is
-} from '../../../util/ModelUtil';
+import { is } from "../../../util/ModelUtil";
 
 var NULL_DIMENSIONS = {
   width: 0,
   height: 0
 };
 
-
 /**
  * A handler that updates the text of a BPMN element.
  */
 export default function UpdateLabelHandler(modeling, textRenderer) {
-
   /**
    * Set the label and return the changed elements.
    *
@@ -34,7 +27,6 @@ export default function UpdateLabelHandler(modeling, textRenderer) {
    * @param {String} text
    */
   function setText(element, text) {
-
     // external label if present
     var label = element.label || element;
 
@@ -42,19 +34,20 @@ export default function UpdateLabelHandler(modeling, textRenderer) {
 
     setLabel(label, text, labelTarget !== label);
 
-    return [ label, labelTarget ];
+    return [label, labelTarget];
   }
 
   function preExecute(ctx) {
     var element = ctx.element,
-        businessObject = element.businessObject,
-        newLabel = ctx.newLabel;
+      businessObject = element.businessObject,
+      newLabel = ctx.newLabel;
 
-    if (!isLabel(element)
-        && isLabelExternal(element)
-        && !hasExternalLabel(element)
-        && !isEmptyText(newLabel)) {
-
+    if (
+      !isLabel(element) &&
+      isLabelExternal(element) &&
+      !hasExternalLabel(element) &&
+      !isEmptyText(newLabel)
+    ) {
       // create label
       var paddingTop = 7;
 
@@ -66,7 +59,7 @@ export default function UpdateLabelHandler(modeling, textRenderer) {
       };
 
       modeling.createLabel(element, labelCenter, {
-        id: businessObject.id + '_label',
+        id: businessObject.id + "_label",
         businessObject: businessObject
       });
     }
@@ -83,13 +76,12 @@ export default function UpdateLabelHandler(modeling, textRenderer) {
 
   function postExecute(ctx) {
     var element = ctx.element,
-        label = element.label || element,
-        newLabel = ctx.newLabel,
-        newBounds = ctx.newBounds,
-        hints = ctx.hints || {};
+      label = element.label || element,
+      newLabel = ctx.newLabel,
+      newBounds = ctx.newBounds,
+      hints = ctx.hints || {};
 
     if (isLabel(label) && isEmptyText(newLabel)) {
-
       if (hints.removeShape !== false) {
         modeling.removeShape(label, { unsetLabel: false });
       }
@@ -98,7 +90,7 @@ export default function UpdateLabelHandler(modeling, textRenderer) {
     }
 
     // ignore internal labels for elements except text annotations
-    if (!isLabelExternal(element) && !is(element, 'bpmn:TextAnnotation')) {
+    if (!isLabelExternal(element) && !is(element, "bpmn:TextAnnotation")) {
       return;
     }
 
@@ -110,7 +102,7 @@ export default function UpdateLabelHandler(modeling, textRenderer) {
     }
 
     // resize element based on label _or_ pre-defined bounds
-    if (typeof newBounds === 'undefined') {
+    if (typeof newBounds === "undefined") {
       newBounds = textRenderer.getExternalLabelBounds(label, text);
     }
 
@@ -129,11 +121,7 @@ export default function UpdateLabelHandler(modeling, textRenderer) {
   this.postExecute = postExecute;
 }
 
-UpdateLabelHandler.$inject = [
-  'modeling',
-  'textRenderer'
-];
-
+UpdateLabelHandler.$inject = ["modeling", "textRenderer"];
 
 // helpers ///////////////////////
 

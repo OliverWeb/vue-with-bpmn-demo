@@ -1,5 +1,5 @@
-var MARKER_RESIZING = 'djs-resizing',
-    MARKER_RESIZE_NOT_OK = 'resize-not-ok';
+var MARKER_RESIZING = "djs-resizing",
+  MARKER_RESIZE_NOT_OK = "resize-not-ok";
 
 var LOW_PRIORITY = 500;
 
@@ -7,8 +7,7 @@ import {
   attr as svgAttr,
   remove as svgRemove,
   classes as svgClasses
-} from 'tiny-svg';
-
+} from "tiny-svg";
 
 /**
  * Provides previews for resizing shapes when resizing.
@@ -18,20 +17,21 @@ import {
  * @param {PreviewSupport} previewSupport
  */
 export default function ResizePreview(eventBus, canvas, previewSupport) {
-
   /**
    * Update resizer frame.
    *
    * @param {Object} context
    */
   function updateFrame(context) {
-
     var shape = context.shape,
-        bounds = context.newBounds,
-        frame = context.frame;
+      bounds = context.newBounds,
+      frame = context.frame;
 
     if (!frame) {
-      frame = context.frame = previewSupport.addFrame(shape, canvas.getDefaultLayer());
+      frame = context.frame = previewSupport.addFrame(
+        shape,
+        canvas.getDefaultLayer()
+      );
 
       canvas.addMarker(shape, MARKER_RESIZING);
     }
@@ -58,7 +58,7 @@ export default function ResizePreview(eventBus, canvas, previewSupport) {
    */
   function removeFrame(context) {
     var shape = context.shape,
-        frame = context.frame;
+      frame = context.frame;
 
     if (frame) {
       svgRemove(context.frame);
@@ -68,19 +68,14 @@ export default function ResizePreview(eventBus, canvas, previewSupport) {
   }
 
   // add and update previews
-  eventBus.on('resize.move', LOW_PRIORITY, function(event) {
+  eventBus.on("resize.move", LOW_PRIORITY, function(event) {
     updateFrame(event.context);
   });
 
   // remove previews
-  eventBus.on('resize.cleanup', function(event) {
+  eventBus.on("resize.cleanup", function(event) {
     removeFrame(event.context);
   });
-
 }
 
-ResizePreview.$inject = [
-  'eventBus',
-  'canvas',
-  'previewSupport'
-];
+ResizePreview.$inject = ["eventBus", "canvas", "previewSupport"];

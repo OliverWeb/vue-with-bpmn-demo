@@ -1,21 +1,14 @@
-import {
-  forEach,
-  assign,
-  find,
-  matchPattern,
-  isDefined
-} from 'min-dash';
+import { forEach, assign, find, matchPattern, isDefined } from "min-dash";
 
 import {
   delegate as domDelegate,
-  domify as domify,
+  domify,
   classes as domClasses,
   attr as domAttr,
   remove as domRemove
-} from 'min-dom';
+} from "min-dom";
 
-var DATA_REF = 'data-id';
-
+var DATA_REF = "data-id";
 
 /**
  * A popup menu that can be used to display a list of actions anywhere in the canvas.
@@ -31,11 +24,12 @@ var DATA_REF = 'data-id';
  * @constructor
  */
 export default function PopupMenu(config, eventBus, canvas) {
-
-  var scale = isDefined(config && config.scale) ? config.scale : {
-    min: 1,
-    max: 1.5
-  };
+  var scale = isDefined(config && config.scale)
+    ? config.scale
+    : {
+        min: 1,
+        max: 1.5
+      };
 
   this._config = {
     scale: scale
@@ -47,11 +41,7 @@ export default function PopupMenu(config, eventBus, canvas) {
   this._current = {};
 }
 
-PopupMenu.$inject = [
-  'config.popupMenu',
-  'eventBus',
-  'canvas'
-];
+PopupMenu.$inject = ["config.popupMenu", "eventBus", "canvas"];
 
 /**
  * Registers a popup menu provider
@@ -77,7 +67,6 @@ PopupMenu.prototype.registerProvider = function(id, provider) {
   this._providers[id] = provider;
 };
 
-
 /**
  * Determine if the popup menu has entries.
  *
@@ -85,24 +74,24 @@ PopupMenu.prototype.registerProvider = function(id, provider) {
  */
 PopupMenu.prototype.isEmpty = function(element, providerId) {
   if (!element) {
-    throw new Error('element parameter is missing');
+    throw new Error("element parameter is missing");
   }
 
   if (!providerId) {
-    throw new Error('providerId parameter is missing');
+    throw new Error("providerId parameter is missing");
   }
 
   var provider = this._providers[providerId];
 
   var entries = provider.getEntries(element),
-      headerEntries = provider.getHeaderEntries && provider.getHeaderEntries(element);
+    headerEntries =
+      provider.getHeaderEntries && provider.getHeaderEntries(element);
 
   var hasEntries = entries.length > 0,
-      hasHeaderEntries = headerEntries && headerEntries.length > 0;
+    hasHeaderEntries = headerEntries && headerEntries.length > 0;
 
   return !hasEntries && !hasHeaderEntries;
 };
-
 
 /**
  * Create entries and open popup menu at given position
@@ -114,33 +103,32 @@ PopupMenu.prototype.isEmpty = function(element, providerId) {
  * @return {Object} popup menu instance
  */
 PopupMenu.prototype.open = function(element, id, position) {
-
   var provider = this._providers[id];
 
   if (!element) {
-    throw new Error('Element is missing');
+    throw new Error("Element is missing");
   }
 
   if (!provider) {
-    throw new Error('Provider is not registered: ' + id);
+    throw new Error("Provider is not registered: " + id);
   }
 
   if (!position) {
-    throw new Error('the position argument is missing');
+    throw new Error("the position argument is missing");
   }
 
   if (this.isOpen()) {
     this.close();
   }
 
-  this._emit('open');
+  this._emit("open");
 
-  var current = this._current = {
+  var current = (this._current = {
     provider: provider,
     className: id,
     element: element,
     position: position
-  };
+  });
 
   if (provider.getHeaderEntries) {
     current.headerEntries = provider.getHeaderEntries(element);
@@ -151,43 +139,40 @@ PopupMenu.prototype.open = function(element, id, position) {
   current.container = this._createContainer();
 
   var headerEntries = current.headerEntries || [],
-      entries = current.entries || [];
+    entries = current.entries || [];
 
   if (headerEntries.length) {
     current.container.appendChild(
-      this._createEntries(current.headerEntries, 'djs-popup-header')
+      this._createEntries(current.headerEntries, "djs-popup-header")
     );
   }
 
   if (entries.length) {
     current.container.appendChild(
-      this._createEntries(current.entries, 'djs-popup-body')
+      this._createEntries(current.entries, "djs-popup-body")
     );
   }
 
   var canvas = this._canvas,
-      parent = canvas.getContainer();
+    parent = canvas.getContainer();
 
   this._attachContainer(current.container, parent, position.cursor);
 };
-
 
 /**
  * Removes the popup menu and unbinds the event handlers.
  */
 PopupMenu.prototype.close = function() {
-
   if (!this.isOpen()) {
     return;
   }
 
-  this._emit('close');
+  this._emit("close");
 
   this._unbindHandlers();
   domRemove(this._current.container);
   this._current.container = null;
 };
-
 
 /**
  * Determine if an open popup menu exist.
@@ -198,7 +183,6 @@ PopupMenu.prototype.isOpen = function() {
   return !!this._current.container;
 };
 
-
 /**
  * Trigger an action associated with an entry.
  *
@@ -207,12 +191,11 @@ PopupMenu.prototype.isOpen = function() {
  * @return the result of the action callback, if any
  */
 PopupMenu.prototype.trigger = function(event) {
-
   // silence other actions
   event.preventDefault();
 
   var element = event.delegateTarget || event.target,
-      entryId = domAttr(element, DATA_REF);
+    entryId = domAttr(element, DATA_REF);
 
   var entry = this._getEntry(entryId);
 
@@ -229,20 +212,21 @@ PopupMenu.prototype.trigger = function(event) {
  * @return {Object} entry instance
  */
 PopupMenu.prototype._getEntry = function(entryId) {
-
   var search = matchPattern({ id: entryId });
 
-  var entry = find(this._current.entries, search) || find(this._current.headerEntries, search);
+  var entry =
+    find(this._current.entries, search) ||
+    find(this._current.headerEntries, search);
 
   if (!entry) {
-    throw new Error('entry not found');
+    throw new Error("entry not found");
   }
 
   return entry;
 };
 
 PopupMenu.prototype._emit = function(eventName) {
-  this._eventBus.fire('popupMenu.' + eventName);
+  this._eventBus.fire("popupMenu." + eventName);
 };
 
 /**
@@ -252,21 +236,20 @@ PopupMenu.prototype._emit = function(eventName) {
  */
 PopupMenu.prototype._createContainer = function() {
   var container = domify('<div class="djs-popup">'),
-      position = this._current.position,
-      className = this._current.className;
+    position = this._current.position,
+    className = this._current.className;
 
   assign(container.style, {
-    position: 'absolute',
-    left: position.x + 'px',
-    top: position.y + 'px',
-    visibility: 'hidden'
+    position: "absolute",
+    left: position.x + "px",
+    top: position.y + "px",
+    visibility: "hidden"
   });
 
   domClasses(container).add(className);
 
   return container;
 };
-
 
 /**
  * Attaches the container to the DOM and binds the event handlers.
@@ -278,7 +261,7 @@ PopupMenu.prototype._attachContainer = function(container, parent, cursor) {
   var self = this;
 
   // Event handler
-  domDelegate.bind(container, '.entry' ,'click', function(event) {
+  domDelegate.bind(container, ".entry", "click", function(event) {
     self.trigger(event);
   });
 
@@ -295,7 +278,6 @@ PopupMenu.prototype._attachContainer = function(container, parent, cursor) {
   this._bindHandlers();
 };
 
-
 /**
  * Updates popup style.transform with respect to the config and zoom level.
  *
@@ -307,12 +289,11 @@ PopupMenu.prototype._updateScale = function(container) {
   var zoom = this._canvas.zoom();
 
   var scaleConfig = this._config.scale,
-      minScale,
-      maxScale,
-      scale = zoom;
+    minScale,
+    maxScale,
+    scale = zoom;
 
   if (scaleConfig !== true) {
-
     if (scaleConfig === false) {
       minScale = 1;
       maxScale = 1;
@@ -328,12 +309,10 @@ PopupMenu.prototype._updateScale = function(container) {
     if (isDefined(maxScale) && zoom > maxScale) {
       scale = maxScale;
     }
-
   }
 
-  setTransform(container, 'scale(' + scale + ')');
+  setTransform(container, "scale(" + scale + ")");
 };
-
 
 /**
  * Make sure that the menu is always fully shown
@@ -345,14 +324,15 @@ PopupMenu.prototype._updateScale = function(container) {
  */
 PopupMenu.prototype._assureIsInbounds = function(container, cursor) {
   var canvas = this._canvas,
-      clientRect = canvas._container.getBoundingClientRect();
+    clientRect = canvas._container.getBoundingClientRect();
 
   var containerX = container.offsetLeft,
-      containerY = container.offsetTop,
-      containerWidth = container.scrollWidth,
-      containerHeight = container.scrollHeight,
-      overAxis = {},
-      left, top;
+    containerY = container.offsetTop,
+    containerWidth = container.scrollWidth,
+    containerHeight = container.scrollHeight,
+    overAxis = {},
+    left,
+    top;
 
   var cursorPosition = {
     x: cursor.x - clientRect.left,
@@ -368,22 +348,25 @@ PopupMenu.prototype._assureIsInbounds = function(container, cursor) {
   }
 
   if (overAxis.x && overAxis.y) {
-    left = cursorPosition.x - containerWidth + 'px';
-    top = cursorPosition.y - containerHeight + 'px';
+    left = cursorPosition.x - containerWidth + "px";
+    top = cursorPosition.y - containerHeight + "px";
   } else if (overAxis.x) {
-    left = cursorPosition.x - containerWidth + 'px';
-    top = cursorPosition.y + 'px';
+    left = cursorPosition.x - containerWidth + "px";
+    top = cursorPosition.y + "px";
   } else if (overAxis.y && cursorPosition.y < containerHeight) {
-    left = cursorPosition.x + 'px';
-    top = 10 + 'px';
+    left = cursorPosition.x + "px";
+    top = 10 + "px";
   } else if (overAxis.y) {
-    left = cursorPosition.x + 'px';
-    top = cursorPosition.y - containerHeight + 'px';
+    left = cursorPosition.x + "px";
+    top = cursorPosition.y - containerHeight + "px";
   }
 
-  assign(container.style, { left: left, top: top }, { visibility: 'visible', 'z-index': 1000 });
+  assign(
+    container.style,
+    { left: left, top: top },
+    { visibility: "visible", "z-index": 1000 }
+  );
 };
-
 
 /**
  * Creates a list of entries and returns them as a DOM container.
@@ -394,9 +377,8 @@ PopupMenu.prototype._assureIsInbounds = function(container, cursor) {
  * @return {Object} a DOM container
  */
 PopupMenu.prototype._createEntries = function(entries, className) {
-
-  var entriesContainer = domify('<div>'),
-      self = this;
+  var entriesContainer = domify("<div>"),
+    self = this;
 
   domClasses(entriesContainer).add(className);
 
@@ -408,7 +390,6 @@ PopupMenu.prototype._createEntries = function(entries, className) {
   return entriesContainer;
 };
 
-
 /**
  * Creates a single entry and returns it as a DOM container.
  *
@@ -417,18 +398,17 @@ PopupMenu.prototype._createEntries = function(entries, className) {
  * @return {Object} a DOM container
  */
 PopupMenu.prototype._createEntry = function(entry) {
-
   if (!entry.id) {
-    throw new Error ('every entry must have the id property set');
+    throw new Error("every entry must have the id property set");
   }
 
-  var entryContainer = domify('<div>'),
-      entryClasses = domClasses(entryContainer);
+  var entryContainer = domify("<div>"),
+    entryClasses = domClasses(entryContainer);
 
-  entryClasses.add('entry');
+  entryClasses.add("entry");
 
   if (entry.className) {
-    entry.className.split(' ').forEach(function(className) {
+    entry.className.split(" ").forEach(function(className) {
       entryClasses.add(className);
     });
   }
@@ -436,7 +416,7 @@ PopupMenu.prototype._createEntry = function(entry) {
   domAttr(entryContainer, DATA_REF, entry.id);
 
   if (entry.label) {
-    var label = domify('<span>');
+    var label = domify("<span>");
     label.textContent = entry.label;
     entryContainer.appendChild(label);
   }
@@ -446,11 +426,11 @@ PopupMenu.prototype._createEntry = function(entry) {
   }
 
   if (entry.active === true) {
-    entryClasses.add('active');
+    entryClasses.add("active");
   }
 
   if (entry.disabled === true) {
-    entryClasses.add('disabled');
+    entryClasses.add("disabled");
   }
 
   if (entry.title) {
@@ -460,50 +440,44 @@ PopupMenu.prototype._createEntry = function(entry) {
   return entryContainer;
 };
 
-
 /**
  * Binds the `close` method to 'contextPad.close' & 'canvas.viewbox.changed'.
  */
 PopupMenu.prototype._bindHandlers = function() {
-
   var eventBus = this._eventBus,
-      self = this;
+    self = this;
 
   function close() {
     self.close();
   }
 
-  eventBus.once('contextPad.close', close);
-  eventBus.once('canvas.viewbox.changing', close);
-  eventBus.once('commandStack.changed', close);
+  eventBus.once("contextPad.close", close);
+  eventBus.once("canvas.viewbox.changing", close);
+  eventBus.once("commandStack.changed", close);
 };
-
 
 /**
  * Unbinds the `close` method to 'contextPad.close' & 'canvas.viewbox.changing'.
  */
 PopupMenu.prototype._unbindHandlers = function() {
-
   var eventBus = this._eventBus,
-      self = this;
+    self = this;
 
   function close() {
     self.close();
   }
 
-  eventBus.off('contextPad.close', close);
-  eventBus.off('canvas.viewbox.changed', close);
-  eventBus.off('commandStack.changed', close);
+  eventBus.off("contextPad.close", close);
+  eventBus.off("canvas.viewbox.changed", close);
+  eventBus.off("commandStack.changed", close);
 };
-
-
 
 // helpers /////////////////////////////
 
 function setTransform(element, transform) {
-  element.style['transform-origin'] = 'top left';
+  element.style["transform-origin"] = "top left";
 
-  [ '', '-ms-', '-webkit-' ].forEach(function(prefix) {
-    element.style[prefix + 'transform'] = transform;
+  ["", "-ms-", "-webkit-"].forEach(function(prefix) {
+    element.style[prefix + "transform"] = transform;
   });
 }

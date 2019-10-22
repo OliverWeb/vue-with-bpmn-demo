@@ -7,29 +7,26 @@ import {
   map,
   matchPattern,
   size
-} from 'min-dash';
+} from "min-dash";
 
-import {
-  selfAndAllChildren
-} from '../../util/Elements';
+import { selfAndAllChildren } from "../../util/Elements";
 
 import {
   append as svgAppend,
   attr as svgAttr,
   create as svgCreate,
   remove as svgRemove
-} from 'tiny-svg';
+} from "tiny-svg";
 
-import { translate } from '../../util/SvgTransformUtil';
+import { translate } from "../../util/SvgTransformUtil";
 
 var LOW_PRIORITY = 499;
 
-var MARKER_DRAGGING = 'djs-dragging',
-    MARKER_OK = 'drop-ok',
-    MARKER_NOT_OK = 'drop-not-ok',
-    MARKER_NEW_PARENT = 'new-parent',
-    MARKER_ATTACH = 'attach-ok';
-
+var MARKER_DRAGGING = "djs-dragging",
+  MARKER_OK = "drop-ok",
+  MARKER_NOT_OK = "drop-not-ok",
+  MARKER_NEW_PARENT = "new-parent",
+  MARKER_ATTACH = "attach-ok";
 
 /**
  * Provides previews for moving shapes when moving.
@@ -39,9 +36,7 @@ var MARKER_DRAGGING = 'djs-dragging',
  * @param {Canvas} canvas
  * @param {Styles} styles
  */
-export default function MovePreview(
-    eventBus, canvas, styles, previewSupport) {
-
+export default function MovePreview(eventBus, canvas, styles, previewSupport) {
   function getVisualDragShapes(shapes) {
     var elements = getAllDraggedElements(shapes);
 
@@ -64,15 +59,15 @@ export default function MovePreview(
    * Sets drop marker on an element.
    */
   function setMarker(element, marker) {
-
-    [ MARKER_ATTACH, MARKER_OK, MARKER_NOT_OK, MARKER_NEW_PARENT ].forEach(function(m) {
-
-      if (m === marker) {
-        canvas.addMarker(element, m);
-      } else {
-        canvas.removeMarker(element, m);
+    [MARKER_ATTACH, MARKER_OK, MARKER_NOT_OK, MARKER_NEW_PARENT].forEach(
+      function(m) {
+        if (m === marker) {
+          canvas.addMarker(element, m);
+        } else {
+          canvas.removeMarker(element, m);
+        }
       }
-    });
+    );
   }
 
   /**
@@ -83,7 +78,6 @@ export default function MovePreview(
    * @param {Boolean} addMarker
    */
   function makeDraggable(context, element, addMarker) {
-
     previewSupport.addDragger(element, context.dragGroup);
 
     if (addMarker) {
@@ -93,24 +87,24 @@ export default function MovePreview(
     if (context.allDraggedElements) {
       context.allDraggedElements.push(element);
     } else {
-      context.allDraggedElements = [ element ];
+      context.allDraggedElements = [element];
     }
   }
 
   // assign a low priority to this handler
   // to let others modify the move context before
   // we draw things
-  eventBus.on('shape.move.start', LOW_PRIORITY, function(event) {
+  eventBus.on("shape.move.start", LOW_PRIORITY, function(event) {
     var context = event.context,
-        dragShapes = context.shapes,
-        allDraggedElements = context.allDraggedElements;
+      dragShapes = context.shapes,
+      allDraggedElements = context.allDraggedElements;
 
     var visuallyDraggedShapes = getVisualDragShapes(dragShapes);
 
     if (!context.dragGroup) {
-      var dragGroup = svgCreate('g');
+      var dragGroup = svgCreate("g");
 
-      svgAttr(dragGroup, styles.cls('djs-drag-group', [ 'no-events' ]));
+      svgAttr(dragGroup, styles.cls("djs-drag-group", ["no-events"]));
 
       var defaultLayer = canvas.getDefaultLayer();
 
@@ -147,16 +141,15 @@ export default function MovePreview(
   });
 
   // update previews
-  eventBus.on('shape.move.move', LOW_PRIORITY, function(event) {
-
+  eventBus.on("shape.move.move", LOW_PRIORITY, function(event) {
     var context = event.context,
-        dragGroup = context.dragGroup,
-        target = context.target,
-        parent = context.shape.parent,
-        canExecute = context.canExecute;
+      dragGroup = context.dragGroup,
+      target = context.target,
+      parent = context.shape.parent,
+      canExecute = context.canExecute;
 
     if (target) {
-      if (canExecute === 'attach') {
+      if (canExecute === "attach") {
         setMarker(target, MARKER_ATTACH);
       } else if (context.canExecute && target && target.id !== parent.id) {
         setMarker(target, MARKER_NEW_PARENT);
@@ -168,9 +161,9 @@ export default function MovePreview(
     translate(dragGroup, event.dx, event.dy);
   });
 
-  eventBus.on([ 'shape.move.out', 'shape.move.cleanup' ], function(event) {
+  eventBus.on(["shape.move.out", "shape.move.cleanup"], function(event) {
     var context = event.context,
-        target = context.target;
+      target = context.target;
 
     if (target) {
       setMarker(target, null);
@@ -178,12 +171,10 @@ export default function MovePreview(
   });
 
   // remove previews
-  eventBus.on('shape.move.cleanup', function(event) {
-
+  eventBus.on("shape.move.cleanup", function(event) {
     var context = event.context,
-        allDraggedElements = context.allDraggedElements,
-        dragGroup = context.dragGroup;
-
+      allDraggedElements = context.allDraggedElements,
+      dragGroup = context.dragGroup;
 
     // remove dragging marker
     forEach(allDraggedElements, function(e) {
@@ -194,7 +185,6 @@ export default function MovePreview(
       svgRemove(dragGroup);
     }
   });
-
 
   // API //////////////////////
 
@@ -208,13 +198,7 @@ export default function MovePreview(
   this.makeDraggable = makeDraggable;
 }
 
-MovePreview.$inject = [
-  'eventBus',
-  'canvas',
-  'styles',
-  'previewSupport'
-];
-
+MovePreview.$inject = ["eventBus", "canvas", "styles", "previewSupport"];
 
 // helpers //////////////////////
 
@@ -223,13 +207,10 @@ MovePreview.$inject = [
  * where source or target is not elements
  */
 function removeEdges(elements) {
-
   var filteredElements = filter(elements, function(element) {
-
     if (!isConnection(element)) {
       return true;
     } else {
-
       return (
         find(elements, matchPattern({ id: element.source.id })) &&
         find(elements, matchPattern({ id: element.target.id }))
@@ -241,7 +222,13 @@ function removeEdges(elements) {
 }
 
 function haveDifferentParents(elements) {
-  return size(groupBy(elements, function(e) { return e.parent && e.parent.id; })) !== 1;
+  return (
+    size(
+      groupBy(elements, function(e) {
+        return e.parent && e.parent.id;
+      })
+    ) !== 1
+  );
 }
 
 /**

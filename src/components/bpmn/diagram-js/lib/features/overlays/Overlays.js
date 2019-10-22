@@ -8,7 +8,7 @@ import {
   filter,
   matchPattern,
   isDefined
-} from 'min-dash';
+} from "min-dash";
 
 import {
   domify,
@@ -16,19 +16,16 @@ import {
   attr as domAttr,
   remove as domRemove,
   clear as domClear
-} from 'min-dom';
+} from "min-dom";
 
-import {
-  getBBox
-} from '../../util/Elements';
+import { getBBox } from "../../util/Elements";
 
-import Ids from '../../util/IdGenerator';
+import Ids from "../../util/IdGenerator";
 
 // document wide unique overlay ids
-var ids = new Ids('ov');
+var ids = new Ids("ov");
 
 var LOW_PRIORITY = 500;
-
 
 /**
  * A service that allows users to attach overlays to diagram elements.
@@ -95,20 +92,22 @@ var LOW_PRIORITY = 500;
  * @param {ElementRegistry} elementRegistry
  */
 export default function Overlays(config, eventBus, canvas, elementRegistry) {
-
   this._eventBus = eventBus;
   this._canvas = canvas;
   this._elementRegistry = elementRegistry;
 
   this._ids = ids;
 
-  this._overlayDefaults = assign({
-    // no show constraints
-    show: null,
+  this._overlayDefaults = assign(
+    {
+      // no show constraints
+      show: null,
 
-    // always scale
-    scale: true
-  }, config && config.defaults);
+      // always scale
+      scale: true
+    },
+    config && config.defaults
+  );
 
   /**
    * Mapping overlayId -> overlay
@@ -126,14 +125,7 @@ export default function Overlays(config, eventBus, canvas, elementRegistry) {
   this._init();
 }
 
-
-Overlays.$inject = [
-  'config.overlays',
-  'eventBus',
-  'canvas',
-  'elementRegistry'
-];
-
+Overlays.$inject = ["config.overlays", "eventBus", "canvas", "elementRegistry"];
 
 /**
  * Returns the overlay with the specified id or a list of overlays
@@ -162,7 +154,6 @@ Overlays.$inject = [
  * @return {Object|Array<Object>} the overlay(s)
  */
 Overlays.prototype.get = function(search) {
-
   if (isString(search)) {
     search = { id: search };
   }
@@ -176,12 +167,13 @@ Overlays.prototype.get = function(search) {
 
     // return a list of overlays when searching by element (+type)
     if (container) {
-      return search.type ? filter(container.overlays, matchPattern({ type: search.type })) : container.overlays.slice();
+      return search.type
+        ? filter(container.overlays, matchPattern({ type: search.type }))
+        : container.overlays.slice();
     } else {
       return [];
     }
-  } else
-  if (search.type) {
+  } else if (search.type) {
     return filter(this._overlays, matchPattern({ type: search.type }));
   } else {
     // return single element when searching by id
@@ -213,7 +205,6 @@ Overlays.prototype.get = function(search) {
  * @return {String}                 id that may be used to reference the overlay for update or removal
  */
 Overlays.prototype.add = function(element, type, overlay) {
-
   if (isObject(type)) {
     overlay = type;
     type = null;
@@ -224,15 +215,15 @@ Overlays.prototype.add = function(element, type, overlay) {
   }
 
   if (!overlay.position) {
-    throw new Error('must specifiy overlay position');
+    throw new Error("must specifiy overlay position");
   }
 
   if (!overlay.html) {
-    throw new Error('must specifiy overlay html');
+    throw new Error("must specifiy overlay html");
   }
 
   if (!element) {
-    throw new Error('invalid element specified');
+    throw new Error("invalid element specified");
   }
 
   var id = this._ids.next();
@@ -249,7 +240,6 @@ Overlays.prototype.add = function(element, type, overlay) {
   return id;
 };
 
-
 /**
  * Remove an overlay with the given id or all overlays matching the given filter.
  *
@@ -259,17 +249,15 @@ Overlays.prototype.add = function(element, type, overlay) {
  * @param {Object} [filter]
  */
 Overlays.prototype.remove = function(filter) {
-
   var overlays = this.get(filter) || [];
 
   if (!isArray(overlays)) {
-    overlays = [ overlays ];
+    overlays = [overlays];
   }
 
   var self = this;
 
   forEach(overlays, function(overlay) {
-
     var container = self._getOverlayContainer(overlay.element, true);
 
     if (overlay) {
@@ -289,14 +277,11 @@ Overlays.prototype.remove = function(filter) {
       }
     }
   });
-
 };
-
 
 Overlays.prototype.show = function() {
   setVisible(this._overlayRoot);
 };
-
 
 Overlays.prototype.hide = function() {
   setVisible(this._overlayRoot, false);
@@ -312,13 +297,13 @@ Overlays.prototype.clear = function() {
 
 Overlays.prototype._updateOverlayContainer = function(container) {
   var element = container.element,
-      html = container.html;
+    html = container.html;
 
   // update container left,top according to the elements x,y coordinates
   // this ensures we can attach child elements relative to this container
 
   var x = element.x,
-      y = element.y;
+    y = element.y;
 
   if (element.waypoints) {
     var bbox = getBBox(element);
@@ -328,25 +313,22 @@ Overlays.prototype._updateOverlayContainer = function(container) {
 
   setPosition(html, x, y);
 
-  domAttr(container.html, 'data-container-id', element.id);
+  domAttr(container.html, "data-container-id", element.id);
 };
 
-
 Overlays.prototype._updateOverlay = function(overlay) {
-
   var position = overlay.position,
-      htmlContainer = overlay.htmlContainer,
-      element = overlay.element;
+    htmlContainer = overlay.htmlContainer,
+    element = overlay.element;
 
   // update overlay html relative to shape because
   // it is already positioned on the element
 
   // update relative
   var left = position.left,
-      top = position.top;
+    top = position.top;
 
   if (position.right !== undefined) {
-
     var width;
 
     if (element.waypoints) {
@@ -359,7 +341,6 @@ Overlays.prototype._updateOverlay = function(overlay) {
   }
 
   if (position.bottom !== undefined) {
-
     var height;
 
     if (element.waypoints) {
@@ -373,7 +354,6 @@ Overlays.prototype._updateOverlay = function(overlay) {
 
   setPosition(htmlContainer, left || 0, top || 0);
 };
-
 
 Overlays.prototype._createOverlayContainer = function(element) {
   var html = domify('<div class="djs-overlays" style="position: absolute" />');
@@ -393,30 +373,23 @@ Overlays.prototype._createOverlayContainer = function(element) {
   return container;
 };
 
-
 Overlays.prototype._updateRoot = function(viewbox) {
   var scale = viewbox.scale || 1;
 
-  var matrix = 'matrix(' +
-  [
-    scale,
-    0,
-    0,
-    scale,
-    -1 * viewbox.x * scale,
-    -1 * viewbox.y * scale
-  ].join(',') +
-  ')';
+  var matrix =
+    "matrix(" +
+    [scale, 0, 0, scale, -1 * viewbox.x * scale, -1 * viewbox.y * scale].join(
+      ","
+    ) +
+    ")";
 
   setTransform(this._overlayRoot, matrix);
 };
-
 
 Overlays.prototype._getOverlayContainer = function(element, raw) {
   var container = find(this._overlayContainers, function(c) {
     return c.element === element;
   });
-
 
   if (!container && !raw) {
     return this._createOverlayContainer(element);
@@ -425,14 +398,12 @@ Overlays.prototype._getOverlayContainer = function(element, raw) {
   return container;
 };
 
-
 Overlays.prototype._addOverlay = function(overlay) {
-
   var id = overlay.id,
-      element = overlay.element,
-      html = overlay.html,
-      htmlContainer,
-      overlayContainer;
+    element = overlay.element,
+    html = overlay.html,
+    htmlContainer,
+    overlayContainer;
 
   // unwrap jquery (for those who need it)
   if (html.get && html.constructor.prototype.jquery) {
@@ -447,12 +418,16 @@ Overlays.prototype._addOverlay = function(overlay) {
 
   overlayContainer = this._getOverlayContainer(element);
 
-  htmlContainer = domify('<div class="djs-overlay" data-overlay-id="' + id + '" style="position: absolute">');
+  htmlContainer = domify(
+    '<div class="djs-overlay" data-overlay-id="' +
+      id +
+      '" style="position: absolute">'
+  );
 
   htmlContainer.appendChild(html);
 
   if (overlay.type) {
-    domClasses(htmlContainer).add('djs-overlay-' + overlay.type);
+    domClasses(htmlContainer).add("djs-overlay-" + overlay.type);
   }
 
   overlay.htmlContainer = htmlContainer;
@@ -466,13 +441,12 @@ Overlays.prototype._addOverlay = function(overlay) {
   this._updateOverlayVisibilty(overlay, this._canvas.viewbox());
 };
 
-
 Overlays.prototype._updateOverlayVisibilty = function(overlay, viewbox) {
   var show = overlay.show,
-      minZoom = show && show.minZoom,
-      maxZoom = show && show.maxZoom,
-      htmlContainer = overlay.htmlContainer,
-      visible = true;
+    minZoom = show && show.minZoom,
+    maxZoom = show && show.maxZoom,
+    htmlContainer = overlay.htmlContainer,
+    visible = true;
 
   if (show) {
     if (
@@ -488,17 +462,16 @@ Overlays.prototype._updateOverlayVisibilty = function(overlay, viewbox) {
   this._updateOverlayScale(overlay, viewbox);
 };
 
-
 Overlays.prototype._updateOverlayScale = function(overlay, viewbox) {
   var shouldScale = overlay.scale,
-      minScale,
-      maxScale,
-      htmlContainer = overlay.htmlContainer;
+    minScale,
+    maxScale,
+    htmlContainer = overlay.htmlContainer;
 
-  var scale, transform = '';
+  var scale,
+    transform = "";
 
   if (shouldScale !== true) {
-
     if (shouldScale === false) {
       minScale = 1;
       maxScale = 1;
@@ -517,15 +490,13 @@ Overlays.prototype._updateOverlayScale = function(overlay, viewbox) {
   }
 
   if (isDefined(scale)) {
-    transform = 'scale(' + scale + ',' + scale + ')';
+    transform = "scale(" + scale + "," + scale + ")";
   }
 
   setTransform(htmlContainer, transform);
 };
 
-
 Overlays.prototype._updateOverlaysVisibilty = function(viewbox) {
-
   var self = this;
 
   forEach(this._overlays, function(overlay) {
@@ -533,13 +504,10 @@ Overlays.prototype._updateOverlaysVisibilty = function(viewbox) {
   });
 };
 
-
 Overlays.prototype._init = function() {
-
   var eventBus = this._eventBus;
 
   var self = this;
-
 
   // scroll/zoom integration
 
@@ -550,18 +518,17 @@ Overlays.prototype._init = function() {
     self.show();
   }
 
-  eventBus.on('canvas.viewbox.changing', function(event) {
+  eventBus.on("canvas.viewbox.changing", function(event) {
     self.hide();
   });
 
-  eventBus.on('canvas.viewbox.changed', function(event) {
+  eventBus.on("canvas.viewbox.changed", function(event) {
     updateViewbox(event.viewbox);
   });
 
-
   // remove integration
 
-  eventBus.on([ 'shape.remove', 'connection.remove' ], function(e) {
+  eventBus.on(["shape.remove", "connection.remove"], function(e) {
     var element = e.element;
     var overlays = self.get({ element: element });
 
@@ -580,10 +547,9 @@ Overlays.prototype._init = function() {
     }
   });
 
-
   // move integration
 
-  eventBus.on('element.changed', LOW_PRIORITY, function(e) {
+  eventBus.on("element.changed", LOW_PRIORITY, function(e) {
     var element = e.element;
 
     var container = self._getOverlayContainer(element, true);
@@ -597,23 +563,19 @@ Overlays.prototype._init = function() {
     }
   });
 
-
   // marker integration, simply add them on the overlays as classes, too.
 
-  eventBus.on('element.marker.update', function(e) {
+  eventBus.on("element.marker.update", function(e) {
     var container = self._getOverlayContainer(e.element, true);
     if (container) {
-      domClasses(container.html)[e.add ? 'add' : 'remove'](e.marker);
+      domClasses(container.html)[e.add ? "add" : "remove"](e.marker);
     }
   });
 
-
   // clear overlays with diagram
 
-  eventBus.on('diagram.clear', this.clear, this);
+  eventBus.on("diagram.clear", this.clear, this);
 };
-
-
 
 // helpers /////////////////////////////
 
@@ -628,18 +590,17 @@ function createRoot(parentNode) {
 }
 
 function setPosition(el, x, y) {
-  assign(el.style, { left: x + 'px', top: y + 'px' });
+  assign(el.style, { left: x + "px", top: y + "px" });
 }
 
 function setVisible(el, visible) {
-  el.style.display = visible === false ? 'none' : '';
+  el.style.display = visible === false ? "none" : "";
 }
 
 function setTransform(el, transform) {
+  el.style["transform-origin"] = "top left";
 
-  el.style['transform-origin'] = 'top left';
-
-  [ '', '-ms-', '-webkit-' ].forEach(function(prefix) {
-    el.style[prefix + 'transform'] = transform;
+  ["", "-ms-", "-webkit-"].forEach(function(prefix) {
+    el.style[prefix + "transform"] = transform;
   });
 }

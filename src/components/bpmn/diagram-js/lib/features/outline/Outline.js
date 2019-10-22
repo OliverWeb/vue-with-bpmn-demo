@@ -1,4 +1,4 @@
-import { getBBox } from '../../util/Elements';
+import { getBBox } from "../../util/Elements";
 
 var LOW_PRIORITY = 500;
 
@@ -6,16 +6,11 @@ import {
   append as svgAppend,
   attr as svgAttr,
   create as svgCreate
-} from 'tiny-svg';
+} from "tiny-svg";
 
-import {
-  query as domQuery
-} from 'min-dom';
+import { query as domQuery } from "min-dom";
 
-import {
-  assign
-} from 'min-dash';
-
+import { assign } from "min-dash";
 
 /**
  * @class
@@ -28,22 +23,27 @@ import {
  * @param {ElementRegistry} elementRegistry
  */
 export default function Outline(eventBus, styles, elementRegistry) {
-
   this.offset = 6;
 
-  var OUTLINE_STYLE = styles.cls('djs-outline', [ 'no-fill' ]);
+  var OUTLINE_STYLE = styles.cls("djs-outline", ["no-fill"]);
 
   var self = this;
 
   function createOutline(gfx, bounds) {
-    var outline = svgCreate('rect');
+    var outline = svgCreate("rect");
 
-    svgAttr(outline, assign({
-      x: 10,
-      y: 10,
-      width: 100,
-      height: 100
-    }, OUTLINE_STYLE));
+    svgAttr(
+      outline,
+      assign(
+        {
+          x: 10,
+          y: 10,
+          width: 100,
+          height: 100
+        },
+        OUTLINE_STYLE
+      )
+    );
 
     svgAppend(gfx, outline);
 
@@ -52,11 +52,11 @@ export default function Outline(eventBus, styles, elementRegistry) {
 
   // A low priortity is necessary, because outlines of labels have to be updated
   // after the label bounds have been updated in the renderer.
-  eventBus.on([ 'shape.added', 'shape.changed' ], LOW_PRIORITY, function(event) {
+  eventBus.on(["shape.added", "shape.changed"], LOW_PRIORITY, function(event) {
     var element = event.element,
-        gfx = event.gfx;
+      gfx = event.gfx;
 
-    var outline = domQuery('.djs-outline', gfx);
+    var outline = domQuery(".djs-outline", gfx);
 
     if (!outline) {
       outline = createOutline(gfx, element);
@@ -65,11 +65,11 @@ export default function Outline(eventBus, styles, elementRegistry) {
     self.updateShapeOutline(outline, element);
   });
 
-  eventBus.on([ 'connection.added', 'connection.changed' ], function(event) {
+  eventBus.on(["connection.added", "connection.changed"], function(event) {
     var element = event.element,
-        gfx = event.gfx;
+      gfx = event.gfx;
 
-    var outline = domQuery('.djs-outline', gfx);
+    var outline = domQuery(".djs-outline", gfx);
 
     if (!outline) {
       outline = createOutline(gfx, element);
@@ -79,7 +79,6 @@ export default function Outline(eventBus, styles, elementRegistry) {
   });
 }
 
-
 /**
  * Updates the outline of a shape respecting the dimension of the
  * element and an outline offset.
@@ -88,16 +87,13 @@ export default function Outline(eventBus, styles, elementRegistry) {
  * @param  {djs.model.Base} element
  */
 Outline.prototype.updateShapeOutline = function(outline, element) {
-
   svgAttr(outline, {
     x: -this.offset,
     y: -this.offset,
     width: element.width + this.offset * 2,
     height: element.height + this.offset * 2
   });
-
 };
-
 
 /**
  * Updates the outline of a connection respecting the bounding box of
@@ -107,7 +103,6 @@ Outline.prototype.updateShapeOutline = function(outline, element) {
  * @param  {djs.model.Base} element
  */
 Outline.prototype.updateConnectionOutline = function(outline, connection) {
-
   var bbox = getBBox(connection);
 
   svgAttr(outline, {
@@ -116,8 +111,6 @@ Outline.prototype.updateConnectionOutline = function(outline, connection) {
     width: bbox.width + this.offset * 2,
     height: bbox.height + this.offset * 2
   });
-
 };
 
-
-Outline.$inject = ['eventBus', 'styles', 'elementRegistry'];
+Outline.$inject = ["eventBus", "styles", "elementRegistry"];

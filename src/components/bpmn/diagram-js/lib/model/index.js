@@ -1,13 +1,28 @@
-import { assign } from 'min-dash';
-import inherits from 'inherits';
+import { assign } from "min-dash";
+import inherits from "inherits";
 
-import Refs from 'object-refs';
+import Refs from "object-refs";
 
-var parentRefs = new Refs({ name: 'children', enumerable: true, collection: true }, { name: 'parent' }),
-    labelRefs = new Refs({ name: 'labels', enumerable: true, collection: true }, { name: 'labelTarget' }),
-    attacherRefs = new Refs({ name: 'attachers', collection: true }, { name: 'host' }),
-    outgoingRefs = new Refs({ name: 'outgoing', collection: true }, { name: 'source' }),
-    incomingRefs = new Refs({ name: 'incoming', collection: true }, { name: 'target' });
+var parentRefs = new Refs(
+    { name: "children", enumerable: true, collection: true },
+    { name: "parent" }
+  ),
+  labelRefs = new Refs(
+    { name: "labels", enumerable: true, collection: true },
+    { name: "labelTarget" }
+  ),
+  attacherRefs = new Refs(
+    { name: "attachers", collection: true },
+    { name: "host" }
+  ),
+  outgoingRefs = new Refs(
+    { name: "outgoing", collection: true },
+    { name: "source" }
+  ),
+  incomingRefs = new Refs(
+    { name: "incoming", collection: true },
+    { name: "target" }
+  );
 
 /**
  * @namespace djs.model
@@ -25,17 +40,15 @@ var parentRefs = new Refs({ name: 'children', enumerable: true, collection: true
  * @abstract
  */
 export function Base() {
-
   /**
    * The object that backs up the shape
    *
    * @name Base#businessObject
    * @type Object
    */
-  Object.defineProperty(this, 'businessObject', {
+  Object.defineProperty(this, "businessObject", {
     writable: true
   });
-
 
   /**
    * Single label support, will mapped to multi label array
@@ -43,14 +56,13 @@ export function Base() {
    * @name Base#label
    * @type Object
    */
-  Object.defineProperty(this, 'label', {
+  Object.defineProperty(this, "label", {
     get: function() {
       return this.labels[0];
     },
     set: function(newLabel) {
-
       var label = this.label,
-          labels = this.labels;
+        labels = this.labels;
 
       if (!newLabel && label) {
         labels.remove(label);
@@ -66,7 +78,7 @@ export function Base() {
    * @name Base#parent
    * @type Shape
    */
-  parentRefs.bind(this, 'parent');
+  parentRefs.bind(this, "parent");
 
   /**
    * The list of labels
@@ -74,7 +86,7 @@ export function Base() {
    * @name Base#labels
    * @type Label
    */
-  labelRefs.bind(this, 'labels');
+  labelRefs.bind(this, "labels");
 
   /**
    * The list of outgoing connections
@@ -82,7 +94,7 @@ export function Base() {
    * @name Base#outgoing
    * @type Array<Connection>
    */
-  outgoingRefs.bind(this, 'outgoing');
+  outgoingRefs.bind(this, "outgoing");
 
   /**
    * The list of incoming connections
@@ -90,9 +102,8 @@ export function Base() {
    * @name Base#incoming
    * @type Array<Connection>
    */
-  incomingRefs.bind(this, 'incoming');
+  incomingRefs.bind(this, "incoming");
 }
-
 
 /**
  * A graphical object
@@ -118,23 +129,22 @@ export function Shape() {
    * @name Shape#children
    * @type Array<Base>
    */
-  parentRefs.bind(this, 'children');
+  parentRefs.bind(this, "children");
 
   /**
    * @name Shape#host
    * @type Shape
    */
-  attacherRefs.bind(this, 'host');
+  attacherRefs.bind(this, "host");
 
   /**
    * @name Shape#attachers
    * @type Shape
    */
-  attacherRefs.bind(this, 'attachers');
+  attacherRefs.bind(this, "attachers");
 }
 
 inherits(Shape, Base);
-
 
 /**
  * A root graphical object
@@ -149,7 +159,6 @@ export function Root() {
 }
 
 inherits(Root, Shape);
-
 
 /**
  * A label for an element
@@ -168,11 +177,10 @@ export function Label() {
    * @name Label#labelTarget
    * @type Base
    */
-  labelRefs.bind(this, 'labelTarget');
+  labelRefs.bind(this, "labelTarget");
 }
 
 inherits(Label, Shape);
-
 
 /**
  * A connection between two elements
@@ -191,7 +199,7 @@ export function Connection() {
    * @name Connection#source
    * @type Base
    */
-  outgoingRefs.bind(this, 'source');
+  outgoingRefs.bind(this, "source");
 
   /**
    * The element this connection points to
@@ -199,11 +207,10 @@ export function Connection() {
    * @name Connection#target
    * @type Base
    */
-  incomingRefs.bind(this, 'target');
+  incomingRefs.bind(this, "target");
 }
 
 inherits(Connection, Base);
-
 
 var types = {
   connection: Connection,
@@ -232,7 +239,7 @@ var types = {
 export function create(type, attrs) {
   var Type = types[type];
   if (!Type) {
-    throw new Error('unknown type: <' + type + '>');
+    throw new Error("unknown type: <" + type + ">");
   }
   return assign(new Type(), attrs);
 }

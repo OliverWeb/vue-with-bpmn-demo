@@ -1,53 +1,39 @@
-import {
-  pick,
-  assign,
-  filter,
-  has
-} from 'min-dash';
+import { pick, assign, filter, has } from "min-dash";
 
-import {
-  is,
-  getBusinessObject
-} from '../../util/ModelUtil';
+import { is, getBusinessObject } from "../../util/ModelUtil";
 
-import {
-  isAny
-} from '../modeling/util/ModelingUtil';
+import { isAny } from "../modeling/util/ModelingUtil";
 
-import {
-  isExpanded,
-  isEventSubProcess
-} from '../../util/DiUtil';
+import { isExpanded, isEventSubProcess } from "../../util/DiUtil";
 
 import {
   getProperties,
   IGNORED_PROPERTIES
-} from '../../util/model/ModelCloneUtils';
+} from "../../util/model/ModelCloneUtils";
 
-import ModelCloneHelper from '../../util/model/ModelCloneHelper';
+import ModelCloneHelper from "../../util/model/ModelCloneHelper";
 
 var CUSTOM_PROPERTIES = [
-  'cancelActivity',
-  'instantiate',
-  'eventGatewayType',
-  'triggeredByEvent',
-  'isInterrupting'
+  "cancelActivity",
+  "instantiate",
+  "eventGatewayType",
+  "triggeredByEvent",
+  "isInterrupting"
 ];
 
-
 function toggeling(element, target) {
-
-  var oldCollapsed = (
-    element && has(element, 'collapsed') ? element.collapsed : !isExpanded(element)
-  );
+  var oldCollapsed =
+    element && has(element, "collapsed")
+      ? element.collapsed
+      : !isExpanded(element);
 
   var targetCollapsed;
 
-  if (target && (has(target, 'collapsed') || has(target, 'isExpanded'))) {
+  if (target && (has(target, "collapsed") || has(target, "isExpanded"))) {
     // property is explicitly set so use it
-    targetCollapsed = (
-      has(target, 'collapsed') ? target.collapsed : !target.isExpanded
-    );
+    targetCollapsed = has(target, "collapsed")
+      ? target.collapsed
+      : !target.isExpanded;
   } else {
     // keep old state
     targetCollapsed = oldCollapsed;
@@ -61,16 +47,17 @@ function toggeling(element, target) {
   return false;
 }
 
-
-
 /**
  * This module takes care of replacing BPMN elements
  */
 export default function BpmnReplace(
-    bpmnFactory, elementFactory, replace,
-    selection, modeling, eventBus
+  bpmnFactory,
+  elementFactory,
+  replace,
+  selection,
+  modeling,
+  eventBus
 ) {
-
   var helper = new ModelCloneHelper(eventBus, bpmnFactory);
 
   /**
@@ -86,12 +73,12 @@ export default function BpmnReplace(
   function replaceElement(element, target, hints) {
     hints = hints || {};
 
-// 新替换的类型和旧节点的信息
+    // 新替换的类型和旧节点的信息
     var type = target.type,
-        oldBusinessObject = element.businessObject;
+      oldBusinessObject = element.businessObject;
 
     if (isSubProcess(oldBusinessObject)) {
-      if (type === 'bpmn:SubProcess') {
+      if (type === "bpmn:SubProcess") {
         if (toggeling(element, target)) {
           // expanding or collapsing process
           modeling.toggleCollapse(element);
@@ -102,30 +89,30 @@ export default function BpmnReplace(
     }
 
     var newBusinessObject = bpmnFactory.create(type, {}, target.serviceType);
-	// newBusinessObject.id = newBusinessObject.di.id
-	// 删除自定义的属性
-	delete target.serviceType
+    // newBusinessObject.id = newBusinessObject.di.id
+    // 删除自定义的属性
+    delete target.serviceType;
     var newElement = {
       type: type,
       businessObject: newBusinessObject
     };
 
     var elementProps = getProperties(oldBusinessObject.$descriptor),
-        newElementProps = getProperties(newBusinessObject.$descriptor, true),
-        copyProps = intersection(elementProps, newElementProps);
+      newElementProps = getProperties(newBusinessObject.$descriptor, true),
+      copyProps = intersection(elementProps, newElementProps);
     // initialize special properties defined in target definition
     assign(newBusinessObject, pick(target, CUSTOM_PROPERTIES));
     var properties = filter(copyProps, function(property) {
-      var propName = property.replace(/bpmn:/, '');
+      var propName = property.replace(/bpmn:/, "");
 
       // copying event definitions, unless we replace
-      if (propName === 'eventDefinitions') {
+      if (propName === "eventDefinitions") {
         return hasEventDefinition(element, target.eventDefinitionType);
       }
 
       // retain loop characteristics if the target element
       // is not an event sub process
-      if (propName === 'loopCharacteristics') {
+      if (propName === "loopCharacteristics") {
         return !isEventSubProcess(newBusinessObject);
       }
 
@@ -134,21 +121,24 @@ export default function BpmnReplace(
         return false;
       }
 
-      if (propName === 'processRef' && target.isExpanded === false) {
+      if (propName === "processRef" && target.isExpanded === false) {
         return false;
       }
 
-      if (propName === 'triggeredByEvent') {
+      if (propName === "triggeredByEvent") {
         return false;
       }
 
       return IGNORED_PROPERTIES.indexOf(propName) === -1;
     });
-	
-    newBusinessObject = helper.clone(oldBusinessObject, newBusinessObject, properties);
+
+    newBusinessObject = helper.clone(
+      oldBusinessObject,
+      newBusinessObject,
+      properties
+    );
     // initialize custom BPMN extensions
     if (target.eventDefinitionType) {
-
       // only initialize with new eventDefinition
       // if we did not set an event definition yet,
       // i.e. because we cloned it
@@ -157,21 +147,24 @@ export default function BpmnReplace(
       }
     }
 
-    if (is(oldBusinessObject, 'bpmn:Activity')) {
-
+    if (is(oldBusinessObject, "bpmn:Activity")) {
       if (isSubProcess(oldBusinessObject)) {
         // no toggeling, so keep old state
         newElement.isExpanded = isExpanded(oldBusinessObject);
       }
       // else if property is explicitly set, use it
-      else if (target && has(target, 'isExpanded')) {
+      else if (target && has(target, "isExpanded")) {
         newElement.isExpanded = target.isExpanded;
       }
 
       // TODO: need also to respect min/max Size
       // copy size, from an expanded subprocess to an expanded alternative subprocess
       // except bpmn:Task, because Task is always expanded
-      if ((isExpanded(oldBusinessObject) && !is(oldBusinessObject, 'bpmn:Task')) && newElement.isExpanded) {
+      if (
+        isExpanded(oldBusinessObject) &&
+        !is(oldBusinessObject, "bpmn:Task") &&
+        newElement.isExpanded
+      ) {
         newElement.width = element.width;
         newElement.height = element.height;
       }
@@ -183,11 +176,10 @@ export default function BpmnReplace(
     }
 
     // transform collapsed/expanded pools
-    if (is(oldBusinessObject, 'bpmn:Participant')) {
-
+    if (is(oldBusinessObject, "bpmn:Participant")) {
       // create expanded pool
       if (target.isExpanded === true) {
-        newBusinessObject.processRef = bpmnFactory.create('bpmn:Process');
+        newBusinessObject.processRef = bpmnFactory.create("bpmn:Process");
       } else {
         // remove children when transforming to collapsed pool
         hints.moveChildren = false;
@@ -195,7 +187,9 @@ export default function BpmnReplace(
 
       // apply same width and default height
       newElement.width = element.width;
-      newElement.height = elementFactory._getDefaultSize(newBusinessObject).height;
+      newElement.height = elementFactory._getDefaultSize(
+        newBusinessObject
+      ).height;
     }
 
     newBusinessObject.name = oldBusinessObject.name;
@@ -203,14 +197,14 @@ export default function BpmnReplace(
     // retain default flow's reference between inclusive <-> exclusive gateways and activities
     if (
       isAny(oldBusinessObject, [
-        'bpmn:ExclusiveGateway',
-        'bpmn:InclusiveGateway',
-        'bpmn:Activity'
+        "bpmn:ExclusiveGateway",
+        "bpmn:InclusiveGateway",
+        "bpmn:Activity"
       ]) &&
       isAny(newBusinessObject, [
-        'bpmn:ExclusiveGateway',
-        'bpmn:InclusiveGateway',
-        'bpmn:Activity'
+        "bpmn:ExclusiveGateway",
+        "bpmn:InclusiveGateway",
+        "bpmn:Activity"
       ])
     ) {
       newBusinessObject.default = oldBusinessObject.default;
@@ -218,14 +212,16 @@ export default function BpmnReplace(
 
     if (
       target.host &&
-      !is(oldBusinessObject, 'bpmn:BoundaryEvent') &&
-      is(newBusinessObject, 'bpmn:BoundaryEvent')
+      !is(oldBusinessObject, "bpmn:BoundaryEvent") &&
+      is(newBusinessObject, "bpmn:BoundaryEvent")
     ) {
       newElement.host = target.host;
     }
 
-    if ('fill' in oldBusinessObject.di || 'stroke' in oldBusinessObject.di) {
-      assign(newElement, { colors: pick(oldBusinessObject.di, [ 'fill', 'stroke' ]) });
+    if ("fill" in oldBusinessObject.di || "stroke" in oldBusinessObject.di) {
+      assign(newElement, {
+        colors: pick(oldBusinessObject.di, ["fill", "stroke"])
+      });
     }
 
     newElement = replace.replaceElement(element, newElement, hints);
@@ -233,8 +229,8 @@ export default function BpmnReplace(
     if (hints.select !== false) {
       selection.select(newElement);
     }
-	newElement.businessObject.id = newBusinessObject.di.id
-	console.log(newElement)
+    newElement.businessObject.id = newBusinessObject.di.id;
+    console.log(newElement);
     return newElement;
   }
 
@@ -242,26 +238,27 @@ export default function BpmnReplace(
 }
 
 BpmnReplace.$inject = [
-  'bpmnFactory',
-  'elementFactory',
-  'replace',
-  'selection',
-  'modeling',
-  'eventBus'
+  "bpmnFactory",
+  "elementFactory",
+  "replace",
+  "selection",
+  "modeling",
+  "eventBus"
 ];
 
-
 function isSubProcess(bo) {
-  return is(bo, 'bpmn:SubProcess');
+  return is(bo, "bpmn:SubProcess");
 }
 
 function hasEventDefinition(element, type) {
-
   var bo = getBusinessObject(element);
 
-  return type && bo.get('eventDefinitions').some(function(definition) {
-    return is(definition, type);
-  });
+  return (
+    type &&
+    bo.get("eventDefinitions").some(function(definition) {
+      return is(definition, type);
+    })
+  );
 }
 
 /**

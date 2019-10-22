@@ -1,7 +1,6 @@
-
-import PropertiesPanel from './propertiesPanel';
+import PropertiesPanel from "./propertiesPanel";
 
 export default {
-  __init__: ['propertiesPanel'],
-  propertiesPanel: [ 'type', PropertiesPanel ]
+  __init__: ["propertiesPanel"],
+  propertiesPanel: ["type", PropertiesPanel]
 };

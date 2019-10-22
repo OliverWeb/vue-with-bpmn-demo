@@ -1,6 +1,6 @@
-import AlignElements from './AlignElements';
+import AlignElements from "./AlignElements";
 
 export default {
-  __init__: [ 'alignElements' ],
-  alignElements: [ 'type', AlignElements ]
+  __init__: ["alignElements"],
+  alignElements: ["type", AlignElements]
 };

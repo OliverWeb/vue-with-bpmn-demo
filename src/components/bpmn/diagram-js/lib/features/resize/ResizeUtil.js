@@ -1,22 +1,13 @@
-import {
-  filter,
-  isNumber
-} from 'min-dash';
+import { filter, isNumber } from "min-dash";
 
 var max = Math.max,
-    min = Math.min;
+  min = Math.min;
 
 var DEFAULT_CHILD_BOX_PADDING = 20;
 
-import {
-  getBBox
-} from '../../util/Elements';
+import { getBBox } from "../../util/Elements";
 
-import {
-  asTRBL,
-  asBounds
-} from '../../layout/LayoutUtil';
-
+import { asTRBL, asBounds } from "../../layout/LayoutUtil";
 
 /**
  * Substract a TRBL from another
@@ -45,49 +36,46 @@ export function substractTRBL(trblA, trblB) {
  * @return {Bounds} resized bounding box
  */
 export function resizeBounds(bounds, direction, delta) {
-
   var dx = delta.x,
-      dy = delta.y;
+    dy = delta.y;
 
   switch (direction) {
+    case "nw":
+      return {
+        x: bounds.x + dx,
+        y: bounds.y + dy,
+        width: bounds.width - dx,
+        height: bounds.height - dy
+      };
 
-  case 'nw':
-    return {
-      x: bounds.x + dx,
-      y: bounds.y + dy,
-      width: bounds.width - dx,
-      height: bounds.height - dy
-    };
+    case "sw":
+      return {
+        x: bounds.x + dx,
+        y: bounds.y,
+        width: bounds.width - dx,
+        height: bounds.height + dy
+      };
 
-  case 'sw':
-    return {
-      x: bounds.x + dx,
-      y: bounds.y,
-      width: bounds.width - dx,
-      height: bounds.height + dy
-    };
+    case "ne":
+      return {
+        x: bounds.x,
+        y: bounds.y + dy,
+        width: bounds.width + dx,
+        height: bounds.height - dy
+      };
 
-  case 'ne':
-    return {
-      x: bounds.x,
-      y: bounds.y + dy,
-      width: bounds.width + dx,
-      height: bounds.height - dy
-    };
+    case "se":
+      return {
+        x: bounds.x,
+        y: bounds.y,
+        width: bounds.width + dx,
+        height: bounds.height + dy
+      };
 
-  case 'se':
-    return {
-      x: bounds.x,
-      y: bounds.y,
-      width: bounds.width + dx,
-      height: bounds.height + dy
-    };
-
-  default:
-    throw new Error('unrecognized direction: ' + direction);
+    default:
+      throw new Error("unrecognized direction: " + direction);
   }
 }
-
 
 /**
  * Resize the given bounds by applying the passed
@@ -107,24 +95,24 @@ export function resizeTRBL(bounds, resize) {
   };
 }
 
-
 export function reattachPoint(bounds, newBounds, point) {
-
   var sx = bounds.width / newBounds.width,
-      sy = bounds.height / newBounds.height;
+    sy = bounds.height / newBounds.height;
 
   return {
-    x: Math.round((newBounds.x + newBounds.width / 2)) - Math.floor(((bounds.x + bounds.width / 2) - point.x) / sx),
-    y: Math.round((newBounds.y + newBounds.height / 2)) - Math.floor(((bounds.y + bounds.height / 2) - point.y) / sy)
+    x:
+      Math.round(newBounds.x + newBounds.width / 2) -
+      Math.floor((bounds.x + bounds.width / 2 - point.x) / sx),
+    y:
+      Math.round(newBounds.y + newBounds.height / 2) -
+      Math.floor((bounds.y + bounds.height / 2 - point.y) / sy)
   };
 }
 
-
 function applyConstraints(attr, trbl, resizeConstraints) {
-
   var value = trbl[attr],
-      minValue = resizeConstraints.min && resizeConstraints.min[attr],
-      maxValue = resizeConstraints.max && resizeConstraints.max[attr];
+    minValue = resizeConstraints.min && resizeConstraints.min[attr],
+    maxValue = resizeConstraints.max && resizeConstraints.max[attr];
 
   if (isNumber(minValue)) {
     value = (/top|left/.test(attr) ? min : max)(value, minValue);
@@ -138,7 +126,6 @@ function applyConstraints(attr, trbl, resizeConstraints) {
 }
 
 export function ensureConstraints(currentBounds, resizeConstraints) {
-
   if (!resizeConstraints) {
     return currentBounds;
   }
@@ -146,23 +133,34 @@ export function ensureConstraints(currentBounds, resizeConstraints) {
   var currentTrbl = asTRBL(currentBounds);
 
   return asBounds({
-    top: applyConstraints('top', currentTrbl, resizeConstraints),
-    right: applyConstraints('right', currentTrbl, resizeConstraints),
-    bottom: applyConstraints('bottom', currentTrbl, resizeConstraints),
-    left: applyConstraints('left', currentTrbl, resizeConstraints)
+    top: applyConstraints("top", currentTrbl, resizeConstraints),
+    right: applyConstraints("right", currentTrbl, resizeConstraints),
+    bottom: applyConstraints("bottom", currentTrbl, resizeConstraints),
+    left: applyConstraints("left", currentTrbl, resizeConstraints)
   });
 }
 
-
-export function getMinResizeBounds(direction, currentBounds, minDimensions, childrenBounds) {
-
+export function getMinResizeBounds(
+  direction,
+  currentBounds,
+  minDimensions,
+  childrenBounds
+) {
   var currentBox = asTRBL(currentBounds);
 
   var minBox = {
-    top: /n/.test(direction) ? currentBox.bottom - minDimensions.height : currentBox.top,
-    left: /w/.test(direction) ? currentBox.right - minDimensions.width : currentBox.left,
-    bottom: /s/.test(direction) ? currentBox.top + minDimensions.height : currentBox.bottom,
-    right: /e/.test(direction) ? currentBox.left + minDimensions.width : currentBox.right
+    top: /n/.test(direction)
+      ? currentBox.bottom - minDimensions.height
+      : currentBox.top,
+    left: /w/.test(direction)
+      ? currentBox.right - minDimensions.width
+      : currentBox.left,
+    bottom: /s/.test(direction)
+      ? currentBox.top + minDimensions.height
+      : currentBox.bottom,
+    right: /e/.test(direction)
+      ? currentBox.left + minDimensions.width
+      : currentBox.right
   };
 
   var childrenBox = childrenBounds ? asTRBL(childrenBounds) : minBox;
@@ -178,7 +176,7 @@ export function getMinResizeBounds(direction, currentBounds, minDimensions, chil
 }
 
 function asPadding(mayBePadding, defaultValue) {
-  if (typeof mayBePadding !== 'undefined') {
+  if (typeof mayBePadding !== "undefined") {
     return mayBePadding;
   } else {
     return DEFAULT_CHILD_BOX_PADDING;
@@ -188,7 +186,7 @@ function asPadding(mayBePadding, defaultValue) {
 export function addPadding(bbox, padding) {
   var left, right, top, bottom;
 
-  if (typeof padding === 'object') {
+  if (typeof padding === "object") {
     left = asPadding(padding.left);
     right = asPadding(padding.right);
     top = asPadding(padding.top);
@@ -205,7 +203,6 @@ export function addPadding(bbox, padding) {
   };
 }
 
-
 /**
  * Is the given element part of the resize
  * targets min boundary box?
@@ -216,14 +213,13 @@ export function addPadding(bbox, padding) {
  * @param {djs.model.Base} element
  */
 function isBBoxChild(element) {
-
   // exclude connections
   if (element.waypoints) {
     return false;
   }
 
   // exclude labels
-  if (element.type === 'label') {
+  if (element.type === "label") {
     return false;
   }
 
@@ -240,7 +236,6 @@ function isBBoxChild(element) {
  * @return {Bounds}
  */
 export function computeChildrenBBox(shapeOrChildren, padding) {
-
   var elements;
 
   // compute based on shape
@@ -248,7 +243,6 @@ export function computeChildrenBBox(shapeOrChildren, padding) {
     // grab all the children that are part of the
     // parents children box
     elements = filter(shapeOrChildren.children, isBBoxChild);
-
   } else {
     elements = shapeOrChildren;
   }

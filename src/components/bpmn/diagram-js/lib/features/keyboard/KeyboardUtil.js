@@ -1,18 +1,17 @@
-import { isArray } from 'min-dash';
+import { isArray } from "min-dash";
 
 /**
  * Returns true if event was triggered with any modifier
  * @param {KeyboardEvent} event
  */
 export function hasModifier(event) {
-  return (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey);
+  return event.ctrlKey || event.metaKey || event.shiftKey || event.altKey;
 }
 
 /**
  * @param {KeyboardEvent} event
  */
 export function isCmd(event) {
-
   // ensure we don't react to AltGr
   // (mapped to CTRL + ALT)
   if (event.altKey) {
@@ -29,7 +28,7 @@ export function isCmd(event) {
  * @param {KeyboardEvent} event
  */
 export function isKey(keys, event) {
-  keys = isArray(keys) ? keys : [ keys ];
+  keys = isArray(keys) ? keys : [keys];
 
   return keys.indexOf(event.key) > -1;
 }

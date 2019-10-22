@@ -1,16 +1,14 @@
-import inherits from 'inherits';
+import inherits from "inherits";
 
-import CommandInterceptor from './../../../../../diagram-js/lib/command/CommandInterceptor';
+import CommandInterceptor from "./../../../../../diagram-js/lib/command/CommandInterceptor";
 
-import { isAny } from '../util/ModelingUtil';
-import { getBusinessObject } from '../../../util/ModelUtil';
-
+import { isAny } from "../util/ModelingUtil";
+import { getBusinessObject } from "../../../util/ModelUtil";
 
 /**
  * BPMN specific attach event behavior
  */
 export default function AttachEventBehavior(eventBus, bpmnReplace) {
-
   CommandInterceptor.call(this, eventBus);
 
   /**
@@ -18,48 +16,54 @@ export default function AttachEventBehavior(eventBus, bpmnReplace) {
    * attaching it to a shape
    */
 
-  this.preExecute('elements.move', function(context) {
-    var shapes = context.shapes,
+  this.preExecute(
+    "elements.move",
+    function(context) {
+      var shapes = context.shapes,
         host = context.newHost,
         shape,
         eventDefinition,
         boundaryEvent,
         newShape;
 
-    if (shapes.length !== 1) {
-      return;
-    }
-
-    shape = shapes[0];
-
-    if (host && isAny(shape, [ 'bpmn:IntermediateThrowEvent', 'bpmn:IntermediateCatchEvent' ])) {
-
-      eventDefinition = getEventDefinition(shape);
-
-      boundaryEvent = {
-        type: 'bpmn:BoundaryEvent',
-        host: host
-      };
-
-      if (eventDefinition) {
-        boundaryEvent.eventDefinitionType = eventDefinition.$type;
+      if (shapes.length !== 1) {
+        return;
       }
 
-      newShape = bpmnReplace.replaceElement(shape, boundaryEvent, { layoutConnection: false });
+      shape = shapes[0];
 
-      context.shapes = [ newShape ];
-    }
-  }, true);
+      if (
+        host &&
+        isAny(shape, [
+          "bpmn:IntermediateThrowEvent",
+          "bpmn:IntermediateCatchEvent"
+        ])
+      ) {
+        eventDefinition = getEventDefinition(shape);
+
+        boundaryEvent = {
+          type: "bpmn:BoundaryEvent",
+          host: host
+        };
+
+        if (eventDefinition) {
+          boundaryEvent.eventDefinitionType = eventDefinition.$type;
+        }
+
+        newShape = bpmnReplace.replaceElement(shape, boundaryEvent, {
+          layoutConnection: false
+        });
+
+        context.shapes = [newShape];
+      }
+    },
+    true
+  );
 }
 
-AttachEventBehavior.$inject = [
-  'eventBus',
-  'bpmnReplace'
-];
+AttachEventBehavior.$inject = ["eventBus", "bpmnReplace"];
 
 inherits(AttachEventBehavior, CommandInterceptor);
-
-
 
 // helper /////
 function getEventDefinition(element) {

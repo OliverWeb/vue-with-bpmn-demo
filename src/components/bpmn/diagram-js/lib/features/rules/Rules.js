@@ -13,11 +13,10 @@
  * @param {Injector} injector
  */
 export default function Rules(injector) {
-  this._commandStack = injector.get('commandStack', false);
+  this._commandStack = injector.get("commandStack", false);
 }
 
-Rules.$inject = [ 'injector' ];
-
+Rules.$inject = ["injector"];
 
 /**
  * Returns whether or not a given modeling action can be executed

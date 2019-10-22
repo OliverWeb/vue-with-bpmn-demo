@@ -1,12 +1,6 @@
-import {
-  roundPoint
-} from '../layout/LayoutUtil';
+import { roundPoint } from "../layout/LayoutUtil";
 
-import {
-  center,
-  delta
-} from './PositionUtil';
-
+import { center, delta } from "./PositionUtil";
 
 /**
  * Calculates the absolute point relative to the new element's position
@@ -19,8 +13,8 @@ import {
  */
 export function getNewAttachPoint(point, oldBounds, newBounds) {
   var oldCenter = center(oldBounds),
-      newCenter = center(newBounds),
-      oldDelta = delta(point, oldCenter);
+    newCenter = center(newBounds),
+    oldDelta = delta(point, oldCenter);
 
   var newDelta = {
     x: oldDelta.x * (newBounds.width / oldBounds.width),
@@ -32,7 +26,6 @@ export function getNewAttachPoint(point, oldBounds, newBounds) {
     y: newCenter.y + newDelta.y
   });
 }
-
 
 /**
  * Calculates the shape's delta relative to a new position
@@ -46,10 +39,10 @@ export function getNewAttachPoint(point, oldBounds, newBounds) {
  */
 export function getNewAttachShapeDelta(shape, oldBounds, newBounds) {
   var shapeCenter = center(shape),
-      oldCenter = center(oldBounds),
-      newCenter = center(newBounds),
-      shapeDelta = delta(shape, shapeCenter),
-      oldCenterDelta = delta(shapeCenter, oldCenter);
+    oldCenter = center(oldBounds),
+    newCenter = center(newBounds),
+    shapeDelta = delta(shape, shapeCenter),
+    oldCenterDelta = delta(shapeCenter, oldCenter);
 
   var newCenterDelta = {
     x: oldCenterDelta.x * (newBounds.width / oldBounds.width),

@@ -1,11 +1,10 @@
 <template>
-	<div>
-		阿偶！出错了
-	</div>
+  <div>
+    阿偶！出错了
+  </div>
 </template>
 <script>
 export default {
-	name:'error-page'
-}
+  name: "error-page"
+};
 </script>
-

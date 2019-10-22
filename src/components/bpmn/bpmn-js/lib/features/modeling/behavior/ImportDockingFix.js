@@ -1,9 +1,6 @@
-import {
-  getMid
-} from './../../../../../diagram-js/lib/layout/LayoutUtil';
+import { getMid } from "./../../../../../diagram-js/lib/layout/LayoutUtil";
 
-import lineIntersect from './util/LineIntersect';
-
+import lineIntersect from "./util/LineIntersect";
 
 /**
  * Fix broken dockings after DI imports.
@@ -11,9 +8,7 @@ import lineIntersect from './util/LineIntersect';
  * @param {EventBus} eventBus
  */
 export default function ImportDockingFix(eventBus) {
-
   function adjustDocking(startPoint, nextPoint, elementMid) {
-
     var elementTop = {
       x: elementMid.x,
       y: elementMid.y - 50
@@ -24,14 +19,27 @@ export default function ImportDockingFix(eventBus) {
       y: elementMid.y
     };
 
-    var verticalIntersect = lineIntersect(startPoint, nextPoint, elementMid, elementTop),
-        horizontalIntersect = lineIntersect(startPoint, nextPoint, elementMid, elementLeft);
+    var verticalIntersect = lineIntersect(
+        startPoint,
+        nextPoint,
+        elementMid,
+        elementTop
+      ),
+      horizontalIntersect = lineIntersect(
+        startPoint,
+        nextPoint,
+        elementMid,
+        elementLeft
+      );
 
     // original is horizontal or vertical center cross intersection
     var centerIntersect;
 
     if (verticalIntersect && horizontalIntersect) {
-      if (getDistance(verticalIntersect, elementMid) > getDistance(horizontalIntersect, elementMid)) {
+      if (
+        getDistance(verticalIntersect, elementMid) >
+        getDistance(horizontalIntersect, elementMid)
+      ) {
         centerIntersect = horizontalIntersect;
       } else {
         centerIntersect = verticalIntersect;
@@ -46,11 +54,7 @@ export default function ImportDockingFix(eventBus) {
   function fixDockings(connection) {
     var waypoints = connection.waypoints;
 
-    adjustDocking(
-      waypoints[0],
-      waypoints[1],
-      getMid(connection.source)
-    );
+    adjustDocking(waypoints[0], waypoints[1], getMid(connection.source));
 
     adjustDocking(
       waypoints[waypoints.length - 1],
@@ -59,8 +63,7 @@ export default function ImportDockingFix(eventBus) {
     );
   }
 
-  eventBus.on('bpmnElement.added', function(e) {
-
+  eventBus.on("bpmnElement.added", function(e) {
     var element = e.element;
 
     if (element.waypoints) {
@@ -69,10 +72,7 @@ export default function ImportDockingFix(eventBus) {
   });
 }
 
-ImportDockingFix.$inject = [
-  'eventBus'
-];
-
+ImportDockingFix.$inject = ["eventBus"];
 
 // helpers //////////////////////
 

@@ -4,7 +4,6 @@
  */
 export default function CommandHandler() {}
 
-
 /**
  * Execute changes described in the passed action context.
  *
@@ -14,7 +13,6 @@ export default function CommandHandler() {}
  */
 CommandHandler.prototype.execute = function(context) {};
 
-
 /**
  * Revert changes described in the passed action context.
  *
@@ -23,7 +21,6 @@ CommandHandler.prototype.execute = function(context) {};
  * @return {Array<djs.model.Base>} list of touched (áka dirty) diagram elements
  */
 CommandHandler.prototype.revert = function(context) {};
-
 
 /**
  * Return true if the handler may execute in the given context.
@@ -37,7 +34,6 @@ CommandHandler.prototype.revert = function(context) {};
 CommandHandler.prototype.canExecute = function(context) {
   return true;
 };
-
 
 /**
  * Execute actions before the actual command execution but

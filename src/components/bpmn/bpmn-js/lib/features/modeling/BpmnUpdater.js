@@ -1,34 +1,28 @@
-import {
-  assign,
-  forEach
-} from 'min-dash';
+import { assign, forEach } from "min-dash";
 
-import inherits from 'inherits';
+import inherits from "inherits";
 
 import {
   remove as collectionRemove,
   add as collectionAdd
-} from './../../../../diagram-js/lib/util/Collections';
+} from "./../../../../diagram-js/lib/util/Collections";
 
-import {
-  Label
-} from './../../../../diagram-js/lib/model';
+import { Label } from "./../../../../diagram-js/lib/model";
 
-import {
-  getBusinessObject,
-  is
-} from '../../util/ModelUtil';
+import { getBusinessObject, is } from "../../util/ModelUtil";
 
-import CommandInterceptor from './../../../../diagram-js/lib/command/CommandInterceptor';
+import CommandInterceptor from "./../../../../diagram-js/lib/command/CommandInterceptor";
 
 /**
  * A handler responsible for updating the underlying BPMN 2.0 XML + DI
  * once changes on the diagram happen
  */
 export default function BpmnUpdater(
-    eventBus, bpmnFactory, connectionDocking,
-    translate) {
-
+  eventBus,
+  bpmnFactory,
+  connectionDocking,
+  translate
+) {
   CommandInterceptor.call(this, eventBus);
 
   this._bpmnFactory = bpmnFactory;
@@ -36,14 +30,12 @@ export default function BpmnUpdater(
 
   var self = this;
 
-
-
   // connection cropping //////////////////////
 
   // crop connection ends during create/update
   function cropConnection(e) {
     var context = e.context,
-        connection;
+      connection;
 
     if (!context.cropped) {
       connection = context.connection;
@@ -52,19 +44,13 @@ export default function BpmnUpdater(
     }
   }
 
-  this.executed([
-    'connection.layout',
-    'connection.create'
-  ], cropConnection);
+  this.executed(["connection.layout", "connection.create"], cropConnection);
 
-  this.reverted([ 'connection.layout' ], function(e) {
+  this.reverted(["connection.layout"], function(e) {
     delete e.context.cropped;
   });
 
-
-
   // BPMN + DI update //////////////////////
-
 
   // update parent
   function updateParent(e) {
@@ -77,29 +63,35 @@ export default function BpmnUpdater(
     var context = e.context;
 
     var element = context.shape || context.connection,
-        // oldParent is the (old) new parent, because we are undoing
-        oldParent = context.parent || context.newParent;
+      // oldParent is the (old) new parent, because we are undoing
+      oldParent = context.parent || context.newParent;
 
     self.updateParent(element, oldParent);
   }
 
-  this.executed([
-    'shape.move',
-    'shape.create',
-    'shape.delete',
-    'connection.create',
-    'connection.move',
-    'connection.delete'
-  ], ifBpmn(updateParent));
+  this.executed(
+    [
+      "shape.move",
+      "shape.create",
+      "shape.delete",
+      "connection.create",
+      "connection.move",
+      "connection.delete"
+    ],
+    ifBpmn(updateParent)
+  );
 
-  this.reverted([
-    'shape.move',
-    'shape.create',
-    'shape.delete',
-    'connection.create',
-    'connection.move',
-    'connection.delete'
-  ], ifBpmn(reverseUpdateParent));
+  this.reverted(
+    [
+      "shape.move",
+      "shape.create",
+      "shape.delete",
+      "connection.create",
+      "connection.move",
+      "connection.delete"
+    ],
+    ifBpmn(reverseUpdateParent)
+  );
 
   /*
    * ## Updating Parent
@@ -111,55 +103,58 @@ export default function BpmnUpdater(
    */
   function updateRoot(event) {
     var context = event.context,
-        oldRoot = context.oldRoot,
-        children = oldRoot.children;
+      oldRoot = context.oldRoot,
+      children = oldRoot.children;
 
     forEach(children, function(child) {
-      if (is(child, 'bpmn:BaseElement')) {
+      if (is(child, "bpmn:BaseElement")) {
         self.updateParent(child);
       }
     });
   }
 
-  this.executed([ 'canvas.updateRoot' ], updateRoot);
-  this.reverted([ 'canvas.updateRoot' ], updateRoot);
-
+  this.executed(["canvas.updateRoot"], updateRoot);
+  this.reverted(["canvas.updateRoot"], updateRoot);
 
   // update bounds
   function updateBounds(e) {
     var shape = e.context.shape;
 
-    if (!is(shape, 'bpmn:BaseElement')) {
+    if (!is(shape, "bpmn:BaseElement")) {
       return;
     }
 
     self.updateBounds(shape);
   }
 
-  this.executed([ 'shape.move', 'shape.create', 'shape.resize' ], ifBpmn(function(event) {
+  this.executed(
+    ["shape.move", "shape.create", "shape.resize"],
+    ifBpmn(function(event) {
+      // exclude labels because they're handled separately during shape.changed
+      if (event.context.shape.type === "label") {
+        return;
+      }
 
-    // exclude labels because they're handled separately during shape.changed
-    if (event.context.shape.type === 'label') {
-      return;
-    }
+      updateBounds(event);
+    })
+  );
 
-    updateBounds(event);
-  }));
+  this.reverted(
+    ["shape.move", "shape.create", "shape.resize"],
+    ifBpmn(function(event) {
+      // exclude labels because they're handled separately during shape.changed
+      if (event.context.shape.type === "label") {
+        return;
+      }
 
-  this.reverted([ 'shape.move', 'shape.create', 'shape.resize' ], ifBpmn(function(event) {
-
-    // exclude labels because they're handled separately during shape.changed
-    if (event.context.shape.type === 'label') {
-      return;
-    }
-
-    updateBounds(event);
-  }));
+      updateBounds(event);
+    })
+  );
 
   // Handle labels separately. This is necessary, because the label bounds have to be updated
   // every time its shape changes, not only on move, create and resize.
-  eventBus.on('shape.changed', function(event) {
-    if (event.element.type === 'label') {
+  eventBus.on("shape.changed", function(event) {
+    if (event.element.type === "label") {
       updateBounds({ context: { shape: event.element } });
     }
   });
@@ -169,47 +164,48 @@ export default function BpmnUpdater(
     self.updateConnection(e.context);
   }
 
-  this.executed([
-    'connection.create',
-    'connection.move',
-    'connection.delete',
-    'connection.reconnectEnd',
-    'connection.reconnectStart'
-  ], ifBpmn(updateConnection));
+  this.executed(
+    [
+      "connection.create",
+      "connection.move",
+      "connection.delete",
+      "connection.reconnectEnd",
+      "connection.reconnectStart"
+    ],
+    ifBpmn(updateConnection)
+  );
 
-  this.reverted([
-    'connection.create',
-    'connection.move',
-    'connection.delete',
-    'connection.reconnectEnd',
-    'connection.reconnectStart'
-  ], ifBpmn(updateConnection));
-
+  this.reverted(
+    [
+      "connection.create",
+      "connection.move",
+      "connection.delete",
+      "connection.reconnectEnd",
+      "connection.reconnectStart"
+    ],
+    ifBpmn(updateConnection)
+  );
 
   // update waypoints
   function updateConnectionWaypoints(e) {
     self.updateConnectionWaypoints(e.context.connection);
   }
 
-  this.executed([
-    'connection.layout',
-    'connection.move',
-    'connection.updateWaypoints',
-  ], ifBpmn(updateConnectionWaypoints));
+  this.executed(
+    ["connection.layout", "connection.move", "connection.updateWaypoints"],
+    ifBpmn(updateConnectionWaypoints)
+  );
 
-  this.reverted([
-    'connection.layout',
-    'connection.move',
-    'connection.updateWaypoints',
-  ], ifBpmn(updateConnectionWaypoints));
-
+  this.reverted(
+    ["connection.layout", "connection.move", "connection.updateWaypoints"],
+    ifBpmn(updateConnectionWaypoints)
+  );
 
   // update Default & Conditional flows
-  this.executed([
-    'connection.reconnectEnd',
-    'connection.reconnectStart'
-  ], ifBpmn(function(e) {
-    var context = e.context,
+  this.executed(
+    ["connection.reconnectEnd", "connection.reconnectStart"],
+    ifBpmn(function(e) {
+      var context = e.context,
         connection = context.connection,
         businessObject = getBusinessObject(connection),
         oldSource = getBusinessObject(context.oldSource),
@@ -217,94 +213,108 @@ export default function BpmnUpdater(
         newSource = getBusinessObject(connection.source),
         newTarget = getBusinessObject(connection.target);
 
-    if (oldSource === newSource || oldTarget === newTarget) {
-      return;
-    }
+      if (oldSource === newSource || oldTarget === newTarget) {
+        return;
+      }
 
-    // on reconnectStart -> default flow
-    if (oldSource && oldSource.default === businessObject) {
-      context.default = oldSource.default;
-      oldSource.default = undefined;
-    }
+      // on reconnectStart -> default flow
+      if (oldSource && oldSource.default === businessObject) {
+        context.default = oldSource.default;
+        oldSource.default = undefined;
+      }
 
-    // on reconnectEnd -> default flow
-    if ((businessObject.sourceRef && businessObject.sourceRef.default) &&
-        !(is(newTarget, 'bpmn:Activity') ||
-          is(newTarget, 'bpmn:EndEvent') ||
-          is(newTarget, 'bpmn:Gateway') ||
-          is(newTarget, 'bpmn:IntermediateThrowEvent'))) {
-      context.default = businessObject.sourceRef.default;
-      businessObject.sourceRef.default = undefined;
-    }
+      // on reconnectEnd -> default flow
+      if (
+        businessObject.sourceRef &&
+        businessObject.sourceRef.default &&
+        !(
+          is(newTarget, "bpmn:Activity") ||
+          is(newTarget, "bpmn:EndEvent") ||
+          is(newTarget, "bpmn:Gateway") ||
+          is(newTarget, "bpmn:IntermediateThrowEvent")
+        )
+      ) {
+        context.default = businessObject.sourceRef.default;
+        businessObject.sourceRef.default = undefined;
+      }
 
-    // on reconnectStart -> conditional flow
-    if (oldSource && (businessObject.conditionExpression) &&
-      !(is(newSource, 'bpmn:Activity') ||
-        is(newSource, 'bpmn:Gateway'))) {
-      context.conditionExpression = businessObject.conditionExpression;
-      businessObject.conditionExpression = undefined;
-    }
+      // on reconnectStart -> conditional flow
+      if (
+        oldSource &&
+        businessObject.conditionExpression &&
+        !(is(newSource, "bpmn:Activity") || is(newSource, "bpmn:Gateway"))
+      ) {
+        context.conditionExpression = businessObject.conditionExpression;
+        businessObject.conditionExpression = undefined;
+      }
 
-    // on reconnectEnd -> conditional flow
-    if (oldTarget && (businessObject.conditionExpression) &&
-        !(is(newTarget, 'bpmn:Activity') ||
-          is(newTarget, 'bpmn:EndEvent') ||
-          is(newTarget, 'bpmn:Gateway') ||
-          is(newTarget, 'bpmn:IntermediateThrowEvent'))) {
-      context.conditionExpression = businessObject.conditionExpression;
-      businessObject.conditionExpression = undefined;
-    }
-  }));
+      // on reconnectEnd -> conditional flow
+      if (
+        oldTarget &&
+        businessObject.conditionExpression &&
+        !(
+          is(newTarget, "bpmn:Activity") ||
+          is(newTarget, "bpmn:EndEvent") ||
+          is(newTarget, "bpmn:Gateway") ||
+          is(newTarget, "bpmn:IntermediateThrowEvent")
+        )
+      ) {
+        context.conditionExpression = businessObject.conditionExpression;
+        businessObject.conditionExpression = undefined;
+      }
+    })
+  );
 
-  this.reverted([
-    'connection.reconnectEnd',
-    'connection.reconnectStart'
-  ], ifBpmn(function(e) {
-    var context = e.context,
+  this.reverted(
+    ["connection.reconnectEnd", "connection.reconnectStart"],
+    ifBpmn(function(e) {
+      var context = e.context,
         connection = context.connection,
         businessObject = getBusinessObject(connection),
         newSource = getBusinessObject(connection.source);
 
-    // default flow
-    if (context.default) {
-      if (is(newSource, 'bpmn:ExclusiveGateway') || is(newSource, 'bpmn:InclusiveGateway') ||
-          is(newSource, 'bpmn:Activity')) {
-        newSource.default = context.default;
+      // default flow
+      if (context.default) {
+        if (
+          is(newSource, "bpmn:ExclusiveGateway") ||
+          is(newSource, "bpmn:InclusiveGateway") ||
+          is(newSource, "bpmn:Activity")
+        ) {
+          newSource.default = context.default;
+        }
       }
-    }
 
-    // conditional flow
-    if (context.conditionExpression && is(newSource, 'bpmn:Activity')) {
-      businessObject.conditionExpression = context.conditionExpression;
-    }
-  }));
+      // conditional flow
+      if (context.conditionExpression && is(newSource, "bpmn:Activity")) {
+        businessObject.conditionExpression = context.conditionExpression;
+      }
+    })
+  );
 
   // update attachments
   function updateAttachment(e) {
     self.updateAttachment(e.context);
   }
 
-  this.executed([ 'element.updateAttachment' ], ifBpmn(updateAttachment));
-  this.reverted([ 'element.updateAttachment' ], ifBpmn(updateAttachment));
+  this.executed(["element.updateAttachment"], ifBpmn(updateAttachment));
+  this.reverted(["element.updateAttachment"], ifBpmn(updateAttachment));
 }
 
 inherits(BpmnUpdater, CommandInterceptor);
 
 BpmnUpdater.$inject = [
-  'eventBus',
-  'bpmnFactory',
-  'connectionDocking',
-  'translate'
+  "eventBus",
+  "bpmnFactory",
+  "connectionDocking",
+  "translate"
 ];
-
 
 // implementation //////////////////////
 
 BpmnUpdater.prototype.updateAttachment = function(context) {
-
   var shape = context.shape,
-      businessObject = shape.businessObject,
-      host = shape.host;
+    businessObject = shape.businessObject,
+    host = shape.host;
 
   businessObject.attachedToRef = host && host.businessObject;
 };
@@ -316,23 +326,29 @@ BpmnUpdater.prototype.updateParent = function(element, oldParent) {
   }
 
   // data stores in collaborations are handled seperately by DataStoreBehavior
-  if (is(element, 'bpmn:DataStoreReference') &&
-      element.parent &&
-      is(element.parent, 'bpmn:Collaboration')) {
+  if (
+    is(element, "bpmn:DataStoreReference") &&
+    element.parent &&
+    is(element.parent, "bpmn:Collaboration")
+  ) {
     return;
   }
 
   var parentShape = element.parent;
 
   var businessObject = element.businessObject,
-      parentBusinessObject = parentShape && parentShape.businessObject,
-      parentDi = parentBusinessObject && parentBusinessObject.di;
+    parentBusinessObject = parentShape && parentShape.businessObject,
+    parentDi = parentBusinessObject && parentBusinessObject.di;
 
-  if (is(element, 'bpmn:FlowNode')) {
-    this.updateFlowNodeRefs(businessObject, parentBusinessObject, oldParent && oldParent.businessObject);
+  if (is(element, "bpmn:FlowNode")) {
+    this.updateFlowNodeRefs(
+      businessObject,
+      parentBusinessObject,
+      oldParent && oldParent.businessObject
+    );
   }
 
-  if (is(element, 'bpmn:DataOutputAssociation')) {
+  if (is(element, "bpmn:DataOutputAssociation")) {
     if (element.source) {
       parentBusinessObject = element.source.businessObject;
     } else {
@@ -340,7 +356,7 @@ BpmnUpdater.prototype.updateParent = function(element, oldParent) {
     }
   }
 
-  if (is(element, 'bpmn:DataInputAssociation')) {
+  if (is(element, "bpmn:DataInputAssociation")) {
     if (element.target) {
       parentBusinessObject = element.target.businessObject;
     } else {
@@ -350,25 +366,26 @@ BpmnUpdater.prototype.updateParent = function(element, oldParent) {
 
   this.updateSemanticParent(businessObject, parentBusinessObject);
 
-  if (is(element, 'bpmn:DataObjectReference') && businessObject.dataObjectRef) {
-    this.updateSemanticParent(businessObject.dataObjectRef, parentBusinessObject);
+  if (is(element, "bpmn:DataObjectReference") && businessObject.dataObjectRef) {
+    this.updateSemanticParent(
+      businessObject.dataObjectRef,
+      parentBusinessObject
+    );
   }
 
   this.updateDiParent(businessObject.di, parentDi);
 };
 
-
 BpmnUpdater.prototype.updateBounds = function(shape) {
-
   var di = shape.businessObject.di;
 
-  var target = (shape instanceof Label) ? this._getLabel(di) : di;
+  var target = shape instanceof Label ? this._getLabel(di) : di;
 
   var bounds = target.bounds;
 
   if (!bounds) {
     bounds = this._bpmnFactory.createDiBounds();
-    target.set('bounds', bounds);
+    target.set("bounds", bounds);
   }
 
   assign(bounds, {
@@ -379,29 +396,30 @@ BpmnUpdater.prototype.updateBounds = function(shape) {
   });
 };
 
-BpmnUpdater.prototype.updateFlowNodeRefs = function(businessObject, newContainment, oldContainment) {
-
+BpmnUpdater.prototype.updateFlowNodeRefs = function(
+  businessObject,
+  newContainment,
+  oldContainment
+) {
   if (oldContainment === newContainment) {
     return;
   }
 
   var oldRefs, newRefs;
 
-  if (is (oldContainment, 'bpmn:Lane')) {
-    oldRefs = oldContainment.get('flowNodeRef');
+  if (is(oldContainment, "bpmn:Lane")) {
+    oldRefs = oldContainment.get("flowNodeRef");
     collectionRemove(oldRefs, businessObject);
   }
 
-  if (is(newContainment, 'bpmn:Lane')) {
-    newRefs = newContainment.get('flowNodeRef');
+  if (is(newContainment, "bpmn:Lane")) {
+    newRefs = newContainment.get("flowNodeRef");
     collectionAdd(newRefs, businessObject);
   }
 };
 
-
 // update existing sourceElement and targetElement di information
 BpmnUpdater.prototype.updateDiConnection = function(di, newSource, newTarget) {
-
   if (di.sourceElement && di.sourceElement.bpmnElement !== newSource) {
     di.sourceElement = newSource && newSource.di;
   }
@@ -409,13 +427,10 @@ BpmnUpdater.prototype.updateDiConnection = function(di, newSource, newTarget) {
   if (di.targetElement && di.targetElement.bpmnElement !== newTarget) {
     di.targetElement = newTarget && newTarget.di;
   }
-
 };
 
-
 BpmnUpdater.prototype.updateDiParent = function(di, parentDi) {
-
-  if (parentDi && !is(parentDi, 'bpmndi:BPMNPlane')) {
+  if (parentDi && !is(parentDi, "bpmndi:BPMNPlane")) {
     parentDi = parentDi.$parent;
   }
 
@@ -423,7 +438,7 @@ BpmnUpdater.prototype.updateDiParent = function(di, parentDi) {
     return;
   }
 
-  var planeElements = (parentDi || di.$parent).get('planeElement');
+  var planeElements = (parentDi || di.$parent).get("planeElement");
 
   if (parentDi) {
     planeElements.push(di);
@@ -435,7 +450,7 @@ BpmnUpdater.prototype.updateDiParent = function(di, parentDi) {
 };
 
 function getDefinitions(element) {
-  while (element && !is(element, 'bpmn:Definitions')) {
+  while (element && !is(element, "bpmn:Definitions")) {
     element = element.$parent;
   }
 
@@ -443,15 +458,14 @@ function getDefinitions(element) {
 }
 
 BpmnUpdater.prototype.getLaneSet = function(container) {
-
   var laneSet, laneSets;
 
   // bpmn:Lane
-  if (is(container, 'bpmn:Lane')) {
+  if (is(container, "bpmn:Lane")) {
     laneSet = container.childLaneSet;
 
     if (!laneSet) {
-      laneSet = this._bpmnFactory.create('bpmn:LaneSet');
+      laneSet = this._bpmnFactory.create("bpmn:LaneSet");
       container.childLaneSet = laneSet;
       laneSet.$parent = container;
     }
@@ -460,16 +474,16 @@ BpmnUpdater.prototype.getLaneSet = function(container) {
   }
 
   // bpmn:Participant
-  if (is(container, 'bpmn:Participant')) {
+  if (is(container, "bpmn:Participant")) {
     container = container.processRef;
   }
 
   // bpmn:FlowElementsContainer
-  laneSets = container.get('laneSets');
+  laneSets = container.get("laneSets");
   laneSet = laneSets[0];
 
   if (!laneSet) {
-    laneSet = this._bpmnFactory.create('bpmn:LaneSet');
+    laneSet = this._bpmnFactory.create("bpmn:LaneSet");
     laneSet.$parent = container;
     laneSets.push(laneSet);
   }
@@ -477,65 +491,62 @@ BpmnUpdater.prototype.getLaneSet = function(container) {
   return laneSet;
 };
 
-BpmnUpdater.prototype.updateSemanticParent = function(businessObject, newParent, visualParent) {
-
+BpmnUpdater.prototype.updateSemanticParent = function(
+  businessObject,
+  newParent,
+  visualParent
+) {
   var containment,
-      translate = this._translate;
+    translate = this._translate;
 
   if (businessObject.$parent === newParent) {
     return;
   }
 
-  if (is(businessObject, 'bpmn:DataInput') || is(businessObject, 'bpmn:DataOutput')) {
-
-    if (is(newParent, 'bpmn:Participant') && 'processRef' in newParent) {
+  if (
+    is(businessObject, "bpmn:DataInput") ||
+    is(businessObject, "bpmn:DataOutput")
+  ) {
+    if (is(newParent, "bpmn:Participant") && "processRef" in newParent) {
       newParent = newParent.processRef;
     }
 
     // already in correct ioSpecification
-    if ('ioSpecification' in newParent && newParent.ioSpecification === businessObject.$parent) {
+    if (
+      "ioSpecification" in newParent &&
+      newParent.ioSpecification === businessObject.$parent
+    ) {
       return;
     }
   }
 
-  if (is(businessObject, 'bpmn:Lane')) {
-
+  if (is(businessObject, "bpmn:Lane")) {
     if (newParent) {
       newParent = this.getLaneSet(newParent);
     }
 
-    containment = 'lanes';
-  } else
-
-  if (is(businessObject, 'bpmn:FlowElement')) {
-
+    containment = "lanes";
+  } else if (is(businessObject, "bpmn:FlowElement")) {
     if (newParent) {
-
-      if (is(newParent, 'bpmn:Participant')) {
+      if (is(newParent, "bpmn:Participant")) {
         newParent = newParent.processRef;
-      } else
-
-      if (is(newParent, 'bpmn:Lane')) {
+      } else if (is(newParent, "bpmn:Lane")) {
         do {
           // unwrap Lane -> LaneSet -> (Lane | FlowElementsContainer)
           newParent = newParent.$parent.$parent;
-        } while (is(newParent, 'bpmn:Lane'));
-
+        } while (is(newParent, "bpmn:Lane"));
       }
     }
 
-    containment = 'flowElements';
-
-  } else
-
-  if (is(businessObject, 'bpmn:Artifact')) {
-
-    while (newParent &&
-           !is(newParent, 'bpmn:Process') &&
-           !is(newParent, 'bpmn:SubProcess') &&
-           !is(newParent, 'bpmn:Collaboration')) {
-
-      if (is(newParent, 'bpmn:Participant')) {
+    containment = "flowElements";
+  } else if (is(businessObject, "bpmn:Artifact")) {
+    while (
+      newParent &&
+      !is(newParent, "bpmn:Process") &&
+      !is(newParent, "bpmn:SubProcess") &&
+      !is(newParent, "bpmn:Collaboration")
+    ) {
+      if (is(newParent, "bpmn:Participant")) {
         newParent = newParent.processRef;
         break;
       } else {
@@ -543,54 +554,44 @@ BpmnUpdater.prototype.updateSemanticParent = function(businessObject, newParent,
       }
     }
 
-    containment = 'artifacts';
-  } else
-
-  if (is(businessObject, 'bpmn:MessageFlow')) {
-    containment = 'messageFlows';
-
-  } else
-
-  if (is(businessObject, 'bpmn:Participant')) {
-    containment = 'participants';
+    containment = "artifacts";
+  } else if (is(businessObject, "bpmn:MessageFlow")) {
+    containment = "messageFlows";
+  } else if (is(businessObject, "bpmn:Participant")) {
+    containment = "participants";
 
     // make sure the participants process is properly attached / detached
     // from the XML document
 
     var process = businessObject.processRef,
-        definitions;
+      definitions;
 
     if (process) {
       definitions = getDefinitions(businessObject.$parent || newParent);
 
       if (businessObject.$parent) {
-        collectionRemove(definitions.get('rootElements'), process);
+        collectionRemove(definitions.get("rootElements"), process);
         process.$parent = null;
       }
 
       if (newParent) {
-        collectionAdd(definitions.get('rootElements'), process);
+        collectionAdd(definitions.get("rootElements"), process);
         process.$parent = definitions;
       }
     }
-  } else
-
-  if (is(businessObject, 'bpmn:DataOutputAssociation')) {
-    containment = 'dataOutputAssociations';
-  } else
-
-  if (is(businessObject, 'bpmn:DataInputAssociation')) {
-    containment = 'dataInputAssociations';
+  } else if (is(businessObject, "bpmn:DataOutputAssociation")) {
+    containment = "dataOutputAssociations";
+  } else if (is(businessObject, "bpmn:DataInputAssociation")) {
+    containment = "dataInputAssociations";
   }
 
   if (!containment) {
-    throw new Error(translate(
-      'no parent for {element} in {parent}',
-      {
+    throw new Error(
+      translate("no parent for {element} in {parent}", {
         element: businessObject.id,
         parent: newParent.id
-      }
-    ));
+      })
+    );
   }
 
   var children;
@@ -616,7 +617,6 @@ BpmnUpdater.prototype.updateSemanticParent = function(businessObject, newParent,
     collectionRemove(children, businessObject);
 
     if (newParent) {
-
       if (!diChildren) {
         diChildren = [];
         newParent.set(containment, diChildren);
@@ -627,30 +627,32 @@ BpmnUpdater.prototype.updateSemanticParent = function(businessObject, newParent,
   }
 };
 
-
 BpmnUpdater.prototype.updateConnectionWaypoints = function(connection) {
-  connection.businessObject.di.set('waypoint', this._bpmnFactory.createDiWaypoints(connection.waypoints));
+  connection.businessObject.di.set(
+    "waypoint",
+    this._bpmnFactory.createDiWaypoints(connection.waypoints)
+  );
 };
 
-
 BpmnUpdater.prototype.updateConnection = function(context) {
-
   var connection = context.connection,
-      businessObject = getBusinessObject(connection),
-      newSource = getBusinessObject(connection.source),
-      newTarget = getBusinessObject(connection.target),
-      visualParent;
+    businessObject = getBusinessObject(connection),
+    newSource = getBusinessObject(connection.source),
+    newTarget = getBusinessObject(connection.target),
+    visualParent;
 
-  if (!is(businessObject, 'bpmn:DataAssociation')) {
-
-    var inverseSet = is(businessObject, 'bpmn:SequenceFlow');
+  if (!is(businessObject, "bpmn:DataAssociation")) {
+    var inverseSet = is(businessObject, "bpmn:SequenceFlow");
 
     if (businessObject.sourceRef !== newSource) {
       if (inverseSet) {
-        collectionRemove(businessObject.sourceRef && businessObject.sourceRef.get('outgoing'), businessObject);
+        collectionRemove(
+          businessObject.sourceRef && businessObject.sourceRef.get("outgoing"),
+          businessObject
+        );
 
-        if (newSource && newSource.get('outgoing')) {
-          newSource.get('outgoing').push(businessObject);
+        if (newSource && newSource.get("outgoing")) {
+          newSource.get("outgoing").push(businessObject);
         }
       }
 
@@ -659,27 +661,26 @@ BpmnUpdater.prototype.updateConnection = function(context) {
 
     if (businessObject.targetRef !== newTarget) {
       if (inverseSet) {
-        collectionRemove(businessObject.targetRef && businessObject.targetRef.get('incoming'), businessObject);
+        collectionRemove(
+          businessObject.targetRef && businessObject.targetRef.get("incoming"),
+          businessObject
+        );
 
-        if (newTarget && newTarget.get('incoming')) {
-          newTarget.get('incoming').push(businessObject);
+        if (newTarget && newTarget.get("incoming")) {
+          newTarget.get("incoming").push(businessObject);
         }
       }
 
       businessObject.targetRef = newTarget;
     }
-  } else
-
-  if (is(businessObject, 'bpmn:DataInputAssociation')) {
+  } else if (is(businessObject, "bpmn:DataInputAssociation")) {
     // handle obnoxious isMsome sourceRef
-    businessObject.get('sourceRef')[0] = newSource;
+    businessObject.get("sourceRef")[0] = newSource;
 
     visualParent = context.parent || context.newParent || newTarget;
 
     this.updateSemanticParent(businessObject, newTarget, visualParent);
-  } else
-
-  if (is(businessObject, 'bpmn:DataOutputAssociation')) {
+  } else if (is(businessObject, "bpmn:DataOutputAssociation")) {
     visualParent = context.parent || context.newParent || newSource;
 
     this.updateSemanticParent(businessObject, newSource, visualParent);
@@ -693,7 +694,6 @@ BpmnUpdater.prototype.updateConnection = function(context) {
   this.updateDiConnection(businessObject.di, newSource, newTarget);
 };
 
-
 // helpers //////////////////////
 
 BpmnUpdater.prototype._getLabel = function(di) {
@@ -704,7 +704,6 @@ BpmnUpdater.prototype._getLabel = function(di) {
   return di.label;
 };
 
-
 /**
  * Make sure the event listener is only called
  * if the touched element is a BPMN element.
@@ -713,13 +712,11 @@ BpmnUpdater.prototype._getLabel = function(di) {
  * @return {Function} guarded function
  */
 function ifBpmn(fn) {
-
   return function(event) {
-
     var context = event.context,
-        element = context.shape || context.connection;
+      element = context.shape || context.connection;
 
-    if (is(element, 'bpmn:BaseElement')) {
+    if (is(element, "bpmn:BaseElement")) {
       fn(event);
     }
   };

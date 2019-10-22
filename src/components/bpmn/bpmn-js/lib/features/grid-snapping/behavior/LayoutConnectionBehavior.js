@@ -1,52 +1,50 @@
-import inherits from 'inherits';
+import inherits from "inherits";
 
-import CommandInterceptor from './../../../../../diagram-js/lib/command/CommandInterceptor';
+import CommandInterceptor from "./../../../../../diagram-js/lib/command/CommandInterceptor";
 
-import { pointsAligned } from './../../../../../diagram-js/lib/util/Geometry';
+import { pointsAligned } from "./../../../../../diagram-js/lib/util/Geometry";
 
-import {
-  assign
-} from 'min-dash';
+import { assign } from "min-dash";
 
 var HIGH_PRIORITY = 3000;
-
 
 /**
  * Snaps connections with Manhattan layout.
  */
-export default function LayoutConnectionBehavior(eventBus, gridSnapping, modeling) {
+export default function LayoutConnectionBehavior(
+  eventBus,
+  gridSnapping,
+  modeling
+) {
   CommandInterceptor.call(this, eventBus);
 
   this._gridSnapping = gridSnapping;
 
   var self = this;
 
-  this.postExecuted([
-    'connection.create',
-    'connection.layout'
-  ], HIGH_PRIORITY, function(event) {
-    var context = event.context,
+  this.postExecuted(
+    ["connection.create", "connection.layout"],
+    HIGH_PRIORITY,
+    function(event) {
+      var context = event.context,
         connection = context.connection,
         hints = context.hints || {},
         waypoints = connection.waypoints;
 
-    if (hints.connectionStart || hints.connectionEnd) {
-      return;
-    }
+      if (hints.connectionStart || hints.connectionEnd) {
+        return;
+      }
 
-    if (!hasMiddleSegments(waypoints)) {
-      return;
-    }
+      if (!hasMiddleSegments(waypoints)) {
+        return;
+      }
 
-    modeling.updateWaypoints(connection, self.snapMiddleSegments(waypoints));
-  });
+      modeling.updateWaypoints(connection, self.snapMiddleSegments(waypoints));
+    }
+  );
 }
 
-LayoutConnectionBehavior.$inject = [
-  'eventBus',
-  'gridSnapping',
-  'modeling'
-];
+LayoutConnectionBehavior.$inject = ["eventBus", "gridSnapping", "modeling"];
 
 inherits(LayoutConnectionBehavior, CommandInterceptor);
 
@@ -59,12 +57,11 @@ inherits(LayoutConnectionBehavior, CommandInterceptor);
  */
 LayoutConnectionBehavior.prototype.snapMiddleSegments = function(waypoints) {
   var gridSnapping = this._gridSnapping,
-      snapped;
+    snapped;
 
   waypoints = waypoints.slice();
 
   for (var i = 1; i < waypoints.length - 2; i++) {
-
     snapped = snapSegment(gridSnapping, waypoints[i], waypoints[i + 1]);
 
     waypoints[i] = snapped[0];
@@ -73,7 +70,6 @@ LayoutConnectionBehavior.prototype.snapMiddleSegments = function(waypoints) {
 
   return waypoints;
 };
-
 
 // helpers //////////
 
@@ -96,7 +92,7 @@ function hasMiddleSegments(waypoints) {
  * @returns {boolean}
  */
 function horizontallyAligned(aligned) {
-  return aligned === 'h';
+  return aligned === "h";
 }
 
 /**
@@ -107,7 +103,7 @@ function horizontallyAligned(aligned) {
  * @returns {boolean}
  */
 function verticallyAligned(aligned) {
-  return aligned === 'v';
+  return aligned === "v";
 }
 
 /**
@@ -118,27 +114,24 @@ function verticallyAligned(aligned) {
  * @returns {Array}
  */
 function snapSegment(gridSnapping, segmentStart, segmentEnd) {
-
   var aligned = pointsAligned(segmentStart, segmentEnd);
 
   var snapped = {};
 
   if (horizontallyAligned(aligned)) {
-
     // snap horizontally
     snapped.y = gridSnapping.snapValue(segmentStart.y);
   }
 
   if (verticallyAligned(aligned)) {
-
     // snap vertically
     snapped.x = gridSnapping.snapValue(segmentStart.x);
   }
 
-  if ('x' in snapped || 'y' in snapped) {
+  if ("x" in snapped || "y" in snapped) {
     segmentStart = assign({}, segmentStart, snapped);
     segmentEnd = assign({}, segmentEnd, snapped);
   }
 
-  return [ segmentStart, segmentEnd ];
+  return [segmentStart, segmentEnd];
 }

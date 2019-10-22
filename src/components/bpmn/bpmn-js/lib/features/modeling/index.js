@@ -1,29 +1,25 @@
-import BehaviorModule from './behavior';
-import RulesModule from '../rules';
-import OrderingModule from '../ordering';
-import ReplaceModule from '../replace';
+import BehaviorModule from "./behavior";
+import RulesModule from "../rules";
+import OrderingModule from "../ordering";
+import ReplaceModule from "../replace";
 
-import CommandModule from './../../../../diagram-js/lib/command';
-import TooltipsModule from './../../../../diagram-js/lib/features/tooltips';
-import LabelSupportModule from './../../../../diagram-js/lib/features/label-support';
-import AttachSupportModule from './../../../../diagram-js/lib/features/attach-support';
-import SelectionModule from './../../../../diagram-js/lib/features/selection';
-import ChangeSupportModule from './../../../../diagram-js/lib/features/change-support';
-import SpaceToolModule from './../../../../diagram-js/lib/features/space-tool';
+import CommandModule from "./../../../../diagram-js/lib/command";
+import TooltipsModule from "./../../../../diagram-js/lib/features/tooltips";
+import LabelSupportModule from "./../../../../diagram-js/lib/features/label-support";
+import AttachSupportModule from "./../../../../diagram-js/lib/features/attach-support";
+import SelectionModule from "./../../../../diagram-js/lib/features/selection";
+import ChangeSupportModule from "./../../../../diagram-js/lib/features/change-support";
+import SpaceToolModule from "./../../../../diagram-js/lib/features/space-tool";
 
-import BpmnFactory from './BpmnFactory';
-import BpmnUpdater from './BpmnUpdater';
-import ElementFactory from './ElementFactory';
-import Modeling from './Modeling';
-import BpmnLayouter from './BpmnLayouter';
-import CroppingConnectionDocking from './../../../../diagram-js/lib/layout/CroppingConnectionDocking';
-
+import BpmnFactory from "./BpmnFactory";
+import BpmnUpdater from "./BpmnUpdater";
+import ElementFactory from "./ElementFactory";
+import Modeling from "./Modeling";
+import BpmnLayouter from "./BpmnLayouter";
+import CroppingConnectionDocking from "./../../../../diagram-js/lib/layout/CroppingConnectionDocking";
 
 export default {
-  __init__: [
-    'modeling',
-    'bpmnUpdater'
-  ],
+  __init__: ["modeling", "bpmnUpdater"],
   __depends__: [
     BehaviorModule,
     RulesModule,
@@ -37,10 +33,10 @@ export default {
     ChangeSupportModule,
     SpaceToolModule
   ],
-  bpmnFactory: [ 'type', BpmnFactory ],
-  bpmnUpdater: [ 'type', BpmnUpdater ],
-  elementFactory: [ 'type', ElementFactory ],
-  modeling: [ 'type', Modeling ],
-  layouter: [ 'type', BpmnLayouter ],
-  connectionDocking: [ 'type', CroppingConnectionDocking ]
+  bpmnFactory: ["type", BpmnFactory],
+  bpmnUpdater: ["type", BpmnUpdater],
+  elementFactory: ["type", ElementFactory],
+  modeling: ["type", Modeling],
+  layouter: ["type", BpmnLayouter],
+  connectionDocking: ["type", CroppingConnectionDocking]
 };

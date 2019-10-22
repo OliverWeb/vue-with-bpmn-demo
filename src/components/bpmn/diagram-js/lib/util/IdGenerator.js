@@ -10,9 +10,9 @@
  * @param {String} prefix a prefix to prepend to generated ids (for better readability)
  */
 export default function IdGenerator(prefix) {
-
   this._counter = 0;
-  this._prefix = (prefix ? prefix + '-' : '') + Math.floor(Math.random() * 1000000000) + '-';
+  this._prefix =
+    (prefix ? prefix + "-" : "") + Math.floor(Math.random() * 1000000000) + "-";
 }
 
 /**
@@ -23,5 +23,5 @@ export default function IdGenerator(prefix) {
  * @returns {String} the id
  */
 IdGenerator.prototype.next = function() {
-  return this._prefix + (++this._counter);
+  return this._prefix + ++this._counter;
 };

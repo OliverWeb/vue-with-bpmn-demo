@@ -6,8 +6,7 @@ var TRAP_PRIORITY = 5000;
  * @return {Function} a function to immediately remove the installed trap.
  */
 export function install(eventBus, eventName) {
-
-  eventName = eventName || 'element.click';
+  eventName = eventName || "element.click";
 
   function trap() {
     return false;

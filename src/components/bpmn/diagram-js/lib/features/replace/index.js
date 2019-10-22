@@ -1,6 +1,6 @@
-import Replace from './Replace';
+import Replace from "./Replace";
 
 export default {
-  __init__: [ 'replace' ],
-  replace: [ 'type', Replace ]
+  __init__: ["replace"],
+  replace: ["type", Replace]
 };

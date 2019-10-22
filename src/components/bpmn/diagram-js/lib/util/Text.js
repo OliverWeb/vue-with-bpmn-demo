@@ -1,16 +1,11 @@
-import {
-  isObject,
-  assign,
-  forEach,
-  reduce
-} from 'min-dash';
+import { isObject, assign, forEach, reduce } from "min-dash";
 
 import {
   append as svgAppend,
   attr as svgAttr,
   create as svgCreate,
   remove as svgRemove
-} from 'tiny-svg';
+} from "tiny-svg";
 
 var DEFAULT_BOX_PADDING = 0;
 
@@ -19,19 +14,16 @@ var DEFAULT_LABEL_SIZE = {
   height: 50
 };
 
-
 function parseAlign(align) {
-
-  var parts = align.split('-');
+  var parts = align.split("-");
 
   return {
-    horizontal: parts[0] || 'center',
-    vertical: parts[1] || 'top'
+    horizontal: parts[0] || "center",
+    vertical: parts[1] || "top"
   };
 }
 
 function parsePadding(padding) {
-
   if (isObject(padding)) {
     return assign({ top: 0, left: 0, right: 0, bottom: 0 }, padding);
   } else {
@@ -45,18 +37,17 @@ function parsePadding(padding) {
 }
 
 function getTextBBox(text, fakeText) {
-
   fakeText.textContent = text;
 
   var textBBox;
 
   try {
     var bbox,
-        emptyLine = text === '';
+      emptyLine = text === "";
 
     // add dummy text, when line is empty to
     // determine correct height
-    fakeText.textContent = emptyLine ? 'dummy' : text;
+    fakeText.textContent = emptyLine ? "dummy" : text;
 
     textBBox = fakeText.getBBox();
 
@@ -78,7 +69,6 @@ function getTextBBox(text, fakeText) {
   }
 }
 
-
 /**
  * Layout the next line and return the layouted element.
  *
@@ -88,9 +78,8 @@ function getTextBBox(text, fakeText) {
  * @return {Object} the line descriptor, an object { width, height, text }
  */
 function layoutNext(lines, maxWidth, fakeText) {
-
   var originalLine = lines.shift(),
-      fitLine = originalLine;
+    fitLine = originalLine;
 
   var textBBox;
 
@@ -100,7 +89,12 @@ function layoutNext(lines, maxWidth, fakeText) {
     textBBox.width = fitLine ? textBBox.width : 0;
 
     // try to fit
-    if (fitLine === ' ' || fitLine === '' || textBBox.width < Math.round(maxWidth) || fitLine.length < 2) {
+    if (
+      fitLine === " " ||
+      fitLine === "" ||
+      textBBox.width < Math.round(maxWidth) ||
+      fitLine.length < 2
+    ) {
       return fit(lines, fitLine, originalLine, textBBox);
     }
 
@@ -122,7 +116,6 @@ function fit(lines, fitLine, originalLine, textBBox) {
   };
 }
 
-
 /**
  * Shortens a line based on spacing and hyphens.
  * Returns the shortened result on success.
@@ -133,9 +126,9 @@ function fit(lines, fitLine, originalLine, textBBox) {
  */
 function semanticShorten(line, maxLength) {
   var parts = line.split(/(\s|-)/g),
-      part,
-      shortenedParts = [],
-      length = 0;
+    part,
+    shortenedParts = [],
+    length = 0;
 
   // try to shorten via spaces + hyphens
   if (parts.length > 1) {
@@ -145,7 +138,7 @@ function semanticShorten(line, maxLength) {
         length += part.length;
       } else {
         // remove previous part, too if hyphen does not fit anymore
-        if (part === '-') {
+        if (part === "-") {
           shortenedParts.pop();
         }
 
@@ -154,9 +147,8 @@ function semanticShorten(line, maxLength) {
     }
   }
 
-  return shortenedParts.join('');
+  return shortenedParts.join("");
 }
-
 
 function shortenLine(line, width, maxWidth) {
   var length = Math.max(line.length * (maxWidth / width), 1);
@@ -165,7 +157,6 @@ function shortenLine(line, width, maxWidth) {
   var shortenedLine = semanticShorten(line, length);
 
   if (!shortenedLine) {
-
     // force shorten by cutting the long word
     shortenedLine = line.slice(0, Math.max(Math.round(length - 1), 1));
   }
@@ -173,18 +164,17 @@ function shortenLine(line, width, maxWidth) {
   return shortenedLine;
 }
 
-
 function getHelperSvg() {
-  var helperSvg = document.getElementById('helper-svg');
+  var helperSvg = document.getElementById("helper-svg");
 
   if (!helperSvg) {
-    helperSvg = svgCreate('svg');
+    helperSvg = svgCreate("svg");
 
     svgAttr(helperSvg, {
-      id: 'helper-svg',
+      id: "helper-svg",
       width: 0,
       height: 0,
-      style: 'visibility: hidden; position: fixed'
+      style: "visibility: hidden; position: fixed"
     });
 
     document.body.appendChild(helperSvg);
@@ -192,7 +182,6 @@ function getHelperSvg() {
 
   return helperSvg;
 }
-
 
 /**
  * Creates a new label utility
@@ -204,13 +193,16 @@ function getHelperSvg() {
  * @param {String} config.align
  */
 export default function Text(config) {
-
-  this._config = assign({}, {
-    size: DEFAULT_LABEL_SIZE,
-    padding: DEFAULT_BOX_PADDING,
-    style: {},
-    align: 'center-top'
-  }, config || {});
+  this._config = assign(
+    {},
+    {
+      size: DEFAULT_LABEL_SIZE,
+      padding: DEFAULT_BOX_PADDING,
+      style: {},
+      align: "center-top"
+    },
+    config || {}
+  );
 }
 
 /**
@@ -255,20 +247,22 @@ Text.prototype.getDimensions = function(text, options) {
  */
 Text.prototype.layoutText = function(text, options) {
   var box = assign({}, this._config.size, options.box),
-      style = assign({}, this._config.style, options.style),
-      align = parseAlign(options.align || this._config.align),
-      padding = parsePadding(options.padding !== undefined ? options.padding : this._config.padding),
-      fitBox = options.fitBox || false;
+    style = assign({}, this._config.style, options.style),
+    align = parseAlign(options.align || this._config.align),
+    padding = parsePadding(
+      options.padding !== undefined ? options.padding : this._config.padding
+    ),
+    fitBox = options.fitBox || false;
 
   var lineHeight = getLineHeight(style);
 
   var lines = text.split(/\r?\n/g),
-      layouted = [];
+    layouted = [];
 
   var maxWidth = box.width - padding.left - padding.right;
 
   // ensure correct rendering by attaching helper text node to invisible SVG
-  var helperText = svgCreate('text');
+  var helperText = svgCreate("text");
   svgAttr(helperText, { x: 0, y: 0 });
   svgAttr(helperText, style);
 
@@ -280,60 +274,70 @@ Text.prototype.layoutText = function(text, options) {
     layouted.push(layoutNext(lines, maxWidth, helperText));
   }
 
-  if (align.vertical === 'middle') {
+  if (align.vertical === "middle") {
     padding.top = padding.bottom = 0;
   }
 
-  var totalHeight = reduce(layouted, function(sum, line, idx) {
-    return sum + (lineHeight || line.height);
-  }, 0) + padding.top + padding.bottom;
+  var totalHeight =
+    reduce(
+      layouted,
+      function(sum, line, idx) {
+        return sum + (lineHeight || line.height);
+      },
+      0
+    ) +
+    padding.top +
+    padding.bottom;
 
-  var maxLineWidth = reduce(layouted, function(sum, line, idx) {
-    return line.width > sum ? line.width : sum;
-  }, 0);
+  var maxLineWidth = reduce(
+    layouted,
+    function(sum, line, idx) {
+      return line.width > sum ? line.width : sum;
+    },
+    0
+  );
 
   // the y position of the next line
   var y = padding.top;
 
-  if (align.vertical === 'middle') {
+  if (align.vertical === "middle") {
     y += (box.height - totalHeight) / 2;
   }
-  if (align.vertical === 'bottom') {
+  if (align.vertical === "bottom") {
     y = box.height + 5;
   }
 
   // magic number initial offset
   y -= (lineHeight || layouted[0].height) / 4;
 
-
-  var textElement = svgCreate('text');
+  var textElement = svgCreate("text");
   svgAttr(textElement, style);
 
   // layout each line taking into account that parent
   // shape might resize to fit text size
   forEach(layouted, function(line) {
-
     var x;
 
-    y += (lineHeight || line.height);
+    y += lineHeight || line.height;
 
     switch (align.horizontal) {
-    case 'left':
-      x = padding.left;
-      break;
+      case "left":
+        x = padding.left;
+        break;
 
-    case 'right':
-      x = ((fitBox ? maxLineWidth : maxWidth)
-        - padding.right - line.width);
-      break;
+      case "right":
+        x = (fitBox ? maxLineWidth : maxWidth) - padding.right - line.width;
+        break;
 
-    default:
-      // aka center
-      x = Math.max((((fitBox ? maxLineWidth : maxWidth)
-        - line.width) / 2 + padding.left), 0);
+      default:
+        // aka center
+        x = Math.max(
+          ((fitBox ? maxLineWidth : maxWidth) - line.width) / 2 + padding.left,
+          0
+        );
     }
 
-    var tspan = svgCreate('tspan');
+    var tspan = svgCreate("tspan");
     svgAttr(tspan, { x: x, y: y });
 
     tspan.textContent = line.text;
@@ -354,9 +358,8 @@ Text.prototype.layoutText = function(text, options) {
   };
 };
 
-
 function getLineHeight(style) {
-  if ('fontSize' in style && 'lineHeight' in style) {
+  if ("fontSize" in style && "lineHeight" in style) {
     return style.lineHeight * parseInt(style.fontSize, 10);
   }
 }

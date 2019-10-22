@@ -1,6 +1,6 @@
-import DistributeElements from './DistributeElements';
+import DistributeElements from "./DistributeElements";
 
 export default {
-  __init__: [ 'distributeElements' ],
-  distributeElements: [ 'type', DistributeElements ]
+  __init__: ["distributeElements"],
+  distributeElements: ["type", DistributeElements]
 };

@@ -1,11 +1,9 @@
-import { forEach } from 'min-dash';
-
+import { forEach } from "min-dash";
 
 import {
   add as collectionAdd,
   remove as collectionRemove
-} from '../../../util/Collections';
-
+} from "../../../util/Collections";
 
 /**
  * A handler that implements reversible moving of connections.
@@ -13,17 +11,15 @@ import {
  * The handler differs from the layout connection handler in a sense
  * that it preserves the connection layout.
  */
-export default function MoveConnectionHandler() { }
-
+export default function MoveConnectionHandler() {}
 
 MoveConnectionHandler.prototype.execute = function(context) {
-
   var connection = context.connection,
-      delta = context.delta;
+    delta = context.delta;
 
   var newParent = context.newParent || connection.parent,
-      newParentIndex = context.newParentIndex,
-      oldParent = connection.parent;
+    newParentIndex = context.newParentIndex,
+    oldParent = connection.parent;
 
   // save old parent in context
   context.oldParent = oldParent;
@@ -50,12 +46,11 @@ MoveConnectionHandler.prototype.execute = function(context) {
 };
 
 MoveConnectionHandler.prototype.revert = function(context) {
-
   var connection = context.connection,
-      newParent = connection.parent,
-      oldParent = context.oldParent,
-      oldParentIndex = context.oldParentIndex,
-      delta = context.delta;
+    newParent = connection.parent,
+    oldParent = context.oldParent,
+    oldParentIndex = context.oldParentIndex,
+    delta = context.delta;
 
   // remove from newParent
   collectionRemove(newParent.children, connection);

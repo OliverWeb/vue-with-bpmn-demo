@@ -1,9 +1,6 @@
-import {
-  assign
-} from 'min-dash';
+import { assign } from "min-dash";
 
-import { is } from './ModelUtil';
-
+import { is } from "./ModelUtil";
 
 export var DEFAULT_LABEL_SIZE = {
   width: 90,
@@ -12,7 +9,6 @@ export var DEFAULT_LABEL_SIZE = {
 
 export var FLOW_LABEL_INDENT = 15;
 
-
 /**
  * Returns true if the given semantic has an external label
  *
@@ -20,15 +16,17 @@ export var FLOW_LABEL_INDENT = 15;
  * @return {Boolean} true if has label
  */
 export function isLabelExternal(semantic) {
-  return is(semantic, 'bpmn:Event') ||
-         is(semantic, 'bpmn:Gateway') ||
-         is(semantic, 'bpmn:DataStoreReference') ||
-         is(semantic, 'bpmn:DataObjectReference') ||
-         is(semantic, 'bpmn:DataInput') ||
-         is(semantic, 'bpmn:DataOutput') ||
-         is(semantic, 'bpmn:SequenceFlow') ||
-         is(semantic, 'bpmn:MessageFlow') ||
-         is(semantic, 'bpmn:Group');
+  return (
+    is(semantic, "bpmn:Event") ||
+    is(semantic, "bpmn:Gateway") ||
+    is(semantic, "bpmn:DataStoreReference") ||
+    is(semantic, "bpmn:DataObjectReference") ||
+    is(semantic, "bpmn:DataInput") ||
+    is(semantic, "bpmn:DataOutput") ||
+    is(semantic, "bpmn:SequenceFlow") ||
+    is(semantic, "bpmn:MessageFlow") ||
+    is(semantic, "bpmn:Group")
+  );
 }
 
 /**
@@ -48,7 +46,6 @@ export function hasExternalLabel(element) {
  * @return {Point} the label position
  */
 export function getFlowLabelPosition(waypoints) {
-
   // get the waypoints mid
   var mid = waypoints.length / 2 - 1;
 
@@ -62,7 +59,7 @@ export function getFlowLabelPosition(waypoints) {
   var angle = Math.atan((second.y - first.y) / (second.x - first.x));
 
   var x = position.x,
-      y = position.y;
+    y = position.y;
 
   if (Math.abs(angle) < Math.PI / 2) {
     y -= FLOW_LABEL_INDENT;
@@ -73,7 +70,6 @@ export function getFlowLabelPosition(waypoints) {
   return { x: x, y: y };
 }
 
-
 /**
  * Get the middle of a number of waypoints
  *
@@ -81,7 +77,6 @@ export function getFlowLabelPosition(waypoints) {
  * @return {Point} the mid point
  */
 export function getWaypointsMid(waypoints) {
-
   var mid = waypoints.length / 2 - 1;
 
   var first = waypoints[Math.floor(mid)];
@@ -93,12 +88,10 @@ export function getWaypointsMid(waypoints) {
   };
 }
 
-
 export function getExternalLabelMid(element) {
-
   if (element.waypoints) {
     return getFlowLabelPosition(element.waypoints);
-  } else if (is(element, 'bpmn:Group')) {
+  } else if (is(element, "bpmn:Group")) {
     return {
       x: element.x + element.width / 2,
       y: element.y + DEFAULT_LABEL_SIZE.height / 2
@@ -111,7 +104,6 @@ export function getExternalLabelMid(element) {
   }
 }
 
-
 /**
  * Returns the bounds of an elements label, parsed from the elements DI or
  * generated from its bounds.
@@ -120,12 +112,11 @@ export function getExternalLabelMid(element) {
  * @param {djs.model.Base} element
  */
 export function getExternalLabelBounds(semantic, element) {
-
   var mid,
-      size,
-      bounds,
-      di = semantic.di,
-      label = di.label;
+    size,
+    bounds,
+    di = semantic.di,
+    label = di.label;
 
   if (label && label.bounds) {
     bounds = label.bounds;
@@ -140,16 +131,18 @@ export function getExternalLabelBounds(semantic, element) {
       y: bounds.y + bounds.height / 2
     };
   } else {
-
     mid = getExternalLabelMid(element);
 
     size = DEFAULT_LABEL_SIZE;
   }
 
-  return assign({
-    x: mid.x - size.width / 2,
-    y: mid.y - size.height / 2
-  }, size);
+  return assign(
+    {
+      x: mid.x - size.width / 2,
+      y: mid.y - size.height / 2
+    },
+    size
+  );
 }
 
 export function isLabel(element) {

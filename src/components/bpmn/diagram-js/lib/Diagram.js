@@ -1,7 +1,6 @@
-import { Injector } from 'didi';
+import { Injector } from "didi";
 
-import CoreModule from './core';
-
+import CoreModule from "./core";
 
 /**
  * Bootstrap an injector from a list of modules, instantiating a number of default components
@@ -12,9 +11,8 @@ import CoreModule from './core';
  * @return {didi.Injector} a injector to use to access the components
  */
 function bootstrap(bootstrapModules) {
-
   var modules = [],
-      components = [];
+    components = [];
 
   function hasModule(m) {
     return modules.indexOf(m) >= 0;
@@ -47,12 +45,11 @@ function bootstrap(bootstrapModules) {
   var injector = new Injector(modules);
 
   components.forEach(function(c) {
-
     try {
       // eagerly resolve component (fn or string)
-      injector[typeof c === 'string' ? 'get' : 'invoke'](c);
+      injector[typeof c === "string" ? "get" : "invoke"](c);
     } catch (e) {
-      console.error('Failed to instantiate component');
+      console.error("Failed to instantiate component");
       console.error(e.stack);
 
       throw e;
@@ -70,18 +67,16 @@ function bootstrap(bootstrapModules) {
  * @return {didi.Injector}
  */
 function createInjector(options) {
-
   options = options || {};
 
   var configModule = {
-    'config': ['value', options]
+    config: ["value", options]
   };
 
-  var modules = [ configModule, CoreModule ].concat(options.modules || []);
+  var modules = [configModule, CoreModule].concat(options.modules || []);
 
   return bootstrap(modules);
 }
-
 
 /**
  * The main diagram-js entry point that bootstraps the diagram with the given
@@ -133,7 +128,6 @@ function createInjector(options) {
  * @param {didi.Injector} [injector] an (optional) injector to bootstrap the diagram with
  */
 export default function Diagram(options, injector) {
-
   // create injector unless explicitly specified
   this.injector = injector = injector || createInjector(options);
 
@@ -163,7 +157,6 @@ export default function Diagram(options, injector) {
 
   // indicate via event
 
-
   /**
    * An event indicating that all plug-ins are loaded.
    *
@@ -181,9 +174,8 @@ export default function Diagram(options, injector) {
    *
    * @type {Object}
    */
-  this.get('eventBus').fire('diagram.init');
+  this.get("eventBus").fire("diagram.init");
 }
-
 
 /**
  * Destroys the diagram
@@ -191,12 +183,12 @@ export default function Diagram(options, injector) {
  * @method  Diagram#destroy
  */
 Diagram.prototype.destroy = function() {
-  this.get('eventBus').fire('diagram.destroy');
+  this.get("eventBus").fire("diagram.destroy");
 };
 
 /**
  * Clear the diagram, removing all contents.
  */
 Diagram.prototype.clear = function() {
-  this.get('eventBus').fire('diagram.clear');
+  this.get("eventBus").fire("diagram.clear");
 };

@@ -1,10 +1,4 @@
-import {
-  assign,
-  isFunction,
-  isArray,
-  forEach,
-  isDefined
-} from 'min-dash';
+import { assign, isFunction, isArray, forEach, isDefined } from "min-dash";
 
 import {
   delegate as domDelegate,
@@ -12,11 +6,10 @@ import {
   attr as domAttr,
   query as domQuery,
   classes as domClasses,
-  domify as domify
-} from 'min-dom';
+  domify
+} from "min-dom";
 
-var entrySelector = '.entry';
-
+var entrySelector = ".entry";
 
 /**
  * A context pad that displays element specific, contextual actions next
@@ -30,16 +23,17 @@ var entrySelector = '.entry';
  * @param {Overlays} overlays
  */
 export default function ContextPad(config, eventBus, overlays) {
-
   this._providers = [];
 
   this._eventBus = eventBus;
   this._overlays = overlays;
 
-  var scale = isDefined(config && config.scale) ? config.scale : {
-    min: 1,
-    max: 1.5
-  };
+  var scale = isDefined(config && config.scale)
+    ? config.scale
+    : {
+        min: 1,
+        max: 1.5
+      };
 
   this._overlaysConfig = {
     position: {
@@ -54,24 +48,17 @@ export default function ContextPad(config, eventBus, overlays) {
   this._init();
 }
 
-ContextPad.$inject = [
-  'config.contextPad',
-  'eventBus',
-  'overlays'
-];
-
+ContextPad.$inject = ["config.contextPad", "eventBus", "overlays"];
 
 /**
  * Registers events needed for interaction with other components
  */
 ContextPad.prototype._init = function() {
-
   var eventBus = this._eventBus;
 
   var self = this;
 
-  eventBus.on('selection.changed', function(e) {
-
+  eventBus.on("selection.changed", function(e) {
     var selection = e.newSelection;
 
     if (selection.length === 1) {
@@ -81,7 +68,7 @@ ContextPad.prototype._init = function() {
     }
   });
 
-  eventBus.on('elements.delete', function(event) {
+  eventBus.on("elements.delete", function(event) {
     var elements = event.elements;
 
     forEach(elements, function(e) {
@@ -91,9 +78,9 @@ ContextPad.prototype._init = function() {
     });
   });
 
-  eventBus.on('element.changed', function(event) {
+  eventBus.on("element.changed", function(event) {
     var element = event.element,
-        current = self._current;
+      current = self._current;
 
     // force reopen if element for which we are currently opened changed
     if (current && current.element === element) {
@@ -101,7 +88,6 @@ ContextPad.prototype._init = function() {
     }
   });
 };
-
 
 /**
  * Register a provider with the context pad
@@ -111,7 +97,6 @@ ContextPad.prototype._init = function() {
 ContextPad.prototype.registerProvider = function(provider) {
   this._providers.push(provider);
 };
-
 
 /**
  * Returns the context pad entries for a given element
@@ -136,7 +121,6 @@ ContextPad.prototype.getEntries = function(element) {
   return entries;
 };
 
-
 /**
  * Trigger an action available on the opened context pad
  *
@@ -145,26 +129,25 @@ ContextPad.prototype.getEntries = function(element) {
  * @param  {Boolean} [autoActivate=false]
  */
 ContextPad.prototype.trigger = function(action, event, autoActivate) {
-
   var element = this._current.element,
-      entries = this._current.entries,
-      entry,
-      handler,
-      originalEvent,
-      button = event.delegateTarget || event.target;
+    entries = this._current.entries,
+    entry,
+    handler,
+    originalEvent,
+    button = event.delegateTarget || event.target;
 
   if (!button) {
     return event.preventDefault();
   }
 
-  entry = entries[domAttr(button, 'data-action')];
+  entry = entries[domAttr(button, "data-action")];
   handler = entry.action;
 
   originalEvent = event.originalEvent || event;
 
   // simple action (via callback function)
   if (isFunction(handler)) {
-    if (action === 'click') {
+    if (action === "click") {
       return handler(originalEvent, element, autoActivate);
     }
   } else {
@@ -176,7 +159,6 @@ ContextPad.prototype.trigger = function(action, event, autoActivate) {
   // silence other actions
   event.preventDefault();
 };
-
 
 /**
  * Open the context pad for the given element
@@ -193,22 +175,24 @@ ContextPad.prototype.open = function(element, force) {
   this._updateAndOpen(element);
 };
 
-
 ContextPad.prototype._updateAndOpen = function(element) {
-
   var entries = this.getEntries(element),
-      pad = this.getPad(element),
-      html = pad.html;
+    pad = this.getPad(element),
+    html = pad.html;
   forEach(entries, function(entry, id) {
-    var grouping = entry.group || 'default',
-        control = domify(entry.html || '<div class="entry" draggable="true"></div>'),
-        container;
+    var grouping = entry.group || "default",
+      control = domify(
+        entry.html || '<div class="entry" draggable="true"></div>'
+      ),
+      container;
 
-    domAttr(control, 'data-action', id);
+    domAttr(control, "data-action", id);
 
-    container = domQuery('[data-group=' + grouping + ']', html);
+    container = domQuery("[data-group=" + grouping + "]", html);
     if (!container) {
-      container = domify('<div class="group" data-group="' + grouping + '"></div>');
+      container = domify(
+        '<div class="group" data-group="' + grouping + '"></div>'
+      );
       html.appendChild(container);
     }
 
@@ -219,7 +203,7 @@ ContextPad.prototype._updateAndOpen = function(element) {
     }
 
     if (entry.title) {
-      domAttr(control, 'title', entry.title);
+      domAttr(control, "title", entry.title);
     }
 
     if (entry.imageUrl) {
@@ -227,7 +211,7 @@ ContextPad.prototype._updateAndOpen = function(element) {
     }
   });
 
-  domClasses(html).add('open');
+  domClasses(html).add("open");
 
   this._current = {
     element: element,
@@ -235,9 +219,8 @@ ContextPad.prototype._updateAndOpen = function(element) {
     entries: entries
   };
 
-  this._eventBus.fire('contextPad.open', { current: this._current });
+  this._eventBus.fire("contextPad.open", { current: this._current });
 };
-
 
 ContextPad.prototype.getPad = function(element) {
   if (this.isOpen()) {
@@ -250,32 +233,34 @@ ContextPad.prototype.getPad = function(element) {
 
   var html = domify('<div class="djs-context-pad"></div>');
 
-  var overlaysConfig = assign({
-    html: html
-  }, this._overlaysConfig);
+  var overlaysConfig = assign(
+    {
+      html: html
+    },
+    this._overlaysConfig
+  );
 
-  domDelegate.bind(html, entrySelector, 'click', function(event) {
-    self.trigger('click', event);
+  domDelegate.bind(html, entrySelector, "click", function(event) {
+    self.trigger("click", event);
   });
 
-  domDelegate.bind(html, entrySelector, 'dragstart', function(event) {
-    self.trigger('dragstart', event);
+  domDelegate.bind(html, entrySelector, "dragstart", function(event) {
+    self.trigger("dragstart", event);
   });
 
   // stop propagation of mouse events
-  domEvent.bind(html, 'mousedown', function(event) {
+  domEvent.bind(html, "mousedown", function(event) {
     event.stopPropagation();
   });
 
-  this._overlayId = overlays.add(element, 'context-pad', overlaysConfig);
+  this._overlayId = overlays.add(element, "context-pad", overlaysConfig);
 
   var pad = overlays.get(this._overlayId);
 
-  this._eventBus.fire('contextPad.create', { element: element, pad: pad });
+  this._eventBus.fire("contextPad.create", { element: element, pad: pad });
 
   return pad;
 };
-
 
 /**
  * Close the context pad
@@ -289,7 +274,7 @@ ContextPad.prototype.close = function() {
 
   this._overlayId = null;
 
-  this._eventBus.fire('contextPad.close', { current: this._current });
+  this._eventBus.fire("contextPad.close", { current: this._current });
 
   this._current = null;
 };
@@ -302,19 +287,19 @@ ContextPad.prototype.close = function() {
  * @return {Boolean}
  */
 ContextPad.prototype.isOpen = function(element) {
-  return !!this._current && (!element ? true : this._current.element === element);
+  return (
+    !!this._current && (!element ? true : this._current.element === element)
+  );
 };
-
-
-
 
 // helpers //////////////////////
 
 function addClasses(element, classNames) {
-
   var classes = domClasses(element);
 
-  var actualClassNames = isArray(classNames) ? classNames : classNames.split(/\s+/g);
+  var actualClassNames = isArray(classNames)
+    ? classNames
+    : classNames.split(/\s+/g);
   actualClassNames.forEach(function(cls) {
     classes.add(cls);
   });

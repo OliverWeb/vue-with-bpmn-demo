@@ -1,5 +1,4 @@
-import { bind } from 'min-dash';
-
+import { bind } from "min-dash";
 
 export default function MouseTracking(eventBus, canvas) {
   this._eventBus = eventBus;
@@ -8,11 +7,7 @@ export default function MouseTracking(eventBus, canvas) {
   this._init();
 }
 
-MouseTracking.$inject = [
-  'eventBus',
-  'canvas'
-];
-
+MouseTracking.$inject = ["eventBus", "canvas"];
 
 MouseTracking.prototype.getHoverContext = function() {
   var viewbox = this._canvas.viewbox();
@@ -28,26 +23,28 @@ MouseTracking.prototype.getHoverContext = function() {
 
 MouseTracking.prototype._init = function() {
   var eventBus = this._eventBus,
-      canvas = this._canvas;
+    canvas = this._canvas;
 
   var container = canvas.getContainer();
 
   this._setMousePosition = bind(this._setMousePosition, this);
 
-  container.addEventListener('mousemove', this._setMousePosition);
+  container.addEventListener("mousemove", this._setMousePosition);
 
-  eventBus.on('diagram.destroy', function() {
-    container.removeEventListener('mousemove', this._setMousePosition);
-  }, this);
+  eventBus.on(
+    "diagram.destroy",
+    function() {
+      container.removeEventListener("mousemove", this._setMousePosition);
+    },
+    this
+  );
 
-  eventBus.on('element.hover', this._setHoverElement, this);
+  eventBus.on("element.hover", this._setHoverElement, this);
 };
-
 
 MouseTracking.prototype._setHoverElement = function(event) {
   this._hoverElement = event.element;
 };
-
 
 MouseTracking.prototype._setMousePosition = function(event) {
   this._mouseX = event.layerX;

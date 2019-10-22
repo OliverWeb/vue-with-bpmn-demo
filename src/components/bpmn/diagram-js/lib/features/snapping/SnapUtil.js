@@ -1,6 +1,5 @@
 var abs = Math.abs,
-    round = Math.round;
-
+  round = Math.round;
 
 /**
  * Snap value to a collection of reference values.
@@ -24,7 +23,6 @@ export function snapTo(value, values, tolerance) {
     }
   }
 }
-
 
 export function topLeft(bounds) {
   return {
@@ -55,7 +53,6 @@ export function bottomRight(bounds) {
 }
 
 export function mid(bounds, defaultValue) {
-
   if (!bounds || isNaN(bounds.x) || isNaN(bounds.y)) {
     return defaultValue;
   }
@@ -65,7 +62,6 @@ export function mid(bounds, defaultValue) {
     y: round(bounds.y + bounds.height / 2)
   };
 }
-
 
 /**
  * Retrieve the snap state of the given event.
@@ -83,13 +79,12 @@ export function isSnapped(event, axis) {
     return false;
   }
 
-  if (typeof axis === 'string') {
+  if (typeof axis === "string") {
     return snapped[axis];
   }
 
   return snapped.x && snapped.y;
 }
-
 
 /**
  * Set the given event as snapped.
@@ -104,19 +99,18 @@ export function isSnapped(event, axis) {
  * @return {Number} old value
  */
 export function setSnapped(event, axis, value) {
-  if (typeof axis !== 'string') {
-    throw new Error('axis must be in [x, y]');
+  if (typeof axis !== "string") {
+    throw new Error("axis must be in [x, y]");
   }
 
-  if (typeof value !== 'number' && value !== false) {
-    throw new Error('value must be Number or false');
+  if (typeof value !== "number" && value !== false) {
+    throw new Error("value must be Number or false");
   }
 
   var delta,
-      previousValue = event[axis];
+    previousValue = event[axis];
 
-  var snapped = event.snapped = (event.snapped || {});
-
+  var snapped = (event.snapped = event.snapped || {});
 
   if (value === false) {
     snapped[axis] = false;
@@ -126,7 +120,7 @@ export function setSnapped(event, axis, value) {
     delta = value - previousValue;
 
     event[axis] += delta;
-    event['d' + axis] += delta;
+    event["d" + axis] += delta;
   }
 
   return previousValue;

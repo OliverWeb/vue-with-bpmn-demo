@@ -1,7 +1,6 @@
-import inherits from 'inherits';
+import inherits from "inherits";
 
-import CommandInterceptor from '../../command/CommandInterceptor';
-
+import CommandInterceptor from "../../command/CommandInterceptor";
 
 /**
  * An abstract provider that allows modelers to implement a custom
@@ -33,22 +32,18 @@ import CommandInterceptor from '../../command/CommandInterceptor';
  * @param {EventBus} eventBus
  */
 export default function OrderingProvider(eventBus) {
-
   CommandInterceptor.call(this, eventBus);
-
 
   var self = this;
 
-  this.preExecute([ 'shape.create', 'connection.create' ], function(event) {
-
+  this.preExecute(["shape.create", "connection.create"], function(event) {
     var context = event.context,
-        element = context.shape || context.connection,
-        parent = context.parent;
+      element = context.shape || context.connection,
+      parent = context.parent;
 
     var ordering = self.getOrdering(element, parent);
 
     if (ordering) {
-
       if (ordering.parent !== undefined) {
         context.parent = ordering.parent;
       }
@@ -57,16 +52,14 @@ export default function OrderingProvider(eventBus) {
     }
   });
 
-  this.preExecute([ 'shape.move', 'connection.move' ], function(event) {
-
+  this.preExecute(["shape.move", "connection.move"], function(event) {
     var context = event.context,
-        element = context.shape || context.connection,
-        parent = context.newParent || element.parent;
+      element = context.shape || context.connection,
+      parent = context.newParent || element.parent;
 
     var ordering = self.getOrdering(element, parent);
 
     if (ordering) {
-
       if (ordering.parent !== undefined) {
         context.newParent = ordering.parent;
       }

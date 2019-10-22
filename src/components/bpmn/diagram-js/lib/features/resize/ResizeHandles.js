@@ -1,13 +1,10 @@
-import {
-  bind,
-  forEach
-} from 'min-dash';
+import { bind, forEach } from "min-dash";
 
 var HANDLE_OFFSET = -2,
-    HANDLE_SIZE = 5,
-    HANDLE_HIT_SIZE = 20;
+  HANDLE_SIZE = 5,
+  HANDLE_HIT_SIZE = 20;
 
-var CLS_RESIZER = 'djs-resizer';
+var CLS_RESIZER = "djs-resizer";
 
 import {
   append as svgAppend,
@@ -15,24 +12,15 @@ import {
   classes as svgClasses,
   clear as svgClear,
   create as svgCreate
-} from 'tiny-svg';
+} from "tiny-svg";
 
-import {
-  event as domEvent
-} from 'min-dom';
+import { event as domEvent } from "min-dom";
 
-import {
-  isPrimaryButton
-} from '../../util/Mouse';
+import { isPrimaryButton } from "../../util/Mouse";
 
-import {
-  asTRBL
-} from '../../layout/LayoutUtil';
+import { asTRBL } from "../../layout/LayoutUtil";
 
-import {
-  transform
-} from '../../util/SvgTransformUtil';
-
+import { transform } from "../../util/SvgTransformUtil";
 
 /**
  * This component is responsible for adding resize handles.
@@ -43,13 +31,12 @@ import {
  * @param {Resize} resize
  */
 export default function ResizeHandles(eventBus, canvas, selection, resize) {
-
   this._resize = resize;
   this._canvas = canvas;
 
   var self = this;
 
-  eventBus.on('selection.changed', function(e) {
+  eventBus.on("selection.changed", function(e) {
     var newSelection = e.newSelection;
 
     // remove old selection markers
@@ -61,7 +48,7 @@ export default function ResizeHandles(eventBus, canvas, selection, resize) {
     }
   });
 
-  eventBus.on('shape.changed', function(e) {
+  eventBus.on("shape.changed", function(e) {
     var shape = e.element;
 
     if (selection.isSelected(shape)) {
@@ -71,7 +58,6 @@ export default function ResizeHandles(eventBus, canvas, selection, resize) {
     }
   });
 }
-
 
 ResizeHandles.prototype.makeDraggable = function(element, gfx, direction) {
   var resize = this._resize;
@@ -83,43 +69,48 @@ ResizeHandles.prototype.makeDraggable = function(element, gfx, direction) {
     }
   }
 
-  domEvent.bind(gfx, 'mousedown', startResize);
-  domEvent.bind(gfx, 'touchstart', startResize);
+  domEvent.bind(gfx, "mousedown", startResize);
+  domEvent.bind(gfx, "touchstart", startResize);
 };
 
-
-ResizeHandles.prototype._createResizer = function(element, x, y, rotation, direction) {
+ResizeHandles.prototype._createResizer = function(
+  element,
+  x,
+  y,
+  rotation,
+  direction
+) {
   var resizersParent = this._getResizersParent();
 
-  var group = svgCreate('g');
+  var group = svgCreate("g");
   svgClasses(group).add(CLS_RESIZER);
-  svgClasses(group).add(CLS_RESIZER + '-' + element.id);
-  svgClasses(group).add(CLS_RESIZER + '-' + direction);
+  svgClasses(group).add(CLS_RESIZER + "-" + element.id);
+  svgClasses(group).add(CLS_RESIZER + "-" + direction);
 
   svgAppend(resizersParent, group);
 
   var origin = -HANDLE_SIZE + HANDLE_OFFSET;
 
   // Create four drag indicators on the outline
-  var visual = svgCreate('rect');
+  var visual = svgCreate("rect");
   svgAttr(visual, {
     x: origin,
     y: origin,
     width: HANDLE_SIZE,
     height: HANDLE_SIZE
   });
-  svgClasses(visual).add(CLS_RESIZER + '-visual');
+  svgClasses(visual).add(CLS_RESIZER + "-visual");
 
   svgAppend(group, visual);
 
-  var hit = svgCreate('rect');
+  var hit = svgCreate("rect");
   svgAttr(hit, {
     x: origin,
     y: origin,
     width: HANDLE_HIT_SIZE,
     height: HANDLE_HIT_SIZE
   });
-  svgClasses(hit).add(CLS_RESIZER + '-hit');
+  svgClasses(hit).add(CLS_RESIZER + "-hit");
 
   svgAppend(group, hit);
 
@@ -133,14 +124,26 @@ ResizeHandles.prototype.createResizer = function(element, direction) {
 
   var trbl = asTRBL(element);
 
-  if (direction === 'nw') {
+  if (direction === "nw") {
     resizer = this._createResizer(element, trbl.left, trbl.top, 0, direction);
-  } else if (direction === 'ne') {
+  } else if (direction === "ne") {
     resizer = this._createResizer(element, trbl.right, trbl.top, 90, direction);
-  } else if (direction === 'se') {
-    resizer = this._createResizer(element, trbl.right, trbl.bottom, 180, direction);
+  } else if (direction === "se") {
+    resizer = this._createResizer(
+      element,
+      trbl.right,
+      trbl.bottom,
+      180,
+      direction
+    );
   } else {
-    resizer = this._createResizer(element, trbl.left, trbl.bottom, 270, direction);
+    resizer = this._createResizer(
+      element,
+      trbl.left,
+      trbl.bottom,
+      270,
+      direction
+    );
   }
 
   this.makeDraggable(element, resizer, direction);
@@ -160,10 +163,10 @@ ResizeHandles.prototype.addResizer = function(shape) {
     return;
   }
 
-  this.createResizer(shape, 'nw');
-  this.createResizer(shape, 'ne');
-  this.createResizer(shape, 'se');
-  this.createResizer(shape, 'sw');
+  this.createResizer(shape, "nw");
+  this.createResizer(shape, "ne");
+  this.createResizer(shape, "se");
+  this.createResizer(shape, "sw");
 };
 
 /**
@@ -176,12 +179,7 @@ ResizeHandles.prototype.removeResizers = function() {
 };
 
 ResizeHandles.prototype._getResizersParent = function() {
-  return this._canvas.getLayer('resizers');
+  return this._canvas.getLayer("resizers");
 };
 
-ResizeHandles.$inject = [
-  'eventBus',
-  'canvas',
-  'selection',
-  'resize'
-];
+ResizeHandles.$inject = ["eventBus", "canvas", "selection", "resize"];

@@ -10,8 +10,7 @@ export default function PopupMenuProvider(popupMenu) {
   this.register();
 }
 
-PopupMenuProvider.$inject = [ 'popupMenu' ];
-
+PopupMenuProvider.$inject = ["popupMenu"];
 
 /**
  * This method should implement the creation of a list of entry objects.
@@ -36,7 +35,6 @@ PopupMenuProvider.$inject = [ 'popupMenu' ];
  *}
  */
 PopupMenuProvider.getEntries = function(element) {};
-
 
 /**
  * This method should implement the creation of a list of header entry objects.

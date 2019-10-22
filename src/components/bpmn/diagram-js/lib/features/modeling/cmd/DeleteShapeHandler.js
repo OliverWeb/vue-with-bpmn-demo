@@ -1,10 +1,9 @@
 import {
   add as collectionAdd,
   indexOf as collectionIdx
-} from '../../../util/Collections';
+} from "../../../util/Collections";
 
-import { saveClear } from '../../../util/Removal';
-
+import { saveClear } from "../../../util/Removal";
 
 /**
  * A handler that implements reversible deletion of shapes.
@@ -15,15 +14,13 @@ export default function DeleteShapeHandler(canvas, modeling) {
   this._modeling = modeling;
 }
 
-DeleteShapeHandler.$inject = [ 'canvas', 'modeling' ];
-
+DeleteShapeHandler.$inject = ["canvas", "modeling"];
 
 /**
  * - Remove connections
  * - Remove all direct children
  */
 DeleteShapeHandler.prototype.preExecute = function(context) {
-
   var modeling = this._modeling;
 
   var shape = context.shape;
@@ -56,7 +53,7 @@ DeleteShapeHandler.prototype.execute = function(context) {
   var canvas = this._canvas;
 
   var shape = context.shape,
-      oldParent = shape.parent;
+    oldParent = shape.parent;
 
   context.oldParent = oldParent;
 
@@ -69,17 +66,15 @@ DeleteShapeHandler.prototype.execute = function(context) {
   return shape;
 };
 
-
 /**
  * Command revert implementation
  */
 DeleteShapeHandler.prototype.revert = function(context) {
-
   var canvas = this._canvas;
 
   var shape = context.shape,
-      oldParent = context.oldParent,
-      oldParentIndex = context.oldParentIndex;
+    oldParent = context.oldParent,
+    oldParentIndex = context.oldParentIndex;
 
   // restore containment
   collectionAdd(oldParent.children, shape, oldParentIndex);

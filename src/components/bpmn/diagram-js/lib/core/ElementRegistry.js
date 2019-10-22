@@ -1,7 +1,6 @@
-var ELEMENT_ID = 'data-element-id';
+var ELEMENT_ID = "data-element-id";
 
-import { attr as svgAttr } from 'tiny-svg';
-
+import { attr as svgAttr } from "tiny-svg";
 
 /**
  * @class
@@ -14,7 +13,7 @@ export default function ElementRegistry(eventBus) {
   this._eventBus = eventBus;
 }
 
-ElementRegistry.$inject = [ 'eventBus' ];
+ElementRegistry.$inject = ["eventBus"];
 
 /**
  * Register a pair of (element, gfx, (secondaryGfx)).
@@ -24,7 +23,6 @@ ElementRegistry.$inject = [ 'eventBus' ];
  * @param {SVGElement} [secondaryGfx] optional other element to register, too
  */
 ElementRegistry.prototype.add = function(element, gfx, secondaryGfx) {
-
   var id = element.id;
 
   this._validateId(id);
@@ -36,7 +34,11 @@ ElementRegistry.prototype.add = function(element, gfx, secondaryGfx) {
     svgAttr(secondaryGfx, ELEMENT_ID, id);
   }
 
-  this._elements[id] = { element: element, gfx: gfx, secondaryGfx: secondaryGfx };
+  this._elements[id] = {
+    element: element,
+    gfx: gfx,
+    secondaryGfx: secondaryGfx
+  };
 };
 
 /**
@@ -46,16 +48,15 @@ ElementRegistry.prototype.add = function(element, gfx, secondaryGfx) {
  */
 ElementRegistry.prototype.remove = function(element) {
   var elements = this._elements,
-      id = element.id || element,
-      container = id && elements[id];
+    id = element.id || element,
+    container = id && elements[id];
 
   if (container) {
-
     // unset element id on gfx
-    svgAttr(container.gfx, ELEMENT_ID, '');
+    svgAttr(container.gfx, ELEMENT_ID, "");
 
     if (container.secondaryGfx) {
-      svgAttr(container.secondaryGfx, ELEMENT_ID, '');
+      svgAttr(container.secondaryGfx, ELEMENT_ID, "");
     }
 
     delete elements[id];
@@ -69,20 +70,19 @@ ElementRegistry.prototype.remove = function(element) {
  * @param {String} newId
  */
 ElementRegistry.prototype.updateId = function(element, newId) {
-
   this._validateId(newId);
 
-  if (typeof element === 'string') {
+  if (typeof element === "string") {
     element = this.get(element);
   }
 
-  this._eventBus.fire('element.updateId', {
+  this._eventBus.fire("element.updateId", {
     element: element,
     newId: newId
   });
 
   var gfx = this.getGraphics(element),
-      secondaryGfx = this.getGraphics(element, true);
+    secondaryGfx = this.getGraphics(element, true);
 
   this.remove(element);
 
@@ -107,7 +107,7 @@ ElementRegistry.prototype.updateId = function(element, newId) {
 ElementRegistry.prototype.get = function(filter) {
   var id;
 
-  if (typeof filter === 'string') {
+  if (typeof filter === "string") {
     id = filter;
   } else {
     id = filter && svgAttr(filter, ELEMENT_ID);
@@ -125,7 +125,6 @@ ElementRegistry.prototype.get = function(filter) {
  * @return {Array<djs.model.Base>}
  */
 ElementRegistry.prototype.filter = function(fn) {
-
   var filtered = [];
 
   this.forEach(function(element, gfx) {
@@ -143,7 +142,9 @@ ElementRegistry.prototype.filter = function(fn) {
  * @return {Array<djs.model.Base>}
  */
 ElementRegistry.prototype.getAll = function() {
-  return this.filter(function(e) { return e; });
+  return this.filter(function(e) {
+    return e;
+  });
 };
 
 /**
@@ -152,13 +153,12 @@ ElementRegistry.prototype.getAll = function() {
  * @param {Function} fn
  */
 ElementRegistry.prototype.forEach = function(fn) {
-
   var map = this._elements;
 
   Object.keys(map).forEach(function(id) {
     var container = map[id],
-        element = container.element,
-        gfx = container.gfx;
+      element = container.element,
+      gfx = container.gfx;
 
     return fn(element, gfx);
   });
@@ -196,10 +196,10 @@ ElementRegistry.prototype.getGraphics = function(filter, secondary) {
  */
 ElementRegistry.prototype._validateId = function(id) {
   if (!id) {
-    throw new Error('element must have an id');
+    throw new Error("element must have an id");
   }
 
   if (this._elements[id]) {
-    throw new Error('element with id ' + id + ' already added');
+    throw new Error("element with id " + id + " already added");
   }
 };

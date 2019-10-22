@@ -1,22 +1,21 @@
-import inherits from 'inherits';
+import inherits from "inherits";
 
-import CommandInterceptor from '../../../command/CommandInterceptor';
+import CommandInterceptor from "../../../command/CommandInterceptor";
 
-import { getBBox } from '../../../util/Elements';
-import { getMid } from '../../../layout/LayoutUtil';
+import { getBBox } from "../../../util/Elements";
+import { getMid } from "../../../layout/LayoutUtil";
 
-import { SPACING } from '../GridUtil';
+import { SPACING } from "../GridUtil";
 
 var HIGH_PRIORITY = 2000;
-
 
 export default function PasteBehavior(eventBus, gridSnapping) {
   CommandInterceptor.call(this, eventBus);
 
-  this.preExecute('elements.paste', HIGH_PRIORITY, function(event) {
+  this.preExecute("elements.paste", HIGH_PRIORITY, function(event) {
     var context = event.context,
-        position = context.position,
-        tree = context.tree;
+      position = context.position,
+      tree = context.tree;
 
     if (!tree[0]) {
       return;
@@ -30,9 +29,6 @@ export default function PasteBehavior(eventBus, gridSnapping) {
   });
 }
 
-PasteBehavior.$inject = [
-  'eventBus',
-  'gridSnapping'
-];
+PasteBehavior.$inject = ["eventBus", "gridSnapping"];
 
 inherits(PasteBehavior, CommandInterceptor);

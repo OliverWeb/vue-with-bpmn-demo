@@ -29,7 +29,6 @@
  */
 export default function ConnectionDocking() {}
 
-
 /**
  * Return the actual waypoints of the connection (visually).
  *
@@ -39,7 +38,11 @@ export default function ConnectionDocking() {}
  *
  * @return {Array<Point>}
  */
-ConnectionDocking.prototype.getCroppedWaypoints = function(connection, source, target) {
+ConnectionDocking.prototype.getCroppedWaypoints = function(
+  connection,
+  source,
+  target
+) {
   return connection.waypoints;
 };
 
@@ -52,11 +55,14 @@ ConnectionDocking.prototype.getCroppedWaypoints = function(connection, source, t
  *
  * @return {DockingPointDescriptor}
  */
-ConnectionDocking.prototype.getDockingPoint = function(connection, shape, dockStart) {
-
+ConnectionDocking.prototype.getDockingPoint = function(
+  connection,
+  shape,
+  dockStart
+) {
   var waypoints = connection.waypoints,
-      dockingIdx,
-      dockingPoint;
+    dockingIdx,
+    dockingPoint;
 
   dockingIdx = dockStart ? 0 : waypoints.length - 1;
   dockingPoint = waypoints[dockingIdx];

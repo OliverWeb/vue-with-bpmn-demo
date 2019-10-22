@@ -30,24 +30,18 @@
  * ```
  */
 
-import {
-  isFunction,
-  forEach,
-  merge
-} from 'min-dash';
+import { isFunction, forEach, merge } from "min-dash";
 
-import TestContainer from 'mocha-test-container-support';
+import TestContainer from "mocha-test-container-support";
 
-import Modeler from '../../lib/Modeler';
-import Viewer from '../../lib/Viewer';
+import Modeler from "../../lib/Modeler";
+import Viewer from "../../lib/Viewer";
 
 var OPTIONS, BPMN_JS;
 
-import translationModule from './TranslationCollector';
-
+import translationModule from "./TranslationCollector";
 
 export function bootstrapBpmnJS(BpmnJS, diagram, options, locals) {
-
   return function(done) {
     var testContainer;
 
@@ -60,14 +54,14 @@ export function bootstrapBpmnJS(BpmnJS, diagram, options, locals) {
       // 'this' is the current test context
       testContainer = TestContainer.get(this);
     } catch (e) {
-      testContainer = document.createElement('div');
+      testContainer = document.createElement("div");
       document.body.appendChild(testContainer);
     }
 
-    testContainer.classList.add('test-container');
+    testContainer.classList.add("test-container");
 
     var _options = options,
-        _locals = locals;
+      _locals = locals;
 
     if (_locals === undefined && isFunction(_options)) {
       _locals = _options;
@@ -82,21 +76,25 @@ export function bootstrapBpmnJS(BpmnJS, diagram, options, locals) {
       _locals = _locals();
     }
 
-    _options = merge({
-      container: testContainer,
-      canvas: {
-        deferUpdate: false
-      }
-    }, OPTIONS, _options);
+    _options = merge(
+      {
+        container: testContainer,
+        canvas: {
+          deferUpdate: false
+        }
+      },
+      OPTIONS,
+      _options
+    );
 
     if (_locals) {
       var mockModule = {};
 
       forEach(_locals, function(v, k) {
-        mockModule[k] = ['value', v];
+        mockModule[k] = ["value", v];
       });
 
-      _options.modules = [].concat(_options.modules || [], [ mockModule ]);
+      _options.modules = [].concat(_options.modules || [], [mockModule]);
     }
 
     if (_options.modules && !_options.modules.length) {
@@ -104,11 +102,10 @@ export function bootstrapBpmnJS(BpmnJS, diagram, options, locals) {
     }
 
     // used to extract translations used during tests
-    if (window.__env__ && window.__env__.TRANSLATIONS === 'enabled') {
-      _options.additionalModules = [].concat(
-        _options.additionalModules || [],
-        [ translationModule ]
-      );
+    if (window.__env__ && window.__env__.TRANSLATIONS === "enabled") {
+      _options.additionalModules = [].concat(_options.additionalModules || [], [
+        translationModule
+      ]);
     }
 
     // clean up old bpmn-js instance
@@ -121,7 +118,6 @@ export function bootstrapBpmnJS(BpmnJS, diagram, options, locals) {
     BPMN_JS.importXML(diagram, done);
   };
 }
-
 
 /**
  * Bootstrap the Modeler given the specified options and a number of locals (i.e. services)
@@ -179,7 +175,6 @@ export function bootstrapViewer(diagram, options, locals) {
   return bootstrapBpmnJS(Viewer, diagram, options, locals);
 }
 
-
 /**
  * Injects services of an instantiated diagram into the argument.
  *
@@ -204,18 +199,16 @@ export function bootstrapViewer(diagram, options, locals) {
  */
 export function inject(fn) {
   return function() {
-
     if (!BPMN_JS) {
       throw new Error(
-        'no bootstraped bpmn-js instance, ' +
-        'ensure you created it via #boostrap(Modeler|Viewer)'
+        "no bootstraped bpmn-js instance, " +
+          "ensure you created it via #boostrap(Modeler|Viewer)"
       );
     }
 
     BPMN_JS.invoke(fn);
   };
 }
-
 
 /**
  * Returns the current active BpmnJS instance.
@@ -226,17 +219,16 @@ export function getBpmnJS() {
   return BPMN_JS;
 }
 
-
 export function insertCSS(name, css) {
   if (document.querySelector('[data-css-file="' + name + '"]')) {
     return;
   }
 
-  var head = document.head || document.getElementsByTagName('head')[0],
-      style = document.createElement('style');
-  style.setAttribute('data-css-file', name);
+  var head = document.head || document.getElementsByTagName("head")[0],
+    style = document.createElement("style");
+  style.setAttribute("data-css-file", name);
 
-  style.type = 'text/css';
+  style.type = "text/css";
   if (style.styleSheet) {
     style.styleSheet.cssText = css;
   } else {

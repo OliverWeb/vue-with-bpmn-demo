@@ -1,9 +1,9 @@
 var LOW_PRIORITY = 750;
 
-var MARKER_OK = 'drop-ok',
-    MARKER_NOT_OK = 'drop-not-ok',
-    MARKER_ATTACH = 'attach-ok',
-    MARKER_NEW_PARENT = 'new-parent';
+var MARKER_OK = "drop-ok",
+  MARKER_NOT_OK = "drop-not-ok",
+  MARKER_ATTACH = "attach-ok",
+  MARKER_NEW_PARENT = "new-parent";
 
 import {
   append as svgAppend,
@@ -11,16 +11,13 @@ import {
   classes as svgClasses,
   create as svgCreate,
   remove as svgRemove
-} from 'tiny-svg';
+} from "tiny-svg";
 
-import { assign } from 'min-dash';
+import { assign } from "min-dash";
 
-import {
-  translate
-} from '../../util/SvgTransformUtil';
+import { translate } from "../../util/SvgTransformUtil";
 
-import { Shape } from '../../model';
-
+import { Shape } from "../../model";
 
 /**
  * Adds the ability to create new shapes via drag and drop.
@@ -70,13 +67,17 @@ import { Shape } from '../../model';
  * @param {GraphicsFactory} graphicsFactory
  */
 export default function Create(
-    eventBus, dragging, rules, modeling,
-    canvas, styles, graphicsFactory) {
-
+  eventBus,
+  dragging,
+  rules,
+  modeling,
+  canvas,
+  styles,
+  graphicsFactory
+) {
   // rules
 
   function canCreate(shape, target, source, position) {
-
     if (!target) {
       return false;
     }
@@ -88,26 +89,25 @@ export default function Create(
       position: position
     };
 
-    var create,
-        attach,
-        connect;
+    var create, attach, connect;
 
-    attach = rules.allowed('shape.attach', ctx);
+    attach = rules.allowed("shape.attach", ctx);
 
     if (!attach) {
-      create = rules.allowed('shape.create', ctx);
+      create = rules.allowed("shape.create", ctx);
     }
 
     if (create || attach) {
-
-      connect = source && rules.allowed('connection.create', {
-        source: source,
-        target: shape,
-        hints: {
-          targetParent: target,
-          targetAttach: attach
-        }
-      });
+      connect =
+        source &&
+        rules.allowed("connection.create", {
+          source: source,
+          target: shape,
+          hints: {
+            targetParent: target,
+            targetAttach: attach
+          }
+        });
 
       return {
         attach: attach,
@@ -123,40 +123,38 @@ export default function Create(
     return false;
   }
 
-
   /** set drop marker on an element */
   function setMarker(element, marker) {
-
-    [ MARKER_ATTACH, MARKER_OK, MARKER_NOT_OK, MARKER_NEW_PARENT ].forEach(function(m) {
-
-      if (m === marker) {
-        canvas.addMarker(element, m);
-      } else {
-        canvas.removeMarker(element, m);
+    [MARKER_ATTACH, MARKER_OK, MARKER_NOT_OK, MARKER_NEW_PARENT].forEach(
+      function(m) {
+        if (m === marker) {
+          canvas.addMarker(element, m);
+        } else {
+          canvas.removeMarker(element, m);
+        }
       }
-    });
+    );
   }
-
 
   // visual helpers
 
   function createVisual(shape) {
     var group, preview, visual;
 
-    group = svgCreate('g');
-    svgAttr(group, styles.cls('djs-drag-group', [ 'no-events' ]));
+    group = svgCreate("g");
+    svgAttr(group, styles.cls("djs-drag-group", ["no-events"]));
 
     svgAppend(canvas.getDefaultLayer(), group);
 
-    preview = svgCreate('g');
-    svgClasses(preview).add('djs-dragger');
+    preview = svgCreate("g");
+    svgClasses(preview).add("djs-dragger");
 
     svgAppend(group, preview);
 
     translate(preview, shape.width / -2, shape.height / -2);
 
-    var visualGroup = svgCreate('g');
-    svgClasses(visualGroup).add('djs-visual');
+    var visualGroup = svgCreate("g");
+    svgClasses(visualGroup).add("djs-visual");
 
     svgAppend(preview, visualGroup);
 
@@ -168,15 +166,14 @@ export default function Create(
     return group;
   }
 
-
   // event handlers
 
-  eventBus.on('create.move', function(event) {
+  eventBus.on("create.move", function(event) {
     var context = event.context,
-        hover = event.hover,
-        shape = context.shape,
-        source = context.source,
-        canExecute;
+      hover = event.hover,
+      shape = context.shape,
+      source = context.source,
+      canExecute;
 
     ensureConstraints(event);
 
@@ -185,7 +182,8 @@ export default function Create(
       y: event.y
     };
 
-    canExecute = context.canExecute = hover && canCreate(shape, hover, source, position);
+    canExecute = context.canExecute =
+      hover && canCreate(shape, hover, source, position);
 
     // ignore hover visually if canExecute is null
     if (hover && canExecute !== null) {
@@ -199,11 +197,10 @@ export default function Create(
     }
   });
 
-  eventBus.on('create.move', LOW_PRIORITY, function(event) {
-
+  eventBus.on("create.move", LOW_PRIORITY, function(event) {
     var context = event.context,
-        shape = context.shape,
-        visual = context.visual;
+      shape = context.shape,
+      visual = context.visual;
 
     // lazy init drag visual once we received the first real
     // drag move event (this allows us to get the proper canvas local coordinates)
@@ -214,25 +211,24 @@ export default function Create(
     translate(visual, event.x, event.y);
   });
 
-
-  eventBus.on([ 'create.end', 'create.out', 'create.cleanup' ], function(event) {
+  eventBus.on(["create.end", "create.out", "create.cleanup"], function(event) {
     var context = event.context,
-        target = context.target;
+      target = context.target;
 
     if (target) {
       setMarker(target, null);
     }
   });
 
-  eventBus.on('create.end', function(event) {
+  eventBus.on("create.end", function(event) {
     var context = event.context,
-        source = context.source,
-        hints = context.hints,
-        shape = context.shape,
-        target = context.target,
-        canExecute = context.canExecute,
-        attach = canExecute && canExecute.attach,
-        connect = canExecute && canExecute.connect;
+      source = context.source,
+      hints = context.hints,
+      shape = context.shape,
+      target = context.target,
+      canExecute = context.canExecute,
+      attach = canExecute && canExecute.attach,
+      connect = canExecute && canExecute.connect;
 
     if (canExecute === false || !target) {
       return false;
@@ -253,12 +249,14 @@ export default function Create(
       });
     } else {
       // invoke create, if connect is not set
-      shape = modeling.createShape(shape, position, target, assign(
-        {},
-        hints, {
+      shape = modeling.createShape(
+        shape,
+        position,
+        target,
+        assign({}, hints, {
           attach: attach
-        }
-      ));
+        })
+      );
     }
 
     // make sure we provide the actual attached
@@ -268,8 +266,7 @@ export default function Create(
     context.shape = shape;
   });
 
-
-  eventBus.on('create.cleanup', function(event) {
+  eventBus.on("create.cleanup", function(event) {
     var context = event.context;
 
     if (context.visual) {
@@ -289,14 +286,17 @@ export default function Create(
         source: sourceOrContext
       };
     } else {
-      context = assign({
-        hints: {},
-        shape: shape
-      }, sourceOrContext);
+      context = assign(
+        {
+          hints: {},
+          shape: shape
+        },
+        sourceOrContext
+      );
     }
 
-    dragging.init(event, 'create', {
-      cursor: 'grabbing',
+    dragging.init(event, "create", {
+      cursor: "grabbing",
       autoActivate: true,
       data: {
         shape: shape,
@@ -307,20 +307,20 @@ export default function Create(
 }
 
 Create.$inject = [
-  'eventBus',
-  'dragging',
-  'rules',
-  'modeling',
-  'canvas',
-  'styles',
-  'graphicsFactory'
+  "eventBus",
+  "dragging",
+  "rules",
+  "modeling",
+  "canvas",
+  "styles",
+  "graphicsFactory"
 ];
 
 // helpers //////////
 
 function ensureConstraints(event) {
   var context = event.context,
-      createConstraints = context.createConstraints;
+    createConstraints = context.createConstraints;
 
   if (!createConstraints) {
     return;

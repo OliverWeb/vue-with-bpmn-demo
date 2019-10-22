@@ -1,6 +1,6 @@
-import inherits from 'inherits';
+import inherits from "inherits";
 
-import CommandInterceptor from '../../command/CommandInterceptor';
+import CommandInterceptor from "../../command/CommandInterceptor";
 
 /**
  * A basic provider that may be extended to implement modeling rules.
@@ -16,10 +16,9 @@ export default function RuleProvider(eventBus) {
   this.init();
 }
 
-RuleProvider.$inject = [ 'eventBus' ];
+RuleProvider.$inject = ["eventBus"];
 
 inherits(RuleProvider, CommandInterceptor);
-
 
 /**
  * Adds a modeling rule for the given action, implemented through
@@ -66,18 +65,21 @@ inherits(RuleProvider, CommandInterceptor);
  * @param {Function} fn the callback function that performs the actual check
  */
 RuleProvider.prototype.addRule = function(actions, priority, fn) {
-
   var self = this;
 
-  if (typeof actions === 'string') {
-    actions = [ actions ];
+  if (typeof actions === "string") {
+    actions = [actions];
   }
 
   actions.forEach(function(action) {
-
-    self.canExecute(action, priority, function(context, action, event) {
-      return fn(context);
-    }, true);
+    self.canExecute(
+      action,
+      priority,
+      function(context, action, event) {
+        return fn(context);
+      },
+      true
+    );
   });
 };
 

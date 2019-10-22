@@ -1,5 +1,5 @@
-import CommandStack from './CommandStack';
+import CommandStack from "./CommandStack";
 
 export default {
-  commandStack: [ 'type', CommandStack ]
+  commandStack: ["type", CommandStack]
 };

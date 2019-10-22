@@ -1,6 +1,4 @@
-import {
-  forEach
-} from 'min-dash';
+import { forEach } from "min-dash";
 
 import {
   append as svgAppend,
@@ -9,33 +7,33 @@ import {
   clone as svgClone,
   create as svgCreate,
   remove as svgRemove
-} from 'tiny-svg';
+} from "tiny-svg";
 
-import { query as domQuery } from 'min-dom';
+import { query as domQuery } from "min-dom";
 
-import { getVisual } from '../../util/GraphicsUtil';
+import { getVisual } from "../../util/GraphicsUtil";
 
-var MARKER_TYPES = [
-  'marker-start',
-  'marker-mid',
-  'marker-end'
-];
+var MARKER_TYPES = ["marker-start", "marker-mid", "marker-end"];
 
 var NODES_CAN_HAVE_MARKER = [
-  'circle',
-  'ellipse',
-  'line',
-  'path',
-  'polygon',
-  'polyline',
-  'rect'
+  "circle",
+  "ellipse",
+  "line",
+  "path",
+  "polygon",
+  "polyline",
+  "rect"
 ];
-
 
 /**
  * Adds support for previews of moving/resizing elements.
  */
-export default function PreviewSupport(elementRegistry, eventBus, canvas, styles) {
+export default function PreviewSupport(
+  elementRegistry,
+  eventBus,
+  canvas,
+  styles
+) {
   this._elementRegistry = elementRegistry;
   this._canvas = canvas;
   this._styles = styles;
@@ -44,7 +42,7 @@ export default function PreviewSupport(elementRegistry, eventBus, canvas, styles
 
   var self = this;
 
-  eventBus.on('drag.cleanup', function() {
+  eventBus.on("drag.cleanup", function() {
     forEach(self._clonedMarkers, function(clonedMarker) {
       svgRemove(clonedMarker);
     });
@@ -53,13 +51,7 @@ export default function PreviewSupport(elementRegistry, eventBus, canvas, styles
   });
 }
 
-PreviewSupport.$inject = [
-  'elementRegistry',
-  'eventBus',
-  'canvas',
-  'styles'
-];
-
+PreviewSupport.$inject = ["elementRegistry", "eventBus", "canvas", "styles"];
 
 /**
  * Returns graphics of an element.
@@ -88,10 +80,13 @@ PreviewSupport.prototype.addDragger = function(shape, group) {
 
   this._cloneMarkers(getVisual(dragger));
 
-  svgAttr(dragger, this._styles.cls('djs-dragger', [], {
-    x: bbox.top,
-    y: bbox.left
-  }));
+  svgAttr(
+    dragger,
+    this._styles.cls("djs-dragger", [], {
+      x: bbox.top,
+      y: bbox.left
+    })
+  );
 
   svgAppend(group, dragger);
 
@@ -107,10 +102,9 @@ PreviewSupport.prototype.addDragger = function(shape, group) {
  * @return {SVGElement} frame
  */
 PreviewSupport.prototype.addFrame = function(shape, group) {
-
-  var frame = svgCreate('rect', {
-    class: 'djs-resize-overlay',
-    width:  shape.width,
+  var frame = svgCreate("rect", {
+    class: "djs-resize-overlay",
+    width: shape.width,
     height: shape.height,
     x: shape.x,
     y: shape.y
@@ -130,12 +124,10 @@ PreviewSupport.prototype._cloneMarkers = function(gfx) {
   var self = this;
 
   if (gfx.childNodes) {
-
     // TODO: use forEach once we drop PhantomJS
     for (var i = 0; i < gfx.childNodes.length; i++) {
-
       // recursively clone markers of child nodes
-      self._cloneMarkers(gfx.childNodes[ i ]);
+      self._cloneMarkers(gfx.childNodes[i]);
     }
   }
 
@@ -162,25 +154,25 @@ PreviewSupport.prototype._cloneMarkers = function(gfx) {
 PreviewSupport.prototype._cloneMarker = function(gfx, marker, markerType) {
   var markerId = marker.id;
 
-  var clonedMarker = this._clonedMarkers[ markerId ];
+  var clonedMarker = this._clonedMarkers[markerId];
 
   if (!clonedMarker) {
     clonedMarker = svgClone(marker);
 
-    var clonedMarkerId = markerId + '-clone';
+    var clonedMarkerId = markerId + "-clone";
 
     clonedMarker.id = clonedMarkerId;
 
     svgClasses(clonedMarker)
-      .add('djs-dragger')
-      .add('djs-dragger-marker');
+      .add("djs-dragger")
+      .add("djs-dragger-marker");
 
-    this._clonedMarkers[ markerId ] = clonedMarker;
+    this._clonedMarkers[markerId] = clonedMarker;
 
-    var defs = domQuery('defs', this._canvas._svg);
+    var defs = domQuery("defs", this._canvas._svg);
 
     if (!defs) {
-      defs = svgCreate('defs');
+      defs = svgCreate("defs");
 
       svgAppend(this._canvas._svg, defs);
     }
@@ -188,7 +180,7 @@ PreviewSupport.prototype._cloneMarker = function(gfx, marker, markerType) {
     svgAppend(defs, clonedMarker);
   }
 
-  var reference = idToReference(this._clonedMarkers[ markerId ].id);
+  var reference = idToReference(this._clonedMarkers[markerId].id);
 
   svgAttr(gfx, markerType, reference);
 };
@@ -207,7 +199,7 @@ PreviewSupport.prototype._cloneMarker = function(gfx, marker, markerType) {
 function getMarker(node, markerType, parentNode) {
   var id = referenceToId(svgAttr(node, markerType));
 
-  return domQuery('marker#' + id, parentNode || document);
+  return domQuery("marker#" + id, parentNode || document);
 }
 
 /**
@@ -230,7 +222,7 @@ function referenceToId(reference) {
  * @returns {string}
  */
 function idToReference(id) {
-  return 'url(#' + id + ')';
+  return "url(#" + id + ")";
 }
 
 /**

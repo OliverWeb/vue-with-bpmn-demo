@@ -7,7 +7,6 @@
  * @return {Number} the previous index of the element
  */
 export function remove(collection, element) {
-
   if (!collection || !element) {
     return -1;
   }
@@ -30,24 +29,21 @@ export function remove(collection, element) {
  * @param {Number} idx
  */
 export function add(collection, element, idx) {
-
   if (!collection || !element) {
     return;
   }
 
-  if (typeof idx !== 'number') {
+  if (typeof idx !== "number") {
     idx = -1;
   }
 
   var currentIdx = collection.indexOf(element);
 
   if (currentIdx !== -1) {
-
     if (currentIdx === idx) {
       // nothing to do, position has not changed
       return;
     } else {
-
       if (idx !== -1) {
         // remove from current position
         collection.splice(currentIdx, 1);
@@ -67,7 +63,6 @@ export function add(collection, element, idx) {
   }
 }
 
-
 /**
  * Fail save get the index of an element in a collection.
  *
@@ -78,7 +73,6 @@ export function add(collection, element, idx) {
  *                  not exist or the element is not contained.
  */
 export function indexOf(collection, element) {
-
   if (!collection || !element) {
     return -1;
   }

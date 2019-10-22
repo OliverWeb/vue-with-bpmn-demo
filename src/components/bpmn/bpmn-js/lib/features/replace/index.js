@@ -1,12 +1,9 @@
-import SelectionModule from './../../../../diagram-js/lib/features/selection';
-import ReplaceModule from './../../../../diagram-js/lib/features/replace';
+import SelectionModule from "./../../../../diagram-js/lib/features/selection";
+import ReplaceModule from "./../../../../diagram-js/lib/features/replace";
 
-import BpmnReplace from './BpmnReplace';
+import BpmnReplace from "./BpmnReplace";
 
 export default {
-  __depends__: [
-    SelectionModule,
-    ReplaceModule
-  ],
-  bpmnReplace: [ 'type', BpmnReplace ]
+  __depends__: [SelectionModule, ReplaceModule],
+  bpmnReplace: ["type", BpmnReplace]
 };

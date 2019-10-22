@@ -3,7 +3,6 @@
  */
 export default function Clipboard() {}
 
-
 Clipboard.prototype.get = function() {
   return this._data;
 };

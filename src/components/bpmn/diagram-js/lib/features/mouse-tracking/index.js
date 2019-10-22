@@ -1,6 +1,6 @@
-import MouseTracking from './MouseTracking';
+import MouseTracking from "./MouseTracking";
 
 export default {
-  __init__: [ 'mouseTracking' ],
-  mouseTracking: [ 'type', MouseTracking ]
+  __init__: ["mouseTracking"],
+  mouseTracking: ["type", MouseTracking]
 };

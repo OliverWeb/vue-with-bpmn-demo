@@ -1,5 +1,5 @@
-var MARKER_OK = 'connect-ok',
-    MARKER_NOT_OK = 'connect-not-ok';
+var MARKER_OK = "connect-ok",
+  MARKER_NOT_OK = "connect-not-ok";
 
 /**
  * @class
@@ -13,24 +13,30 @@ var MARKER_OK = 'connect-ok',
  * @param {Rules} rules
  */
 export default function GlobalConnect(
-    eventBus, dragging, connect,
-    canvas, toolManager, rules) {
-
+  eventBus,
+  dragging,
+  connect,
+  canvas,
+  toolManager,
+  rules
+) {
   var self = this;
 
   this._dragging = dragging;
   this._rules = rules;
 
-  toolManager.registerTool('global-connect', {
-    tool: 'global-connect',
-    dragging: 'global-connect.drag'
+  toolManager.registerTool("global-connect", {
+    tool: "global-connect",
+    dragging: "global-connect.drag"
   });
 
-  eventBus.on('global-connect.hover', function(event) {
+  eventBus.on("global-connect.hover", function(event) {
     var context = event.context,
-        startTarget = event.hover;
+      startTarget = event.hover;
 
-    var canStartConnect = context.canStartConnect = self.canStartConnect(startTarget);
+    var canStartConnect = (context.canStartConnect = self.canStartConnect(
+      startTarget
+    ));
 
     // simply ignore hover
     if (canStartConnect === null) {
@@ -42,24 +48,27 @@ export default function GlobalConnect(
     canvas.addMarker(startTarget, canStartConnect ? MARKER_OK : MARKER_NOT_OK);
   });
 
-
-  eventBus.on([ 'global-connect.out', 'global-connect.cleanup' ], function(event) {
+  eventBus.on(["global-connect.out", "global-connect.cleanup"], function(
+    event
+  ) {
     var startTarget = event.context.startTarget,
-        canStartConnect = event.context.canStartConnect;
+      canStartConnect = event.context.canStartConnect;
 
     if (startTarget) {
-      canvas.removeMarker(startTarget, canStartConnect ? MARKER_OK : MARKER_NOT_OK);
+      canvas.removeMarker(
+        startTarget,
+        canStartConnect ? MARKER_OK : MARKER_NOT_OK
+      );
     }
   });
 
-
-  eventBus.on([ 'global-connect.ended' ], function(event) {
+  eventBus.on(["global-connect.ended"], function(event) {
     var context = event.context,
-        startTarget = context.startTarget,
-        startPosition = {
-          x: event.x,
-          y: event.y
-        };
+      startTarget = context.startTarget,
+      startPosition = {
+        x: event.x,
+        y: event.y
+      };
 
     var canStartConnect = self.canStartConnect(startTarget);
 
@@ -67,9 +76,9 @@ export default function GlobalConnect(
       return;
     }
 
-    eventBus.once('element.out', function() {
-      eventBus.once([ 'connect.ended', 'connect.canceled' ], function() {
-        eventBus.fire('global-connect.drag.ended');
+    eventBus.once("element.out", function() {
+      eventBus.once(["connect.ended", "connect.canceled"], function() {
+        eventBus.fire("global-connect.drag.ended");
       });
 
       connect.start(null, startTarget, startPosition);
@@ -80,19 +89,19 @@ export default function GlobalConnect(
 }
 
 GlobalConnect.$inject = [
-  'eventBus',
-  'dragging',
-  'connect',
-  'canvas',
-  'toolManager',
-  'rules'
+  "eventBus",
+  "dragging",
+  "connect",
+  "canvas",
+  "toolManager",
+  "rules"
 ];
 
 /**
  * Initiates tool activity.
  */
 GlobalConnect.prototype.start = function(event) {
-  this._dragging.init(event, 'global-connect', {
+  this._dragging.init(event, "global-connect", {
     trapClick: false,
     data: {
       context: {}
@@ -121,5 +130,5 @@ GlobalConnect.prototype.isActive = function() {
  * @return {Boolean}
  */
 GlobalConnect.prototype.canStartConnect = function(startTarget) {
-  return this._rules.allowed('connection.start', { source: startTarget });
+  return this._rules.allowed("connection.start", { source: startTarget });
 };

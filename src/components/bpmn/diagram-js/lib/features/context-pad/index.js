@@ -1,13 +1,9 @@
-import InteractionEventsModule from '../interaction-events';
-import OverlaysModule from '../overlays';
+import InteractionEventsModule from "../interaction-events";
+import OverlaysModule from "../overlays";
 
-import ContextPad from './ContextPad';
-
+import ContextPad from "./ContextPad";
 
 export default {
-  __depends__: [
-    InteractionEventsModule,
-    OverlaysModule
-  ],
-  contextPad: [ 'type', ContextPad ]
+  __depends__: [InteractionEventsModule, OverlaysModule],
+  contextPad: ["type", ContextPad]
 };

@@ -1,29 +1,24 @@
-import CommandInterceptor from './../../../../diagram-js/lib/command/CommandInterceptor';
+import CommandInterceptor from "./../../../../diagram-js/lib/command/CommandInterceptor";
 
-import inherits from 'inherits';
+import inherits from "inherits";
 
-import cssEscape from 'css.escape';
+import cssEscape from "css.escape";
 
-import {
-  assign,
-  forEach
-} from 'min-dash';
+import { assign, forEach } from "min-dash";
 
-import {
-  query as domQuery
-} from 'min-dom';
+import { query as domQuery } from "min-dom";
 
-import {
-  attr as svgAttr
-} from 'tiny-svg';
+import { attr as svgAttr } from "tiny-svg";
 
 var LOW_PRIORITY = 250;
 
-
 export default function BpmnReplacePreview(
-    eventBus, elementRegistry, elementFactory,
-    canvas, previewSupport) {
-
+  eventBus,
+  elementRegistry,
+  elementFactory,
+  canvas,
+  previewSupport
+) {
   CommandInterceptor.call(this, eventBus);
 
   /**
@@ -32,11 +27,9 @@ export default function BpmnReplacePreview(
    * @param  {Object} context
    */
   function replaceVisual(context) {
-
     var replacements = context.canExecute.replacements;
 
     forEach(replacements, function(replacement) {
-
       var id = replacement.oldElementId;
 
       var newElement = {
@@ -58,10 +51,13 @@ export default function BpmnReplacePreview(
       canvas.addShape(tempShape, element.parent);
 
       // select the original SVG element related to the element and hide it
-      var gfx = domQuery('[data-element-id="' + cssEscape(element.id) + '"]', context.dragGroup);
+      var gfx = domQuery(
+        '[data-element-id="' + cssEscape(element.id) + '"]',
+        context.dragGroup
+      );
 
       if (gfx) {
-        svgAttr(gfx, { display: 'none' });
+        svgAttr(gfx, { display: "none" });
       }
 
       // clone the gfx of the temporary shape and add it to the drag group
@@ -79,15 +75,16 @@ export default function BpmnReplacePreview(
    * @param  {Object} context
    */
   function restoreVisual(context) {
-
     var visualReplacements = context.visualReplacements;
 
     forEach(visualReplacements, function(dragger, id) {
-
-      var originalGfx = domQuery('[data-element-id="' + cssEscape(id) + '"]', context.dragGroup);
+      var originalGfx = domQuery(
+        '[data-element-id="' + cssEscape(id) + '"]',
+        context.dragGroup
+      );
 
       if (originalGfx) {
-        svgAttr(originalGfx, { display: 'inline' });
+        svgAttr(originalGfx, { display: "inline" });
       }
 
       dragger.remove();
@@ -98,10 +95,9 @@ export default function BpmnReplacePreview(
     });
   }
 
-  eventBus.on('shape.move.move', LOW_PRIORITY, function(event) {
-
+  eventBus.on("shape.move.move", LOW_PRIORITY, function(event) {
     var context = event.context,
-        canExecute = context.canExecute;
+      canExecute = context.canExecute;
 
     if (!context.visualReplacements) {
       context.visualReplacements = {};
@@ -116,11 +112,11 @@ export default function BpmnReplacePreview(
 }
 
 BpmnReplacePreview.$inject = [
-  'eventBus',
-  'elementRegistry',
-  'elementFactory',
-  'canvas',
-  'previewSupport'
+  "eventBus",
+  "elementRegistry",
+  "elementFactory",
+  "canvas",
+  "previewSupport"
 ];
 
 inherits(BpmnReplacePreview, CommandInterceptor);

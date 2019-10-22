@@ -1,40 +1,32 @@
-import {
-  assign,
-  forEach,
-  isArray
-} from 'min-dash';
+import { assign, forEach, isArray } from "min-dash";
 
-import {
-  is
-} from '../../util/ModelUtil';
+import { is } from "../../util/ModelUtil";
 
-import {
-  isExpanded,
-  isEventSubProcess
-} from '../../util/DiUtil';
+import { isExpanded, isEventSubProcess } from "../../util/DiUtil";
 
-import {
-  isAny
-} from '../modeling/util/ModelingUtil';
+import { isAny } from "../modeling/util/ModelingUtil";
 
-import {
-  getChildLanes
-} from '../modeling/util/LaneUtil';
+import { getChildLanes } from "../modeling/util/LaneUtil";
 
-import {
-  hasPrimaryModifier
-} from './../../../../diagram-js/lib/util/Mouse';
-
+import { hasPrimaryModifier } from "./../../../../diagram-js/lib/util/Mouse";
 
 /**
  * A provider for BPMN 2.0 elements context pad
  */
 export default function ContextPadProvider(
-    config, injector, eventBus,
-    contextPad, modeling, elementFactory,
-    connect, create, popupMenu,
-    canvas, rules, translate) {
-
+  config,
+  injector,
+  eventBus,
+  contextPad,
+  modeling,
+  elementFactory,
+  connect,
+  create,
+  popupMenu,
+  canvas,
+  rules,
+  translate
+) {
   config = config || {};
 
   contextPad.registerProvider(this);
@@ -52,10 +44,10 @@ export default function ContextPadProvider(
   this._translate = translate;
 
   if (config.autoPlace !== false) {
-    this._autoPlace = injector.get('autoPlace', false);
+    this._autoPlace = injector.get("autoPlace", false);
   }
 
-  eventBus.on('create.end', 250, function(event) {
+  eventBus.on("create.end", 250, function(event) {
     var shape = event.context.shape;
 
     if (!hasPrimaryModifier(event)) {
@@ -71,38 +63,35 @@ export default function ContextPadProvider(
 }
 
 ContextPadProvider.$inject = [
-  'config.contextPad',
-  'injector',
-  'eventBus',
-  'contextPad',
-  'modeling',
-  'elementFactory',
-  'connect',
-  'create',
-  'popupMenu',
-  'canvas',
-  'rules',
-  'translate'
+  "config.contextPad",
+  "injector",
+  "eventBus",
+  "contextPad",
+  "modeling",
+  "elementFactory",
+  "connect",
+  "create",
+  "popupMenu",
+  "canvas",
+  "rules",
+  "translate"
 ];
 
-
 ContextPadProvider.prototype.getContextPadEntries = function(element) {
-
   var contextPad = this._contextPad,
-      modeling = this._modeling,
-
-      elementFactory = this._elementFactory,
-      connect = this._connect,
-      create = this._create,
-      popupMenu = this._popupMenu,
-      canvas = this._canvas,
-      rules = this._rules,
-      autoPlace = this._autoPlace,
-      translate = this._translate;
+    modeling = this._modeling,
+    elementFactory = this._elementFactory,
+    connect = this._connect,
+    create = this._create,
+    popupMenu = this._popupMenu,
+    canvas = this._canvas,
+    rules = this._rules,
+    autoPlace = this._autoPlace,
+    translate = this._translate;
 
   var actions = {};
 
-  if (element.type === 'label') {
+  if (element.type === "label") {
     return actions;
   }
 
@@ -113,18 +102,17 @@ ContextPadProvider.prototype.getContextPadEntries = function(element) {
   }
 
   function removeElement(e) {
-    modeling.removeElements([ element ]);
+    modeling.removeElements([element]);
   }
 
   function getReplaceMenuPosition(element) {
-
     var Y_OFFSET = 5;
 
     var diagramContainer = canvas.getContainer(),
-        pad = contextPad.getPad(element).html;
+      pad = contextPad.getPad(element).html;
 
     var diagramRect = diagramContainer.getBoundingClientRect(),
-        padRect = pad.getBoundingClientRect();
+      padRect = pad.getBoundingClientRect();
 
     var top = padRect.top - diagramRect.top;
     var left = padRect.left - diagramRect.left;
@@ -137,7 +125,6 @@ ContextPadProvider.prototype.getContextPadEntries = function(element) {
     return pos;
   }
 
-
   /**
    * Create an append action
    *
@@ -149,28 +136,28 @@ ContextPadProvider.prototype.getContextPadEntries = function(element) {
    * @return {Object} descriptor
    */
   function appendAction(type, className, title, options) {
-
-    if (typeof title !== 'string') {
+    if (typeof title !== "string") {
       options = title;
-      title = translate('Append {type}', { type: type.replace(/^bpmn:/, '') });
+      title = translate("Append {type}", { type: type.replace(/^bpmn:/, "") });
     }
 
     function appendStart(event, element) {
-
       var shape = elementFactory.createShape(assign({ type: type }, options));
       create.start(event, shape, element);
     }
 
+    var append = autoPlace
+      ? function(event, element) {
+          var shape = elementFactory.createShape(
+            assign({ type: type }, options)
+          );
 
-    var append = autoPlace ? function(event, element) {
-      var shape = elementFactory.createShape(assign({ type: type }, options));
-
-      autoPlace.append(element, shape);
-    } : appendStart;
-
+          autoPlace.append(element, shape);
+        }
+      : appendStart;
 
     return {
-      group: 'model',
+      group: "model",
       className: className,
       title: title,
       action: {
@@ -181,7 +168,6 @@ ContextPadProvider.prototype.getContextPadEntries = function(element) {
   }
 
   function splitLaneHandler(count) {
-
     return function(event, element) {
       // actual split
       modeling.splitLane(element, count);
@@ -192,32 +178,32 @@ ContextPadProvider.prototype.getContextPadEntries = function(element) {
     };
   }
 
-
-  if (isAny(businessObject, [ 'bpmn:Lane', 'bpmn:Participant' ]) && isExpanded(businessObject)) {
-
+  if (
+    isAny(businessObject, ["bpmn:Lane", "bpmn:Participant"]) &&
+    isExpanded(businessObject)
+  ) {
     var childLanes = getChildLanes(element);
 
     assign(actions, {
-      'lane-insert-above': {
-        group: 'lane-insert-above',
-        className: 'bpmn-icon-lane-insert-above',
-        title: translate('Add Lane above'),
+      "lane-insert-above": {
+        group: "lane-insert-above",
+        className: "bpmn-icon-lane-insert-above",
+        title: translate("Add Lane above"),
         action: {
           click: function(event, element) {
-            modeling.addLane(element, 'top');
+            modeling.addLane(element, "top");
           }
         }
       }
     });
 
     if (childLanes.length < 2) {
-
       if (element.height >= 120) {
         assign(actions, {
-          'lane-divide-two': {
-            group: 'lane-divide',
-            className: 'bpmn-icon-lane-divide-two',
-            title: translate('Divide into two Lanes'),
+          "lane-divide-two": {
+            group: "lane-divide",
+            className: "bpmn-icon-lane-divide-two",
+            title: translate("Divide into two Lanes"),
             action: {
               click: splitLaneHandler(2)
             }
@@ -227,10 +213,10 @@ ContextPadProvider.prototype.getContextPadEntries = function(element) {
 
       if (element.height >= 180) {
         assign(actions, {
-          'lane-divide-three': {
-            group: 'lane-divide',
-            className: 'bpmn-icon-lane-divide-three',
-            title: translate('Divide into three Lanes'),
+          "lane-divide-three": {
+            group: "lane-divide",
+            className: "bpmn-icon-lane-divide-three",
+            title: translate("Divide into three Lanes"),
             action: {
               click: splitLaneHandler(3)
             }
@@ -240,91 +226,93 @@ ContextPadProvider.prototype.getContextPadEntries = function(element) {
     }
 
     assign(actions, {
-      'lane-insert-below': {
-        group: 'lane-insert-below',
-        className: 'bpmn-icon-lane-insert-below',
-        title: translate('Add Lane below'),
+      "lane-insert-below": {
+        group: "lane-insert-below",
+        className: "bpmn-icon-lane-insert-below",
+        title: translate("Add Lane below"),
         action: {
           click: function(event, element) {
-            modeling.addLane(element, 'bottom');
+            modeling.addLane(element, "bottom");
           }
         }
       }
     });
-
   }
 
-  if (is(businessObject, 'bpmn:FlowNode')) {
-
-    if (is(businessObject, 'bpmn:EventBasedGateway')) {
-
+  if (is(businessObject, "bpmn:FlowNode")) {
+    if (is(businessObject, "bpmn:EventBasedGateway")) {
       assign(actions, {
-        'append.receive-task': appendAction(
-          'bpmn:ReceiveTask',
-          'bpmn-icon-receive-task'
+        "append.receive-task": appendAction(
+          "bpmn:ReceiveTask",
+          "bpmn-icon-receive-task"
         ),
-        'append.message-intermediate-event': appendAction(
-          'bpmn:IntermediateCatchEvent',
-          'bpmn-icon-intermediate-event-catch-message',
-          translate('Append MessageIntermediateCatchEvent'),
-          { eventDefinitionType: 'bpmn:MessageEventDefinition' }
+        "append.message-intermediate-event": appendAction(
+          "bpmn:IntermediateCatchEvent",
+          "bpmn-icon-intermediate-event-catch-message",
+          translate("Append MessageIntermediateCatchEvent"),
+          { eventDefinitionType: "bpmn:MessageEventDefinition" }
         ),
-        'append.timer-intermediate-event': appendAction(
-          'bpmn:IntermediateCatchEvent',
-          'bpmn-icon-intermediate-event-catch-timer',
-          translate('Append TimerIntermediateCatchEvent'),
-          { eventDefinitionType: 'bpmn:TimerEventDefinition' }
+        "append.timer-intermediate-event": appendAction(
+          "bpmn:IntermediateCatchEvent",
+          "bpmn-icon-intermediate-event-catch-timer",
+          translate("Append TimerIntermediateCatchEvent"),
+          { eventDefinitionType: "bpmn:TimerEventDefinition" }
         ),
-        'append.condtion-intermediate-event': appendAction(
-          'bpmn:IntermediateCatchEvent',
-          'bpmn-icon-intermediate-event-catch-condition',
-          translate('Append ConditionIntermediateCatchEvent'),
-          { eventDefinitionType: 'bpmn:ConditionalEventDefinition' }
+        "append.condtion-intermediate-event": appendAction(
+          "bpmn:IntermediateCatchEvent",
+          "bpmn-icon-intermediate-event-catch-condition",
+          translate("Append ConditionIntermediateCatchEvent"),
+          { eventDefinitionType: "bpmn:ConditionalEventDefinition" }
         ),
-        'append.signal-intermediate-event': appendAction(
-          'bpmn:IntermediateCatchEvent',
-          'bpmn-icon-intermediate-event-catch-signal',
-          translate('Append SignalIntermediateCatchEvent'),
-          { eventDefinitionType: 'bpmn:SignalEventDefinition' }
+        "append.signal-intermediate-event": appendAction(
+          "bpmn:IntermediateCatchEvent",
+          "bpmn-icon-intermediate-event-catch-signal",
+          translate("Append SignalIntermediateCatchEvent"),
+          { eventDefinitionType: "bpmn:SignalEventDefinition" }
         )
       });
-    } else
-
-    if (isEventType(businessObject, 'bpmn:BoundaryEvent', 'bpmn:CompensateEventDefinition')) {
-
+    } else if (
+      isEventType(
+        businessObject,
+        "bpmn:BoundaryEvent",
+        "bpmn:CompensateEventDefinition"
+      )
+    ) {
       assign(actions, {
-        'append.compensation-activity':
-            appendAction(
-              'bpmn:Task',
-              'bpmn-icon-task',
-              translate('追加补偿活动'),
-              {
-                isForCompensation: true
-              }
-            )
+        "append.compensation-activity": appendAction(
+          "bpmn:Task",
+          "bpmn-icon-task",
+          translate("追加补偿活动"),
+          {
+            isForCompensation: true
+          }
+        )
       });
-    } else
-
-    if (!is(businessObject, 'bpmn:EndEvent') &&
-        !businessObject.isForCompensation &&
-        !isEventType(businessObject, 'bpmn:IntermediateThrowEvent', 'bpmn:LinkEventDefinition') &&
-        !isEventSubProcess(businessObject)) {
-
+    } else if (
+      !is(businessObject, "bpmn:EndEvent") &&
+      !businessObject.isForCompensation &&
+      !isEventType(
+        businessObject,
+        "bpmn:IntermediateThrowEvent",
+        "bpmn:LinkEventDefinition"
+      ) &&
+      !isEventSubProcess(businessObject)
+    ) {
       assign(actions, {
-        'append.end-event': appendAction(
-          'bpmn:EndEvent',
-          'bpmn-icon-end-event-none',
-          translate('添加结束事件')
+        "append.end-event": appendAction(
+          "bpmn:EndEvent",
+          "bpmn-icon-end-event-none",
+          translate("添加结束事件")
         ),
-        'append.gateway': appendAction(
-          'bpmn:ExclusiveGateway',
-          'bpmn-icon-gateway-none',
-          translate('添加互斥网关')
+        "append.gateway": appendAction(
+          "bpmn:ExclusiveGateway",
+          "bpmn-icon-gateway-none",
+          translate("添加互斥网关")
         ),
-        'append.append-task': appendAction(
-          'bpmn:Task',
-          'bpmn-icon-task',
-          translate('添加任务')
+        "append.append-task": appendAction(
+          "bpmn:Task",
+          "bpmn-icon-task",
+          translate("添加任务")
         )
         // 'append.intermediate-event': appendAction(
         //   'bpmn:IntermediateThrowEvent',
@@ -335,41 +323,44 @@ ContextPadProvider.prototype.getContextPadEntries = function(element) {
     }
   }
 
-  if (!popupMenu.isEmpty(element, 'bpmn-replace')) {
+  if (!popupMenu.isEmpty(element, "bpmn-replace")) {
     // Replace menu entry
     assign(actions, {
-      'replace': {
-        group: 'edit',
-        className: 'bpmn-icon-screw-wrench',
-        title: translate('修改类型'),
+      replace: {
+        group: "edit",
+        className: "bpmn-icon-screw-wrench",
+        title: translate("修改类型"),
         action: {
           click: function(event, element) {
-
             var position = assign(getReplaceMenuPosition(element), {
               cursor: { x: event.x, y: event.y }
             });
 
-            popupMenu.open(element, 'bpmn-replace', position);
+            popupMenu.open(element, "bpmn-replace", position);
           }
         }
       }
     });
   }
 
-  if (isAny(businessObject, [
-    'bpmn:FlowNode',
-    'bpmn:InteractionNode',
-    'bpmn:DataObjectReference',
-    'bpmn:DataStoreReference'
-  ])) {
-
+  if (
+    isAny(businessObject, [
+      "bpmn:FlowNode",
+      "bpmn:InteractionNode",
+      "bpmn:DataObjectReference",
+      "bpmn:DataStoreReference"
+    ])
+  ) {
     assign(actions, {
-      'append.text-annotation': appendAction('bpmn:TextAnnotation', 'bpmn-icon-text-annotation'),
+      "append.text-annotation": appendAction(
+        "bpmn:TextAnnotation",
+        "bpmn-icon-text-annotation"
+      ),
 
-      'connect': {
-        group: 'connect',
-        className: 'bpmn-icon-connection-multi',
-        title: translate('使用顺序/消息流或者关联连接'),
+      connect: {
+        group: "connect",
+        className: "bpmn-icon-connection-multi",
+        title: translate("使用顺序/消息流或者关联连接"),
         // title: translate('Connect using ' +
         //           (businessObject.isForCompensation ? '' : 'Sequence/MessageFlow or ') +
         //           'Association'),
@@ -381,12 +372,17 @@ ContextPadProvider.prototype.getContextPadEntries = function(element) {
     });
   }
 
-  if (isAny(businessObject, [ 'bpmn:DataObjectReference', 'bpmn:DataStoreReference' ])) {
+  if (
+    isAny(businessObject, [
+      "bpmn:DataObjectReference",
+      "bpmn:DataStoreReference"
+    ])
+  ) {
     assign(actions, {
-      'connect': {
-        group: 'connect',
-        className: 'bpmn-icon-connection-multi',
-        title: translate('使用数据输入关联连接'),
+      connect: {
+        group: "connect",
+        className: "bpmn-icon-connection-multi",
+        title: translate("使用数据输入关联连接"),
         action: {
           click: startConnect,
           dragstart: startConnect
@@ -396,7 +392,7 @@ ContextPadProvider.prototype.getContextPadEntries = function(element) {
   }
 
   // delete element entry, only show if allowed by rules
-  var deleteAllowed = rules.allowed('elements.delete', { elements: [ element ] });
+  var deleteAllowed = rules.allowed("elements.delete", { elements: [element] });
 
   if (isArray(deleteAllowed)) {
     // was the element returned as a deletion candidate?
@@ -405,10 +401,10 @@ ContextPadProvider.prototype.getContextPadEntries = function(element) {
 
   if (deleteAllowed) {
     assign(actions, {
-      'delete': {
-        group: 'edit',
-        className: 'bpmn-icon-trash',
-        title: translate('删除'),
+      delete: {
+        group: "edit",
+        className: "bpmn-icon-trash",
+        title: translate("删除"),
         action: {
           click: removeElement
         }
@@ -420,7 +416,6 @@ ContextPadProvider.prototype.getContextPadEntries = function(element) {
 };
 
 function isEventType(eventBo, type, definition) {
-
   var isType = eventBo.$instanceOf(type);
   var isDefinition = false;
 

@@ -1,14 +1,10 @@
-import inherits from 'inherits';
+import inherits from "inherits";
 
-import CommandInterceptor from './../../../../../diagram-js/lib/command/CommandInterceptor';
+import CommandInterceptor from "./../../../../../diagram-js/lib/command/CommandInterceptor";
 
-import {
-  getBusinessObject
-} from '../../../util/ModelUtil';
+import { getBusinessObject } from "../../../util/ModelUtil";
 
-import {
-  isAny
-} from '../util/ModelingUtil';
+import { isAny } from "../util/ModelingUtil";
 
 /**
  * A component that makes sure that each created or updated
@@ -17,25 +13,22 @@ import {
  * @param {EventBus} eventBus
  */
 export default function IsHorizontalFix(eventBus) {
-
   CommandInterceptor.call(this, eventBus);
 
-  var elementTypesToUpdate = [
-    'bpmn:Participant',
-    'bpmn:Lane'
-  ];
+  var elementTypesToUpdate = ["bpmn:Participant", "bpmn:Lane"];
 
-  this.executed([ 'shape.move', 'shape.create', 'shape.resize' ], function(event) {
+  this.executed(["shape.move", "shape.create", "shape.resize"], function(
+    event
+  ) {
     var bo = getBusinessObject(event.context.shape);
 
-    if (isAny(bo, elementTypesToUpdate) && !bo.di.get('isHorizontal')) {
+    if (isAny(bo, elementTypesToUpdate) && !bo.di.get("isHorizontal")) {
       // set attribute directly to avoid modeling#updateProperty side effects
-      bo.di.set('isHorizontal', true);
+      bo.di.set("isHorizontal", true);
     }
   });
-
 }
 
-IsHorizontalFix.$inject = [ 'eventBus' ];
+IsHorizontalFix.$inject = ["eventBus"];
 
 inherits(IsHorizontalFix, CommandInterceptor);

@@ -5,14 +5,9 @@
  * @param {Selection} selection
  */
 export default function AutoPlaceSelectionBehavior(eventBus, selection) {
-
-  eventBus.on('autoPlace.end', 500, function(e) {
+  eventBus.on("autoPlace.end", 500, function(e) {
     selection.select(e.shape);
   });
-
 }
 
-AutoPlaceSelectionBehavior.$inject = [
-  'eventBus',
-  'selection'
-];
+AutoPlaceSelectionBehavior.$inject = ["eventBus", "selection"];

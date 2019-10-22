@@ -1,13 +1,10 @@
-import {
-  forEach
-} from 'min-dash';
-
+import { forEach } from "min-dash";
 
 export function getTopLevel(elements) {
   var topLevel = {},
-      parents = [],
-      result = [],
-      clearedParents = [];
+    parents = [],
+    result = [],
+    clearedParents = [];
 
   forEach(elements, function(element) {
     var parent = element.parent;

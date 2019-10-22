@@ -5,19 +5,13 @@ import {
   create as svgCreate,
   remove as svgRemove,
   clear as svgClear
-} from 'tiny-svg';
+} from "tiny-svg";
 
-import {
-  isObject
-} from 'min-dash';
+import { isObject } from "min-dash";
 
-import {
-  getElementLineIntersection,
-  getMid
-} from '../../layout/LayoutUtil';
+import { getElementLineIntersection, getMid } from "../../layout/LayoutUtil";
 
-
-var MARKER_CONNECTION_PREVIEW = 'djs-connection-preview';
+var MARKER_CONNECTION_PREVIEW = "djs-connection-preview";
 
 /**
  * Draws connection preview. Optionally, this can use layouter and connection docking to draw
@@ -29,25 +23,25 @@ var MARKER_CONNECTION_PREVIEW = 'djs-connection-preview';
  * @param {ElementFactory} elementFactory
  */
 export default function ConnectionPreview(
-    injector,
-    canvas,
-    graphicsFactory,
-    elementFactory
+  injector,
+  canvas,
+  graphicsFactory,
+  elementFactory
 ) {
   this._canvas = canvas;
   this._graphicsFactory = graphicsFactory;
   this._elementFactory = elementFactory;
 
   // optional components
-  this._connectionDocking = injector.get('connectionDocking', false);
-  this._layouter = injector.get('layouter', false);
+  this._connectionDocking = injector.get("connectionDocking", false);
+  this._layouter = injector.get("layouter", false);
 }
 
 ConnectionPreview.$inject = [
-  'injector',
-  'canvas',
-  'graphicsFactory',
-  'elementFactory'
+  "injector",
+  "canvas",
+  "graphicsFactory",
+  "elementFactory"
 ];
 
 /**
@@ -69,20 +63,19 @@ ConnectionPreview.$inject = [
  * @param {boolean} [hints.noNoop] true if simple connection should not be drawn
  */
 ConnectionPreview.prototype.drawPreview = function(context, canConnect, hints) {
-
   hints = hints || {};
 
   var connectionPreviewGfx = context.connectionPreviewGfx,
-      getConnection = context.getConnection,
-      source = hints.source,
-      target = hints.target,
-      waypoints = hints.waypoints,
-      connectionStart = hints.connectionStart,
-      connectionEnd = hints.connectionEnd,
-      noLayout = hints.noLayout,
-      noCropping = hints.noCropping,
-      noNoop = hints.noNoop,
-      connection;
+    getConnection = context.getConnection,
+    source = hints.source,
+    target = hints.target,
+    waypoints = hints.waypoints,
+    connectionStart = hints.connectionStart,
+    connectionEnd = hints.connectionEnd,
+    noLayout = hints.noLayout,
+    noCropping = hints.noCropping,
+    noNoop = hints.noNoop,
+    connection;
 
   var self = this;
 
@@ -93,7 +86,11 @@ ConnectionPreview.prototype.drawPreview = function(context, canConnect, hints) {
   svgClear(connectionPreviewGfx);
 
   if (!getConnection) {
-    getConnection = context.getConnection = cacheReturnValues(function(canConnect, source, target) {
+    getConnection = context.getConnection = cacheReturnValues(function(
+      canConnect,
+      source,
+      target
+    ) {
       return self.getConnection(canConnect, source, target);
     });
   }
@@ -129,7 +126,11 @@ ConnectionPreview.prototype.drawPreview = function(context, canConnect, hints) {
 
   // optional cropping
   if (this._connectionDocking && (source || target) && !noCropping) {
-    connection.waypoints = this._connectionDocking.getCroppedWaypoints(connection, source, target);
+    connection.waypoints = this._connectionDocking.getCroppedWaypoints(
+      connection,
+      source,
+      target
+    );
   }
 
   this._graphicsFactory.drawConnection(connectionPreviewGfx, connection);
@@ -145,11 +146,14 @@ ConnectionPreview.prototype.drawPreview = function(context, canConnect, hints) {
  * @param {Point} [hints.connectionStart] required if source is not provided
  * @param {Point} [hints.connectionEnd] required if target is not provided
  */
-ConnectionPreview.prototype.drawNoopPreview = function(connectionPreviewGfx, hints) {
+ConnectionPreview.prototype.drawNoopPreview = function(
+  connectionPreviewGfx,
+  hints
+) {
   var source = hints.source,
-      target = hints.target,
-      start = hints.connectionStart || getMid(source),
-      end = hints.connectionEnd || getMid(target);
+    target = hints.target,
+    start = hints.connectionStart || getMid(source),
+    end = hints.connectionEnd || getMid(target);
 
   var waypoints = this.cropWaypoints(start, end, source, target);
 
@@ -168,16 +172,27 @@ ConnectionPreview.prototype.drawNoopPreview = function(connectionPreviewGfx, hin
  *
  * @returns {Array}
  */
-ConnectionPreview.prototype.cropWaypoints = function(start, end, source, target) {
+ConnectionPreview.prototype.cropWaypoints = function(
+  start,
+  end,
+  source,
+  target
+) {
   var graphicsFactory = this._graphicsFactory,
-      sourcePath = source && graphicsFactory.getShapePath(source),
-      targetPath = target && graphicsFactory.getShapePath(target),
-      connectionPath = graphicsFactory.getConnectionPath({ waypoints: [ start, end ] });
+    sourcePath = source && graphicsFactory.getShapePath(source),
+    targetPath = target && graphicsFactory.getShapePath(target),
+    connectionPath = graphicsFactory.getConnectionPath({
+      waypoints: [start, end]
+    });
 
-  start = (source && getElementLineIntersection(sourcePath, connectionPath, true)) || start;
-  end = (target && getElementLineIntersection(targetPath, connectionPath, false)) || end;
+  start =
+    (source && getElementLineIntersection(sourcePath, connectionPath, true)) ||
+    start;
+  end =
+    (target && getElementLineIntersection(targetPath, connectionPath, false)) ||
+    end;
 
-  return [ start, end ];
+  return [start, end];
 };
 
 /**
@@ -205,17 +220,16 @@ ConnectionPreview.prototype.getConnection = function(canConnect) {
   return this._elementFactory.createConnection(attrs);
 };
 
-
 /**
  * Add and return preview graphics.
  *
  * @returns {SVGElement}
  */
 ConnectionPreview.prototype.createConnectionPreviewGfx = function() {
-  var gfx = svgCreate('g');
+  var gfx = svgCreate("g");
 
   svgAttr(gfx, {
-    pointerEvents: 'none'
+    pointerEvents: "none"
   });
 
   svgClasses(gfx).add(MARKER_CONNECTION_PREVIEW);
@@ -234,16 +248,16 @@ ConnectionPreview.prototype.createConnectionPreviewGfx = function() {
  * @returns {SVGElement}
  */
 ConnectionPreview.prototype.createNoopConnection = function(start, end) {
-  var connection = svgCreate('polyline');
+  var connection = svgCreate("polyline");
 
   svgAttr(connection, {
-    'stroke': '#333',
-    'strokeDasharray': [ 1 ],
-    'strokeWidth': 2,
-    'pointer-events': 'none'
+    stroke: "#333",
+    strokeDasharray: [1],
+    strokeWidth: 2,
+    "pointer-events": "none"
   });
 
-  svgAttr(connection, { 'points': [ start.x, start.y, end.x, end.y ] });
+  svgAttr(connection, { points: [start.x, start.y, end.x, end.y] });
 
   return connection;
 };

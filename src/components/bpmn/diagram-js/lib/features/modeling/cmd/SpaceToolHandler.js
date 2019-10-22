@@ -1,9 +1,6 @@
-import { forEach } from 'min-dash';
+import { forEach } from "min-dash";
 
-import {
-  resizeBounds
-} from '../../space-tool/SpaceUtil';
-
+import { resizeBounds } from "../../space-tool/SpaceUtil";
 
 /**
  * A handler that implements reversible creating and removing of space.
@@ -17,16 +14,14 @@ export default function SpaceToolHandler(modeling) {
   this._modeling = modeling;
 }
 
-SpaceToolHandler.$inject = [ 'modeling' ];
-
+SpaceToolHandler.$inject = ["modeling"];
 
 SpaceToolHandler.prototype.preExecute = function(context) {
-
   // resize
   var modeling = this._modeling,
-      resizingShapes = context.resizingShapes,
-      delta = context.delta,
-      direction = context.direction;
+    resizingShapes = context.resizingShapes,
+    delta = context.delta,
+    direction = context.direction;
 
   forEach(resizingShapes, function(shape) {
     var newBounds = resizeBounds(shape, direction, delta);
@@ -38,10 +33,13 @@ SpaceToolHandler.prototype.preExecute = function(context) {
 SpaceToolHandler.prototype.postExecute = function(context) {
   // move
   var modeling = this._modeling,
-      movingShapes = context.movingShapes,
-      delta = context.delta;
+    movingShapes = context.movingShapes,
+    delta = context.delta;
 
-  modeling.moveElements(movingShapes, delta, undefined, { autoResize: false, attach: false });
+  modeling.moveElements(movingShapes, delta, undefined, {
+    autoResize: false,
+    attach: false
+  });
 };
 
 SpaceToolHandler.prototype.execute = function(context) {};

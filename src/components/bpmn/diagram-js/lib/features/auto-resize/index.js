@@ -1,6 +1,6 @@
-import AutoResize from './AutoResize';
+import AutoResize from "./AutoResize";
 
 export default {
-  __init__: [ 'autoResize' ],
-  autoResize: [ 'type', AutoResize ]
+  __init__: ["autoResize"],
+  autoResize: ["type", AutoResize]
 };

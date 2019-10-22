@@ -11,13 +11,16 @@ export default function BaseRenderer(eventBus, renderPriority) {
 
   renderPriority = renderPriority || DEFAULT_RENDER_PRIORITY;
 
-  eventBus.on([ 'render.shape', 'render.connection' ], renderPriority, function(evt, context) {
+  eventBus.on(["render.shape", "render.connection"], renderPriority, function(
+    evt,
+    context
+  ) {
     var type = evt.type,
-        element = context.element,
-        visuals = context.gfx;
+      element = context.element,
+      visuals = context.gfx;
 
     if (self.canRender(element)) {
-      if (type === 'render.shape') {
+      if (type === "render.shape") {
         return self.drawShape(visuals, element);
       } else {
         return self.drawConnection(visuals, element);
@@ -25,15 +28,19 @@ export default function BaseRenderer(eventBus, renderPriority) {
     }
   });
 
-  eventBus.on([ 'render.getShapePath', 'render.getConnectionPath'], renderPriority, function(evt, element) {
-    if (self.canRender(element)) {
-      if (evt.type === 'render.getShapePath') {
-        return self.getShapePath(element);
-      } else {
-        return self.getConnectionPath(element);
+  eventBus.on(
+    ["render.getShapePath", "render.getConnectionPath"],
+    renderPriority,
+    function(evt, element) {
+      if (self.canRender(element)) {
+        if (evt.type === "render.getShapePath") {
+          return self.getShapePath(element);
+        } else {
+          return self.getConnectionPath(element);
+        }
       }
     }
-  });
+  );
 }
 
 /**

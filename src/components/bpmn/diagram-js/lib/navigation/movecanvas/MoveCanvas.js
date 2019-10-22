@@ -1,28 +1,14 @@
-import {
-  set as cursorSet,
-  unset as cursorUnset
-} from '../../util/Cursor';
+import { set as cursorSet, unset as cursorUnset } from "../../util/Cursor";
 
-import {
-  install as installClickTrap
-} from '../../util/ClickTrap';
+import { install as installClickTrap } from "../../util/ClickTrap";
 
-import {
-  delta as deltaPos
-} from '../../util/PositionUtil';
+import { delta as deltaPos } from "../../util/PositionUtil";
 
-import {
-  event as domEvent,
-  closest as domClosest
-} from 'min-dom';
+import { event as domEvent, closest as domClosest } from "min-dom";
 
-import {
-  toPoint
-} from '../../util/Event';
-
+import { toPoint } from "../../util/Event";
 
 var THRESHOLD = 15;
-
 
 /**
  * Move the canvas via mouse.
@@ -31,34 +17,29 @@ var THRESHOLD = 15;
  * @param {Canvas} canvas
  */
 export default function MoveCanvas(eventBus, canvas) {
-
   var context;
-
 
   // listen for move on element mouse down;
   // allow others to hook into the event before us though
   // (dragging / element moving will do this)
-  eventBus.on('element.mousedown', 500, function(e) {
+  eventBus.on("element.mousedown", 500, function(e) {
     return handleStart(e.originalEvent);
   });
 
-
   function handleMove(event) {
-
     var start = context.start,
-        position = toPoint(event),
-        delta = deltaPos(position, start);
+      position = toPoint(event),
+      delta = deltaPos(position, start);
 
     if (!context.dragging && length(delta) > THRESHOLD) {
       context.dragging = true;
 
       installClickTrap(eventBus);
 
-      cursorSet('grab');
+      cursorSet("grab");
     }
 
     if (context.dragging) {
-
       var lastPosition = context.last || context.start;
 
       delta = deltaPos(position, lastPosition);
@@ -75,10 +56,9 @@ export default function MoveCanvas(eventBus, canvas) {
     event.preventDefault();
   }
 
-
   function handleEnd(event) {
-    domEvent.unbind(document, 'mousemove', handleMove);
-    domEvent.unbind(document, 'mouseup', handleEnd);
+    domEvent.unbind(document, "mousemove", handleMove);
+    domEvent.unbind(document, "mouseup", handleEnd);
 
     context = null;
 
@@ -87,10 +67,9 @@ export default function MoveCanvas(eventBus, canvas) {
 
   function handleStart(event) {
     // event is already handled by '.djs-draggable'
-    if (domClosest(event.target, '.djs-draggable')) {
+    if (domClosest(event.target, ".djs-draggable")) {
       return;
     }
-
 
     // reject non-left left mouse button or modifier key
     if (event.button || event.ctrlKey || event.shiftKey || event.altKey) {
@@ -101,21 +80,15 @@ export default function MoveCanvas(eventBus, canvas) {
       start: toPoint(event)
     };
 
-    domEvent.bind(document, 'mousemove', handleMove);
-    domEvent.bind(document, 'mouseup', handleEnd);
+    domEvent.bind(document, "mousemove", handleMove);
+    domEvent.bind(document, "mouseup", handleEnd);
 
     // we've handled the event
     return true;
   }
 }
 
-
-MoveCanvas.$inject = [
-  'eventBus',
-  'canvas'
-];
-
-
+MoveCanvas.$inject = ["eventBus", "canvas"];
 
 // helpers ///////
 

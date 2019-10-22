@@ -1,20 +1,12 @@
-import SnapContext from './SnapContext';
+import SnapContext from "./SnapContext";
 
-import {
-  getChildren,
-  isSnapped,
-  mid
-} from './SnapUtil';
+import { getChildren, isSnapped, mid } from "./SnapUtil";
 
-import { isCmd } from '../keyboard/KeyboardUtil';
+import { isCmd } from "../keyboard/KeyboardUtil";
 
-import {
-  forEach,
-  isNumber
-} from 'min-dash';
+import { forEach, isNumber } from "min-dash";
 
 var HIGHER_PRIORITY = 1250;
-
 
 /**
  * Snap during create and move.
@@ -25,76 +17,66 @@ var HIGHER_PRIORITY = 1250;
 export default function CreateMoveSnapping(eventBus, snapping) {
   var self = this;
 
-  eventBus.on([
-    'create.start',
-    'shape.move.start'
-  ], function(event) {
+  eventBus.on(["create.start", "shape.move.start"], function(event) {
     self.initSnap(event);
   });
 
-  eventBus.on([
-    'create.move',
-    'create.end',
-    'shape.move.move',
-    'shape.move.end'
-  ], HIGHER_PRIORITY, function(event) {
-    var context = event.context,
+  eventBus.on(
+    ["create.move", "create.end", "shape.move.move", "shape.move.end"],
+    HIGHER_PRIORITY,
+    function(event) {
+      var context = event.context,
         shape = context.shape,
         snapContext = context.snapContext,
         target = context.target;
 
-    if (event.originalEvent && isCmd(event.originalEvent)) {
-      return;
+      if (event.originalEvent && isCmd(event.originalEvent)) {
+        return;
+      }
+
+      if (isSnapped(event) || !target) {
+        return;
+      }
+
+      var snapPoints = snapContext.pointsForTarget(target);
+
+      if (!snapPoints.initialized) {
+        snapPoints = self.addSnapTargetPoints(snapPoints, shape, target);
+
+        snapPoints.initialized = true;
+      }
+
+      snapping.snap(event, snapPoints);
     }
+  );
 
-    if (isSnapped(event) || !target) {
-      return;
-    }
-
-    var snapPoints = snapContext.pointsForTarget(target);
-
-    if (!snapPoints.initialized) {
-      snapPoints = self.addSnapTargetPoints(snapPoints, shape, target);
-
-      snapPoints.initialized = true;
-    }
-
-    snapping.snap(event, snapPoints);
-  });
-
-  eventBus.on([
-    'create.cleanup',
-    'shape.move.cleanup'
-  ], function() {
+  eventBus.on(["create.cleanup", "shape.move.cleanup"], function() {
     snapping.hide();
   });
 }
 
-CreateMoveSnapping.$inject = [
-  'eventBus',
-  'snapping'
-];
+CreateMoveSnapping.$inject = ["eventBus", "snapping"];
 
 CreateMoveSnapping.prototype.initSnap = function(event) {
   var context = event.context,
-      shape = context.shape,
-      snapContext = context.snapContext;
+    shape = context.shape,
+    snapContext = context.snapContext;
 
   if (!snapContext) {
     snapContext = context.snapContext = new SnapContext();
   }
 
   var shapeMid = mid(shape, event),
-      shapeTopLeft = {
-        x: shapeMid.x - shape.width / 2,
-        y: shapeMid.y - shape.height / 2
-      },
-      shapeBottomRight = {
-        x: shapeMid.x + shape.width / 2,
-        y: shapeMid.y + shape.height / 2
-      };
+    shapeTopLeft = {
+      x: shapeMid.x - shape.width / 2,
+      y: shapeMid.y - shape.height / 2
+    },
+    shapeBottomRight = {
+      x: shapeMid.x + shape.width / 2,
+      y: shapeMid.y + shape.height / 2
+    };
 
-  snapContext.setSnapOrigin('mid', {
+  snapContext.setSnapOrigin("mid", {
     x: shapeMid.x - event.x,
     y: shapeMid.y - event.y
   });
@@ -104,12 +86,12 @@ CreateMoveSnapping.prototype.initSnap = function(event) {
     return snapContext;
   }
 
-  snapContext.setSnapOrigin('top-left', {
+  snapContext.setSnapOrigin("top-left", {
     x: shapeTopLeft.x - event.x,
     y: shapeTopLeft.y - event.y
   });
 
-  snapContext.setSnapOrigin('bottom-right', {
+  snapContext.setSnapOrigin("bottom-right", {
     x: shapeBottomRight.x - event.x,
     y: shapeBottomRight.y - event.y
   });
@@ -117,16 +99,18 @@ CreateMoveSnapping.prototype.initSnap = function(event) {
   return snapContext;
 };
 
-CreateMoveSnapping.prototype.addSnapTargetPoints = function(snapPoints, shape, target) {
+CreateMoveSnapping.prototype.addSnapTargetPoints = function(
+  snapPoints,
+  shape,
+  target
+) {
   var snapTargets = this.getSnapTargets(shape, target);
 
   forEach(snapTargets, function(snapTarget) {
-
     // handle labels
     if (isLabel(snapTarget)) {
-
       if (isLabel(shape)) {
-        snapPoints.add('mid', mid(snapTarget));
+        snapPoints.add("mid", mid(snapTarget));
       }
 
       return;
@@ -134,7 +118,6 @@ CreateMoveSnapping.prototype.addSnapTargetPoints = function(snapPoints, shape, t
 
     // handle connections
     if (isConnection(snapTarget)) {
-
       // ignore single segment connections
       if (snapTarget.waypoints.length < 3) {
         return;
@@ -144,21 +127,21 @@ CreateMoveSnapping.prototype.addSnapTargetPoints = function(snapPoints, shape, t
       var waypoints = snapTarget.waypoints.slice(1, -1);
 
       forEach(waypoints, function(waypoint) {
-        snapPoints.add('mid', waypoint);
+        snapPoints.add("mid", waypoint);
       });
 
       return;
     }
 
     // handle shapes
-    snapPoints.add('mid', mid(snapTarget));
+    snapPoints.add("mid", mid(snapTarget));
   });
 
   if (!isNumber(shape.x) || !isNumber(shape.y)) {
     return snapPoints;
   }
 
-  snapPoints.add('mid', mid(shape));
+  snapPoints.add("mid", mid(shape));
 
   return snapPoints;
 };

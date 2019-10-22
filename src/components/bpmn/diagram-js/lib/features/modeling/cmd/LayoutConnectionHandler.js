@@ -1,5 +1,4 @@
-import { assign } from 'min-dash';
-
+import { assign } from "min-dash";
 
 /**
  * A handler that implements reversible moving of shapes.
@@ -9,10 +8,9 @@ export default function LayoutConnectionHandler(layouter, canvas) {
   this._canvas = canvas;
 }
 
-LayoutConnectionHandler.$inject = [ 'layouter', 'canvas' ];
+LayoutConnectionHandler.$inject = ["layouter", "canvas"];
 
 LayoutConnectionHandler.prototype.execute = function(context) {
-
   var connection = context.connection;
 
   var oldWaypoints = connection.waypoints;
@@ -21,13 +19,15 @@ LayoutConnectionHandler.prototype.execute = function(context) {
     oldWaypoints: oldWaypoints
   });
 
-  connection.waypoints = this._layouter.layoutConnection(connection, context.hints);
+  connection.waypoints = this._layouter.layoutConnection(
+    connection,
+    context.hints
+  );
 
   return connection;
 };
 
 LayoutConnectionHandler.prototype.revert = function(context) {
-
   var connection = context.connection;
 
   connection.waypoints = context.oldWaypoints;

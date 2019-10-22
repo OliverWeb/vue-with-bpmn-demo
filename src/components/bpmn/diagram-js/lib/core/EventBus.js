@@ -1,12 +1,6 @@
-import {
-  isFunction,
-  isArray,
-  isNumber,
-  bind,
-  assign
-} from 'min-dash';
+import { isFunction, isArray, isNumber, bind, assign } from "min-dash";
 
-var FN_REF = '__fn';
+var FN_REF = "__fn";
 
 var DEFAULT_PRIORITY = 1000;
 
@@ -100,9 +94,8 @@ export default function EventBus() {
 
   // cleanup on destroy on lowest priority to allow
   // message passing until the bitter end
-  this.on('diagram.destroy', 1, this._destroy, this);
+  this.on("diagram.destroy", 1, this._destroy, this);
 }
-
 
 /**
  * Register an event listener for events with the given name.
@@ -122,8 +115,7 @@ export default function EventBus() {
  * @param {Object} [that] Pass context (`this`) to the callback
  */
 EventBus.prototype.on = function(events, priority, callback, that) {
-
-  events = isArray(events) ? events : [ events ];
+  events = isArray(events) ? events : [events];
 
   if (isFunction(priority)) {
     that = callback;
@@ -132,7 +124,7 @@ EventBus.prototype.on = function(events, priority, callback, that) {
   }
 
   if (!isNumber(priority)) {
-    throw new Error('priority must be a number');
+    throw new Error("priority must be a number");
   }
 
   var actualCallback = callback;
@@ -157,7 +149,6 @@ EventBus.prototype.on = function(events, priority, callback, that) {
   });
 };
 
-
 /**
  * Register an event listener that is executed only once.
  *
@@ -176,7 +167,7 @@ EventBus.prototype.once = function(event, priority, callback, that) {
   }
 
   if (!isNumber(priority)) {
-    throw new Error('priority must be a number');
+    throw new Error("priority must be a number");
   }
 
   function wrappedCallback() {
@@ -195,7 +186,6 @@ EventBus.prototype.once = function(event, priority, callback, that) {
   this.on(event, priority, wrappedCallback);
 };
 
-
 /**
  * Removes event listeners by event and callback.
  *
@@ -205,17 +195,14 @@ EventBus.prototype.once = function(event, priority, callback, that) {
  * @param {Function} [callback]
  */
 EventBus.prototype.off = function(events, callback) {
-
-  events = isArray(events) ? events : [ events ];
+  events = isArray(events) ? events : [events];
 
   var self = this;
 
   events.forEach(function(event) {
     self._removeListener(event, callback);
   });
-
 };
-
 
 /**
  * Create an EventBus event.
@@ -231,7 +218,6 @@ EventBus.prototype.createEvent = function(data) {
 
   return event;
 };
-
 
 /**
  * Fires a named event.
@@ -264,21 +250,17 @@ EventBus.prototype.createEvent = function(data) {
  *                   default action was prevented by listeners
  */
 EventBus.prototype.fire = function(type, data) {
-
-  var event,
-      firstListener,
-      returnValue,
-      args;
+  var event, firstListener, returnValue, args;
 
   args = slice.call(arguments);
 
-  if (typeof type === 'object') {
+  if (typeof type === "object") {
     event = type;
     type = event.type;
   }
 
   if (!type) {
-    throw new Error('no event type specified');
+    throw new Error("no event type specified");
   }
 
   firstListener = this._listeners[type];
@@ -325,22 +307,18 @@ EventBus.prototype.fire = function(type, data) {
   return returnValue;
 };
 
-
 EventBus.prototype.handleError = function(error) {
-  return this.fire('error', { error: error }) === false;
+  return this.fire("error", { error: error }) === false;
 };
-
 
 EventBus.prototype._destroy = function() {
   this._listeners = {};
 };
 
 EventBus.prototype._invokeListeners = function(event, args, listener) {
-
   var returnValue;
 
   while (listener) {
-
     // handle stopped propagation
     if (event.cancelBubble) {
       break;
@@ -355,7 +333,6 @@ EventBus.prototype._invokeListeners = function(event, args, listener) {
 };
 
 EventBus.prototype._invokeListener = function(event, args, listener) {
-
   var returnValue;
 
   try {
@@ -374,7 +351,7 @@ EventBus.prototype._invokeListener = function(event, args, listener) {
     }
   } catch (e) {
     if (!this.handleError(e)) {
-      console.error('unhandled error in event listener');
+      console.error("unhandled error in event listener");
       console.error(e.stack);
 
       throw e;
@@ -401,9 +378,8 @@ EventBus.prototype._invokeListener = function(event, args, listener) {
  * @param {Object} listener { priority, callback }
  */
 EventBus.prototype._addListener = function(event, newListener) {
-
   var listener = this._getListeners(event),
-      previousListener;
+    previousListener;
 
   // no prior listeners
   if (!listener) {
@@ -415,9 +391,7 @@ EventBus.prototype._addListener = function(event, newListener) {
   // ensure we order listeners by priority from
   // 0 (high) to n > 0 (low)
   while (listener) {
-
     if (listener.priority < newListener.priority) {
-
       newListener.next = listener;
 
       if (previousListener) {
@@ -437,7 +411,6 @@ EventBus.prototype._addListener = function(event, newListener) {
   previousListener.next = newListener;
 };
 
-
 EventBus.prototype._getListeners = function(name) {
   return this._listeners[name];
 };
@@ -447,11 +420,10 @@ EventBus.prototype._setListeners = function(name, listener) {
 };
 
 EventBus.prototype._removeListener = function(event, callback) {
-
   var listener = this._getListeners(event),
-      nextListener,
-      previousListener,
-      listenerCallback;
+    nextListener,
+    previousListener,
+    listenerCallback;
 
   if (!callback) {
     // clear listeners
@@ -461,12 +433,14 @@ EventBus.prototype._removeListener = function(event, callback) {
   }
 
   while (listener) {
-
     nextListener = listener.next;
 
     listenerCallback = listener.callback;
 
-    if (listenerCallback === callback || listenerCallback[FN_REF] === callback) {
+    if (
+      listenerCallback === callback ||
+      listenerCallback[FN_REF] === callback
+    ) {
       if (previousListener) {
         previousListener.next = nextListener;
       } else {
@@ -483,7 +457,7 @@ EventBus.prototype._removeListener = function(event, callback) {
 /**
  * A event that is emitted via the event bus.
  */
-function InternalEvent() { }
+function InternalEvent() {}
 
 InternalEvent.prototype.stopPropagation = function() {
   this.cancelBubble = true;
@@ -496,7 +470,6 @@ InternalEvent.prototype.preventDefault = function() {
 InternalEvent.prototype.init = function(data) {
   assign(this, data || {});
 };
-
 
 /**
  * Invoke function. Be fast...

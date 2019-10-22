@@ -1,6 +1,6 @@
-import ChangeSupport from './ChangeSupport';
+import ChangeSupport from "./ChangeSupport";
 
 export default {
-  __init__: [ 'changeSupport'],
-  changeSupport: [ 'type', ChangeSupport ]
+  __init__: ["changeSupport"],
+  changeSupport: ["type", ChangeSupport]
 };

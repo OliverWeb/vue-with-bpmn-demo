@@ -4,16 +4,12 @@ import {
   query as domQuery,
   classes as domClasses,
   attr as domAttr,
-  domify as domify
-} from 'min-dom';
+  domify
+} from "min-dom";
 
-import {
-  getBBox as getBoundingBox
-} from '../../util/Elements';
+import { getBBox as getBoundingBox } from "../../util/Elements";
 
-import {
-  escapeHTML
-} from '../../util/EscapeUtil';
+import { escapeHTML } from "../../util/EscapeUtil";
 
 /**
  * Provides searching infrastructure
@@ -31,23 +27,19 @@ export default function SearchPad(canvas, eventBus, overlays, selection) {
   // setup elements
   this._container = domify(SearchPad.BOX_HTML);
   this._searchInput = domQuery(SearchPad.INPUT_SELECTOR, this._container);
-  this._resultsContainer = domQuery(SearchPad.RESULTS_CONTAINER_SELECTOR, this._container);
+  this._resultsContainer = domQuery(
+    SearchPad.RESULTS_CONTAINER_SELECTOR,
+    this._container
+  );
 
   // attach search pad
   this._canvas.getContainer().appendChild(this._container);
 
   // cleanup on destroy
-  eventBus.on([ 'canvas.destroy', 'diagram.destroy' ], this.close, this);
+  eventBus.on(["canvas.destroy", "diagram.destroy"], this.close, this);
 }
 
-
-SearchPad.$inject = [
-  'canvas',
-  'eventBus',
-  'overlays',
-  'selection'
-];
-
+SearchPad.$inject = ["canvas", "eventBus", "overlays", "selection"];
 
 /**
  * Binds and keeps track of all event listereners
@@ -64,33 +56,39 @@ SearchPad.prototype._bindEvents = function() {
   }
 
   // close search on clicking anywhere outside
-  listen(document, 'html', 'click', function(e) {
-    self.close();
-  }, true);
+  listen(
+    document,
+    "html",
+    "click",
+    function(e) {
+      self.close();
+    },
+    true
+  );
 
   // stop event from propagating and closing search
   // focus on input
-  listen(this._container, SearchPad.INPUT_SELECTOR, 'click', function(e) {
+  listen(this._container, SearchPad.INPUT_SELECTOR, "click", function(e) {
     e.stopPropagation();
     e.delegateTarget.focus();
   });
 
   // preselect result on hover
-  listen(this._container, SearchPad.RESULT_SELECTOR, 'mouseover', function(e) {
+  listen(this._container, SearchPad.RESULT_SELECTOR, "mouseover", function(e) {
     e.stopPropagation();
     self._scrollToNode(e.delegateTarget);
     self._preselect(e.delegateTarget);
   });
 
   // selects desired result on mouse click
-  listen(this._container, SearchPad.RESULT_SELECTOR, 'click', function(e) {
+  listen(this._container, SearchPad.RESULT_SELECTOR, "click", function(e) {
     e.stopPropagation();
     self._select(e.delegateTarget);
   });
 
   // prevent cursor in input from going left and right when using up/down to
   // navigate results
-  listen(this._container, SearchPad.INPUT_SELECTOR, 'keydown', function(e) {
+  listen(this._container, SearchPad.INPUT_SELECTOR, "keydown", function(e) {
     // up
     if (e.keyCode === 38) {
       e.preventDefault();
@@ -103,7 +101,7 @@ SearchPad.prototype._bindEvents = function() {
   });
 
   // handle keyboard input
-  listen(this._container, SearchPad.INPUT_SELECTOR, 'keyup', function(e) {
+  listen(this._container, SearchPad.INPUT_SELECTOR, "keyup", function(e) {
     // escape
     if (e.keyCode === 27) {
       return self.close();
@@ -137,7 +135,6 @@ SearchPad.prototype._bindEvents = function() {
   });
 };
 
-
 /**
  * Unbinds all previously established listeners
  */
@@ -146,7 +143,6 @@ SearchPad.prototype._unbindEvents = function() {
     domDelegate.unbind(m.el, m.type, m.listener);
   });
 };
-
 
 /**
  * Performs a search for the given pattern.
@@ -159,7 +155,7 @@ SearchPad.prototype._search = function(pattern) {
   this._clearResults();
 
   // do not search on empty query
-  if (!pattern || pattern === '') {
+  if (!pattern || pattern === "") {
     return;
   }
 
@@ -185,7 +181,6 @@ SearchPad.prototype._search = function(pattern) {
   this._preselect(node);
 };
 
-
 /**
  * Navigate to the previous/next result. Defaults to next result.
  * @param  {Boolean} previous
@@ -196,13 +191,14 @@ SearchPad.prototype._scrollToDirection = function(previous) {
     return;
   }
 
-  var node = previous ? selected.previousElementSibling : selected.nextElementSibling;
+  var node = previous
+    ? selected.previousElementSibling
+    : selected.nextElementSibling;
   if (node) {
     this._scrollToNode(node);
     this._preselect(node);
   }
 };
-
 
 /**
  * Scroll to the node if it is not visible.
@@ -217,7 +213,8 @@ SearchPad.prototype._scrollToNode = function(node) {
   var nodeOffset = node.offsetTop;
   var containerScroll = this._resultsContainer.scrollTop;
 
-  var bottomScroll = nodeOffset - this._resultsContainer.clientHeight + node.clientHeight;
+  var bottomScroll =
+    nodeOffset - this._resultsContainer.clientHeight + node.clientHeight;
 
   if (nodeOffset < containerScroll) {
     this._resultsContainer.scrollTop = nodeOffset;
@@ -225,7 +222,6 @@ SearchPad.prototype._scrollToNode = function(node) {
     this._resultsContainer.scrollTop = bottomScroll;
   }
 };
-
 
 /**
  * Clears all results data.
@@ -237,9 +233,8 @@ SearchPad.prototype._clearResults = function() {
 
   this._resetOverlay();
 
-  this._eventBus.fire('searchPad.cleared');
+  this._eventBus.fire("searchPad.cleared");
 };
-
 
 /**
  * Get currently selected result.
@@ -249,7 +244,6 @@ SearchPad.prototype._clearResults = function() {
 SearchPad.prototype._getCurrentResult = function() {
   return domQuery(SearchPad.RESULT_SELECTED_SELECTOR, this._resultsContainer);
 };
-
 
 /**
  * Create result DOM element within results container
@@ -268,11 +262,19 @@ SearchPad.prototype._createResultNode = function(result, id) {
 
   // create only if available
   if (result.primaryTokens.length > 0) {
-    createInnerTextNode(node, result.primaryTokens, SearchPad.RESULT_PRIMARY_HTML);
+    createInnerTextNode(
+      node,
+      result.primaryTokens,
+      SearchPad.RESULT_PRIMARY_HTML
+    );
   }
 
   // secondary tokens (represent element ID) are allways available
-  createInnerTextNode(node, result.secondaryTokens, SearchPad.RESULT_SECONDARY_HTML);
+  createInnerTextNode(
+    node,
+    result.secondaryTokens,
+    SearchPad.RESULT_SECONDARY_HTML
+  );
 
   domAttr(node, SearchPad.RESULT_ID_ATTRIBUTE, id);
 
@@ -280,7 +282,6 @@ SearchPad.prototype._createResultNode = function(result, id) {
 
   return node;
 };
-
 
 /**
  * Register search element provider.
@@ -294,13 +295,12 @@ SearchPad.prototype.registerProvider = function(provider) {
   this._searchProvider = provider;
 };
 
-
 /**
  * Open search pad.
  */
 SearchPad.prototype.open = function() {
   if (!this._searchProvider) {
-    throw new Error('no search provider registered');
+    throw new Error("no search provider registered");
   }
 
   if (this.isOpen()) {
@@ -311,13 +311,12 @@ SearchPad.prototype.open = function() {
 
   this._open = true;
 
-  domClasses(this._container).add('open');
+  domClasses(this._container).add("open");
 
   this._searchInput.focus();
 
-  this._eventBus.fire('searchPad.opened');
+  this._eventBus.fire("searchPad.opened");
 };
-
 
 /**
  * Close search pad.
@@ -331,18 +330,17 @@ SearchPad.prototype.close = function() {
 
   this._open = false;
 
-  domClasses(this._container).remove('open');
+  domClasses(this._container).remove("open");
 
   this._clearResults();
 
-  this._searchInput.value = '';
+  this._searchInput.value = "";
   this._searchInput.blur();
 
   this._resetOverlay();
 
-  this._eventBus.fire('searchPad.closed');
+  this._eventBus.fire("searchPad.closed");
 };
-
 
 /**
  * Toggles search pad on/off.
@@ -351,14 +349,12 @@ SearchPad.prototype.toggle = function() {
   this.isOpen() ? this.close() : this.open();
 };
 
-
 /**
  * Report state of search pad.
  */
 SearchPad.prototype.isOpen = function() {
   return this._open;
 };
-
 
 /**
  * Preselect result entry.
@@ -389,9 +385,8 @@ SearchPad.prototype._preselect = function(node) {
 
   this._selection.select(element);
 
-  this._eventBus.fire('searchPad.preselected', element);
+  this._eventBus.fire("searchPad.preselected", element);
 };
-
 
 /**
  * Select result node.
@@ -410,9 +405,8 @@ SearchPad.prototype._select = function(node) {
 
   this._selection.select(element);
 
-  this._eventBus.fire('searchPad.selected', element);
+  this._eventBus.fire("searchPad.selected", element);
 };
-
 
 /**
  * Center viewbox on the element middle point.
@@ -425,8 +419,8 @@ SearchPad.prototype._centerViewbox = function(element) {
   var box = getBoundingBox(element);
 
   var newViewbox = {
-    x: (box.x + box.width/2) - viewbox.outer.width/2,
-    y: (box.y + box.height/2) - viewbox.outer.height/2,
+    x: box.x + box.width / 2 - viewbox.outer.width / 2,
+    y: box.y + box.height / 2 - viewbox.outer.height / 2,
     width: viewbox.outer.width,
     height: viewbox.outer.height
   };
@@ -435,7 +429,6 @@ SearchPad.prototype._centerViewbox = function(element) {
 
   this._canvas.zoom(viewbox.scale);
 };
-
 
 /**
  * Reset overlay removes and, optionally, set
@@ -455,7 +448,6 @@ SearchPad.prototype._resetOverlay = function(element) {
   }
 };
 
-
 /**
  * Construct overlay object for the given bounding box.
  *
@@ -463,15 +455,11 @@ SearchPad.prototype._resetOverlay = function(element) {
  * @return {Object}
  */
 function constructOverlay(box) {
-
   var offset = 6;
   var w = box.width + offset * 2;
   var h = box.height + offset * 2;
 
-  var styles = [
-    'width: '+ w +'px',
-    'height: '+ h + 'px'
-  ].join('; ');
+  var styles = ["width: " + w + "px", "height: " + h + "px"].join("; ");
 
   return {
     position: {
@@ -479,10 +467,14 @@ function constructOverlay(box) {
       right: w - offset
     },
     show: true,
-    html: '<div style="' + styles + '" class="' + SearchPad.OVERLAY_CLASS + '"></div>'
+    html:
+      '<div style="' +
+      styles +
+      '" class="' +
+      SearchPad.OVERLAY_CLASS +
+      '"></div>'
   };
 }
-
 
 /**
  * Creates and appends child node from result tokens and HTML template.
@@ -506,46 +498,47 @@ function createInnerTextNode(parentNode, tokens, template) {
  * @return {String}
  */
 function createHtmlText(tokens) {
-  var htmlText = '';
+  var htmlText = "";
 
   tokens.forEach(function(t) {
     if (t.matched) {
-      htmlText += '<strong class="' + SearchPad.RESULT_HIGHLIGHT_CLASS + '">' + escapeHTML(t.matched) + '</strong>';
+      htmlText +=
+        '<strong class="' +
+        SearchPad.RESULT_HIGHLIGHT_CLASS +
+        '">' +
+        escapeHTML(t.matched) +
+        "</strong>";
     } else {
       htmlText += escapeHTML(t.normal);
     }
   });
 
-  return htmlText !== '' ? htmlText : null;
+  return htmlText !== "" ? htmlText : null;
 }
-
 
 /**
  * CONSTANTS
  */
-SearchPad.CONTAINER_SELECTOR = '.djs-search-container';
-SearchPad.INPUT_SELECTOR = '.djs-search-input input';
-SearchPad.RESULTS_CONTAINER_SELECTOR = '.djs-search-results';
-SearchPad.RESULT_SELECTOR = '.djs-search-result';
-SearchPad.RESULT_SELECTED_CLASS = 'djs-search-result-selected';
-SearchPad.RESULT_SELECTED_SELECTOR = '.' + SearchPad.RESULT_SELECTED_CLASS;
-SearchPad.RESULT_ID_ATTRIBUTE = 'data-result-id';
-SearchPad.RESULT_HIGHLIGHT_CLASS = 'djs-search-highlight';
-SearchPad.OVERLAY_CLASS = 'djs-search-overlay';
+SearchPad.CONTAINER_SELECTOR = ".djs-search-container";
+SearchPad.INPUT_SELECTOR = ".djs-search-input input";
+SearchPad.RESULTS_CONTAINER_SELECTOR = ".djs-search-results";
+SearchPad.RESULT_SELECTOR = ".djs-search-result";
+SearchPad.RESULT_SELECTED_CLASS = "djs-search-result-selected";
+SearchPad.RESULT_SELECTED_SELECTOR = "." + SearchPad.RESULT_SELECTED_CLASS;
+SearchPad.RESULT_ID_ATTRIBUTE = "data-result-id";
+SearchPad.RESULT_HIGHLIGHT_CLASS = "djs-search-highlight";
+SearchPad.OVERLAY_CLASS = "djs-search-overlay";
 
 SearchPad.BOX_HTML =
   '<div class="djs-search-container djs-draggable djs-scrollable">' +
-    '<div class="djs-search-input">' +
-      '<input type="text"/>' +
-    '</div>' +
-    '<div class="djs-search-results"></div>' +
-  '</div>';
+  '<div class="djs-search-input">' +
+  '<input type="text"/>' +
+  "</div>" +
+  '<div class="djs-search-results"></div>' +
+  "</div>";
 
-SearchPad.RESULT_HTML =
-  '<div class="djs-search-result"></div>';
+SearchPad.RESULT_HTML = '<div class="djs-search-result"></div>';
 
-SearchPad.RESULT_PRIMARY_HTML =
-  '<div class="djs-search-result-primary"></div>';
+SearchPad.RESULT_PRIMARY_HTML = '<div class="djs-search-result-primary"></div>';
 
-SearchPad.RESULT_SECONDARY_HTML =
-  '<p class="djs-search-result-secondary"></p>';
+SearchPad.RESULT_SECONDARY_HTML = '<p class="djs-search-result-secondary"></p>';

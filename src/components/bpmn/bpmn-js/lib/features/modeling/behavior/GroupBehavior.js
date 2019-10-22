@@ -1,26 +1,25 @@
-import inherits from 'inherits';
+import inherits from "inherits";
 
-import CommandInterceptor from './../../../../../diagram-js/lib/command/CommandInterceptor';
+import CommandInterceptor from "./../../../../../diagram-js/lib/command/CommandInterceptor";
 
 import {
   add as collectionAdd,
   remove as collectionRemove
-} from './../../../../../diagram-js/lib/util/Collections';
+} from "./../../../../../diagram-js/lib/util/Collections";
 
-import {
-  getBusinessObject,
-  is
-} from '../../../util/ModelUtil';
+import { getBusinessObject, is } from "../../../util/ModelUtil";
 
-import {
-  createCategoryValue
-} from './util/CategoryUtil';
+import { createCategoryValue } from "./util/CategoryUtil";
 
 /**
  * BPMN specific Group behavior
  */
-export default function GroupBehavior(eventBus, bpmnFactory, canvas, elementRegistry) {
-
+export default function GroupBehavior(
+  eventBus,
+  bpmnFactory,
+  canvas,
+  elementRegistry
+) {
   CommandInterceptor.call(this, eventBus);
 
   /**
@@ -30,7 +29,7 @@ export default function GroupBehavior(eventBus, bpmnFactory, canvas, elementRegi
    */
   function getDefinitions() {
     var rootElement = canvas.getRootElement(),
-        businessObject = getBusinessObject(rootElement);
+      businessObject = getBusinessObject(rootElement);
 
     return businessObject.$parent;
   }
@@ -41,10 +40,9 @@ export default function GroupBehavior(eventBus, bpmnFactory, canvas, elementRegi
    * @param {djs.model.Shape} shape
    */
   function removeReferencedCategoryValue(shape) {
-
     var businessObject = getBusinessObject(shape),
-        categoryValue = businessObject.categoryValueRef,
-        category = categoryValue.$parent;
+      categoryValue = businessObject.categoryValueRef,
+      category = categoryValue.$parent;
 
     if (!categoryValue) {
       return;
@@ -64,10 +62,9 @@ export default function GroupBehavior(eventBus, bpmnFactory, canvas, elementRegi
    * @param {ModdleElement} category
    */
   function removeCategory(category) {
-
     var definitions = getDefinitions();
 
-    collectionRemove(definitions.get('rootElements'), category);
+    collectionRemove(definitions.get("rootElements"), category);
   }
 
   /**
@@ -77,7 +74,7 @@ export default function GroupBehavior(eventBus, bpmnFactory, canvas, elementRegi
    */
   function getGroupElements() {
     return elementRegistry.filter(function(e) {
-      return is(e, 'bpmn:Group');
+      return is(e, "bpmn:Group");
     });
   }
 
@@ -90,27 +87,26 @@ export default function GroupBehavior(eventBus, bpmnFactory, canvas, elementRegi
    */
   function isReferenced(elements, categoryValue) {
     return elements.some(function(e) {
-
       var businessObject = getBusinessObject(e);
 
-      return businessObject.categoryValueRef
-        && businessObject.categoryValueRef === categoryValue;
+      return (
+        businessObject.categoryValueRef &&
+        businessObject.categoryValueRef === categoryValue
+      );
     });
   }
 
   /**
    * remove referenced category + value when group was deleted
    */
-  this.executed('shape.delete', function(event) {
-
+  this.executed("shape.delete", function(event) {
     var context = event.context,
-        shape = context.shape;
+      shape = context.shape;
 
-    if (is(shape, 'bpmn:Group')) {
-
+    if (is(shape, "bpmn:Group")) {
       var businessObject = getBusinessObject(shape),
-          categoryValueRef = businessObject.categoryValueRef,
-          groupElements = getGroupElements();
+        categoryValueRef = businessObject.categoryValueRef,
+        groupElements = getGroupElements();
 
       if (!isReferenced(groupElements, categoryValueRef)) {
         removeReferencedCategoryValue(shape);
@@ -121,37 +117,33 @@ export default function GroupBehavior(eventBus, bpmnFactory, canvas, elementRegi
   /**
    * re-attach removed category
    */
-  this.reverted('shape.delete', function(event) {
-
+  this.reverted("shape.delete", function(event) {
     var context = event.context,
-        shape = context.shape;
+      shape = context.shape;
 
-    if (is(shape, 'bpmn:Group')) {
-
+    if (is(shape, "bpmn:Group")) {
       var businessObject = getBusinessObject(shape),
-          categoryValueRef = businessObject.categoryValueRef,
-          definitions = getDefinitions(),
-          category = categoryValueRef ? categoryValueRef.$parent : null;
+        categoryValueRef = businessObject.categoryValueRef,
+        definitions = getDefinitions(),
+        category = categoryValueRef ? categoryValueRef.$parent : null;
 
-      collectionAdd(category.get('categoryValue'), categoryValueRef);
-      collectionAdd(definitions.get('rootElements'), category);
+      collectionAdd(category.get("categoryValue"), categoryValueRef);
+      collectionAdd(definitions.get("rootElements"), category);
     }
   });
 
   /**
    * create new category + value when group was created
    */
-  this.execute('shape.create', function(event) {
-
+  this.execute("shape.create", function(event) {
     var context = event.context,
-        shape = context.shape,
-        businessObject = getBusinessObject(shape),
-        oldBusinessObject = shape.oldBusinessObject;
+      shape = context.shape,
+      businessObject = getBusinessObject(shape),
+      oldBusinessObject = shape.oldBusinessObject;
 
-    if (is(businessObject, 'bpmn:Group') && !businessObject.categoryValueRef) {
-
+    if (is(businessObject, "bpmn:Group") && !businessObject.categoryValueRef) {
       var definitions = getDefinitions(),
-          categoryValue = createCategoryValue(definitions, bpmnFactory);
+        categoryValue = createCategoryValue(definitions, bpmnFactory);
 
       // set name from copied group if existing
       if (oldBusinessObject && oldBusinessObject.categoryValueRef) {
@@ -160,33 +152,26 @@ export default function GroupBehavior(eventBus, bpmnFactory, canvas, elementRegi
 
       // link the reference to the Group
       businessObject.categoryValueRef = categoryValue;
-
     }
-
   });
 
-
-  this.revert('shape.create', function(event) {
-
+  this.revert("shape.create", function(event) {
     var context = event.context,
-        shape = context.shape;
+      shape = context.shape;
 
-    if (is(shape, 'bpmn:Group')) {
-
+    if (is(shape, "bpmn:Group")) {
       removeReferencedCategoryValue(shape);
 
       delete getBusinessObject(shape).categoryValueRef;
-
     }
   });
-
 }
 
 GroupBehavior.$inject = [
-  'eventBus',
-  'bpmnFactory',
-  'canvas',
-  'elementRegistry'
+  "eventBus",
+  "bpmnFactory",
+  "canvas",
+  "elementRegistry"
 ];
 
 inherits(GroupBehavior, CommandInterceptor);

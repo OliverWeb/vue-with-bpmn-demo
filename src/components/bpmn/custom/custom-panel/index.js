@@ -1,6 +1,6 @@
-import CustomPropertiesProvider from './PropertiesProvider';
+import CustomPropertiesProvider from "./PropertiesProvider";
 
 export default {
-  __init__: ['propertiesProvider'],
-  propertiesProvider:['type', CustomPropertiesProvider]
+  __init__: ["propertiesProvider"],
+  propertiesProvider: ["type", CustomPropertiesProvider]
 };

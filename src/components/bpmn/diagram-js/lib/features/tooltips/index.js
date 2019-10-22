@@ -1,6 +1,6 @@
-import Tooltips from './Tooltips';
+import Tooltips from "./Tooltips";
 
 export default {
-  __init__: [ 'tooltips' ],
-  tooltips: [ 'type', Tooltips ]
+  __init__: ["tooltips"],
+  tooltips: ["type", Tooltips]
 };

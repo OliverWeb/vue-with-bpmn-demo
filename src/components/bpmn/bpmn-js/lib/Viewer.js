@@ -4,41 +4,25 @@
  *
  * @see http://bpmn.io/license for more information.
  */
-import {
-  assign,
-  find,
-  isFunction,
-  isNumber,
-  omit
-} from 'min-dash';
+import { assign, find, isFunction, isNumber, omit } from "min-dash";
 
-import {
-  domify,
-  query as domQuery,
-  remove as domRemove
-} from 'min-dom';
+import { domify, query as domQuery, remove as domRemove } from "min-dom";
 
-import {
-  innerSVG
-} from 'tiny-svg';
+import { innerSVG } from "tiny-svg";
 
-import Diagram from 'diagram-js';
-import BpmnModdle from 'bpmn-moddle';
+import Diagram from "diagram-js";
+import BpmnModdle from "bpmn-moddle";
 
-import inherits from 'inherits';
+import inherits from "inherits";
 
-import {
-  importBpmnDiagram
-} from './import/Importer';
+import { importBpmnDiagram } from "./import/Importer";
 
-import CoreModule from './core';
-import TranslateModule from './../../diagram-js/lib/i18n/translate';
-import SelectionModule from './../../diagram-js/lib/features/selection';
-import OverlaysModule from './../../diagram-js/lib/features/overlays';
-
+import CoreModule from "./core";
+import TranslateModule from "./../../diagram-js/lib/i18n/translate";
+import SelectionModule from "./../../diagram-js/lib/features/selection";
+import OverlaysModule from "./../../diagram-js/lib/features/overlays";
 
 function checkValidationError(err) {
-
   // check if we can help the user by indicating wrong BPMN 2.0 xml
   // (in case he or the exporting tool did not get that right)
 
@@ -47,27 +31,28 @@ function checkValidationError(err) {
 
   if (match) {
     err.message =
-      'unparsable content <' + match[1] + '> detected; ' +
-      'this may indicate an invalid BPMN 2.0 diagram file' + match[2];
+      "unparsable content <" +
+      match[1] +
+      "> detected; " +
+      "this may indicate an invalid BPMN 2.0 diagram file" +
+      match[2];
   }
 
   return err;
 }
 
 var DEFAULT_OPTIONS = {
-  width: '100%',
-  height: '100%',
-  position: 'relative'
+  width: "100%",
+  height: "100%",
+  position: "relative"
 };
-
 
 /**
  * Ensure the passed argument is a proper unit (defaulting to px)
  */
 function ensureUnit(val) {
-  return val + (isNumber(val) ? 'px' : '');
+  return val + (isNumber(val) ? "px" : "");
 }
-
 
 /**
  * Find BPMNDiagram in definitions by ID
@@ -82,9 +67,11 @@ function findBPMNDiagram(definitions, diagramId) {
     return null;
   }
 
-  return find(definitions.diagrams, function(element) {
-    return element.id === diagramId;
-  }) || null;
+  return (
+    find(definitions.diagrams, function(element) {
+      return element.id === diagramId;
+    }) || null
+  );
 }
 
 /**
@@ -135,7 +122,6 @@ function findBPMNDiagram(definitions, diagramId) {
  * @param {Array<didi.Module>} [options.additionalModules] a list of modules to use with the default modules
  */
 export default function Viewer(options) {
-
   options = assign({}, DEFAULT_OPTIONS, options);
 
   this._moddle = this._createModdle(options);
@@ -143,7 +129,7 @@ export default function Viewer(options) {
 
   /* <project-logo> */
 
-//   addProjectLogo(this._container);
+  //   addProjectLogo(this._container);
 
   /* </project-logo> */
 
@@ -151,7 +137,6 @@ export default function Viewer(options) {
 }
 
 inherits(Viewer, Diagram);
-
 
 /**
  * Parse and render a BPMN 2.0 diagram.
@@ -188,32 +173,39 @@ Viewer.prototype.importXML = function(xml, bpmnDiagram, done) {
 
   // hook in pre-parse listeners +
   // allow xml manipulation
-  xml = this._emit('import.parse.start', { xml: xml }) || xml;
+  xml = this._emit("import.parse.start", { xml: xml }) || xml;
 
-  this._moddle.fromXML(xml, 'bpmn:Definitions', function(err, definitions, context) {
-
+  this._moddle.fromXML(xml, "bpmn:Definitions", function(
+    err,
+    definitions,
+    context
+  ) {
     // hook in post parse listeners +
     // allow definitions manipulation
-    definitions = self._emit('import.parse.complete', {
-      error: err,
-      definitions: definitions,
-      context: context
-    }) || definitions;
+    definitions =
+      self._emit("import.parse.complete", {
+        error: err,
+        definitions: definitions,
+        context: context
+      }) || definitions;
 
     var parseWarnings = context.warnings;
 
     if (err) {
       err = checkValidationError(err);
 
-      self._emit('import.done', { error: err, warnings: parseWarnings });
+      self._emit("import.done", { error: err, warnings: parseWarnings });
 
       return done(err, parseWarnings);
     }
 
-    self.importDefinitions(definitions, bpmnDiagram, function(err, importWarnings) {
+    self.importDefinitions(definitions, bpmnDiagram, function(
+      err,
+      importWarnings
+    ) {
       var allWarnings = [].concat(parseWarnings, importWarnings || []);
 
-      self._emit('import.done', { error: err, warnings: allWarnings });
+      self._emit("import.done", { error: err, warnings: allWarnings });
 
       done(err, allWarnings);
     });
@@ -240,7 +232,6 @@ Viewer.prototype.importXML = function(xml, bpmnDiagram, done) {
  * @param {Function} [done] invoked with (err, warnings=[])
  */
 Viewer.prototype.importDefinitions = function(definitions, bpmnDiagram, done) {
-
   if (isFunction(bpmnDiagram)) {
     done = bpmnDiagram;
     bpmnDiagram = null;
@@ -273,7 +264,6 @@ Viewer.prototype.importDefinitions = function(definitions, bpmnDiagram, done) {
  * @param {Function} [done] invoked with (err, warnings=[])
  */
 Viewer.prototype.open = function(bpmnDiagramOrId, done) {
-
   if (isFunction(bpmnDiagramOrId)) {
     done = bpmnDiagramOrId;
     bpmnDiagramOrId = null;
@@ -286,14 +276,14 @@ Viewer.prototype.open = function(bpmnDiagramOrId, done) {
   done = done || function() {};
 
   if (!definitions) {
-    return done(new Error('no XML imported'));
+    return done(new Error("no XML imported"));
   }
 
-  if (typeof bpmnDiagramOrId === 'string') {
+  if (typeof bpmnDiagramOrId === "string") {
     bpmnDiagram = findBPMNDiagram(definitions, bpmnDiagramOrId);
 
     if (!bpmnDiagram) {
-      return done(new Error('BPMNDiagram <' + bpmnDiagramOrId + '> not found'));
+      return done(new Error("BPMNDiagram <" + bpmnDiagramOrId + "> not found"));
     }
   }
 
@@ -330,7 +320,6 @@ Viewer.prototype.open = function(bpmnDiagramOrId, done) {
  * @param {Function} done invoked with (err, xml)
  */
 Viewer.prototype.saveXML = function(options, done) {
-
   if (!done) {
     done = options;
     options = {};
@@ -341,28 +330,29 @@ Viewer.prototype.saveXML = function(options, done) {
   var definitions = this._definitions;
 
   if (!definitions) {
-    return done(new Error('no definitions loaded'));
+    return done(new Error("no definitions loaded"));
   }
 
   // allow to fiddle around with definitions
-  definitions = this._emit('saveXML.start', {
-    definitions: definitions
-  }) || definitions;
+  definitions =
+    this._emit("saveXML.start", {
+      definitions: definitions
+    }) || definitions;
 
   this._moddle.toXML(definitions, options, function(err, xml) {
-
     try {
-      xml = self._emit('saveXML.serialized', {
-        error: err,
-        xml: xml
-      }) || xml;
+      xml =
+        self._emit("saveXML.serialized", {
+          error: err,
+          xml: xml
+        }) || xml;
 
-      self._emit('saveXML.done', {
+      self._emit("saveXML.done", {
         error: err,
         xml: xml
       });
     } catch (e) {
-      console.error('error in saveXML life-cycle listener', e);
+      console.error("error in saveXML life-cycle listener", e);
     }
 
     done(err, xml);
@@ -386,41 +376,53 @@ Viewer.prototype.saveXML = function(options, done) {
  * @param {Function} done invoked with (err, svgStr)
  */
 Viewer.prototype.saveSVG = function(options, done) {
-
   if (!done) {
     done = options;
     options = {};
   }
 
-  this._emit('saveSVG.start');
+  this._emit("saveSVG.start");
 
   var svg, err;
 
   try {
-    var canvas = this.get('canvas');
+    var canvas = this.get("canvas");
 
     var contentNode = canvas.getDefaultLayer(),
-        defsNode = domQuery('defs', canvas._svg);
+      defsNode = domQuery("defs", canvas._svg);
 
     var contents = innerSVG(contentNode),
-        defs = defsNode ? '<defs>' + innerSVG(defsNode) + '</defs>' : '';
+      defs = defsNode ? "<defs>" + innerSVG(defsNode) + "</defs>" : "";
 
     var bbox = contentNode.getBBox();
 
     svg =
       '<?xml version="1.0" encoding="utf-8"?>\n' +
-      '<!-- created with bpmn-js / http://bpmn.io -->\n' +
+      "<!-- created with bpmn-js / http://bpmn.io -->\n" +
       '<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">\n' +
       '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" ' +
-           'width="' + bbox.width + '" height="' + bbox.height + '" ' +
-           'viewBox="' + bbox.x + ' ' + bbox.y + ' ' + bbox.width + ' ' + bbox.height + '" version="1.1">' +
-        defs + contents +
-      '</svg>';
+      'width="' +
+      bbox.width +
+      '" height="' +
+      bbox.height +
+      '" ' +
+      'viewBox="' +
+      bbox.x +
+      " " +
+      bbox.y +
+      " " +
+      bbox.width +
+      " " +
+      bbox.height +
+      '" version="1.1">' +
+      defs +
+      contents +
+      "</svg>";
   } catch (e) {
     err = e;
   }
 
-  this._emit('saveSVG.done', {
+  this._emit("saveSVG.done", {
     error: err,
     svg: svg
   });
@@ -459,7 +461,6 @@ Viewer.prototype.saveSVG = function(options, done) {
  * @method Viewer#invoke
  */
 
-
 Viewer.prototype._setDefinitions = function(definitions) {
   this._definitions = definitions;
 };
@@ -477,13 +478,12 @@ Viewer.prototype.getModules = function() {
  * @method Viewer#clear
  */
 Viewer.prototype.clear = function() {
-
   // remove businessObject#di binding
   //
   // this is necessary, as we establish the bindings
   // in the BpmnTreeWalker (and assume none are given
   // on reimport)
-  this.get('elementRegistry').forEach(function(element) {
+  this.get("elementRegistry").forEach(function(element) {
     var bo = element.businessObject;
 
     if (bo && bo.di) {
@@ -500,7 +500,6 @@ Viewer.prototype.clear = function() {
  * remainders from the document tree.
  */
 Viewer.prototype.destroy = function() {
-
   // diagram destroy
   Diagram.prototype.destroy.call(this);
 
@@ -519,7 +518,7 @@ Viewer.prototype.destroy = function() {
  * @param {Object} [that]
  */
 Viewer.prototype.on = function(event, priority, callback, target) {
-  return this.get('eventBus').on(event, priority, callback, target);
+  return this.get("eventBus").on(event, priority, callback, target);
 };
 
 /**
@@ -529,13 +528,12 @@ Viewer.prototype.on = function(event, priority, callback, target) {
  * @param {Function} callback
  */
 Viewer.prototype.off = function(event, callback) {
-  this.get('eventBus').off(event, callback);
+  this.get("eventBus").off(event, callback);
 };
 
 Viewer.prototype.attachTo = function(parentNode) {
-
   if (!parentNode) {
-    throw new Error('parentNode required');
+    throw new Error("parentNode required");
   }
 
   // ensure we detach from the
@@ -547,15 +545,15 @@ Viewer.prototype.attachTo = function(parentNode) {
     parentNode = parentNode.get(0);
   }
 
-  if (typeof parentNode === 'string') {
+  if (typeof parentNode === "string") {
     parentNode = domQuery(parentNode);
   }
 
   parentNode.appendChild(this._container);
 
-  this._emit('attach', {});
+  this._emit("attach", {});
 
-  this.get('canvas').resized();
+  this.get("canvas").resized();
 };
 
 Viewer.prototype.getDefinitions = function() {
@@ -563,33 +561,31 @@ Viewer.prototype.getDefinitions = function() {
 };
 
 Viewer.prototype.detach = function() {
-
   var container = this._container,
-      parentNode = container.parentNode;
+    parentNode = container.parentNode;
 
   if (!parentNode) {
     return;
   }
 
-  this._emit('detach', {});
+  this._emit("detach", {});
 
   parentNode.removeChild(container);
 };
 
 Viewer.prototype._init = function(container, moddle, options) {
-
   var baseModules = options.modules || this.getModules(),
-      additionalModules = options.additionalModules || [],
-      staticModules = [
-        {
-          bpmnjs: [ 'value', this ],
-          moddle: [ 'value', moddle ]
-        }
-      ];
+    additionalModules = options.additionalModules || [],
+    staticModules = [
+      {
+        bpmnjs: ["value", this],
+        moddle: ["value", moddle]
+      }
+    ];
 
   var diagramModules = [].concat(staticModules, baseModules, additionalModules);
 
-  var diagramOptions = assign(omit(options, [ 'additionalModules' ]), {
+  var diagramOptions = assign(omit(options, ["additionalModules"]), {
     canvas: assign({}, options.canvas, { container: container }),
     modules: diagramModules
   });
@@ -611,11 +607,10 @@ Viewer.prototype._init = function(container, moddle, options) {
  * @return {Object} event processing result (if any)
  */
 Viewer.prototype._emit = function(type, event) {
-  return this.get('eventBus').fire(type, event);
+  return this.get("eventBus").fire(type, event);
 };
 
 Viewer.prototype._createContainer = function(options) {
-
   var container = domify('<div class="bjs-container"></div>');
 
   assign(container.style, {
@@ -628,7 +623,11 @@ Viewer.prototype._createContainer = function(options) {
 };
 
 Viewer.prototype._createModdle = function(options) {
-  var moddleOptions = assign({}, this._moddleExtensions, options.moddleExtensions);
+  var moddleOptions = assign(
+    {},
+    this._moddleExtensions,
+    options.moddleExtensions
+  );
   return new BpmnModdle(moddleOptions);
 };
 
@@ -645,14 +644,9 @@ Viewer.prototype._moddleExtensions = {};
 
 /* <project-logo> */
 
-import {
-  open as openPoweredBy,
-  BPMNIO_IMG
-} from './util/PoweredByUtil';
+import { open as openPoweredBy, BPMNIO_IMG } from "./util/PoweredByUtil";
 
-import {
-  event as domEvent
-} from 'min-dom';
+import { event as domEvent } from "min-dom";
 
 /**
  * Adds the project logo to the diagram container as
@@ -667,18 +661,18 @@ function addProjectLogo(container) {
 
   var linkMarkup =
     '<a href="http://bpmn.io" ' +
-       'target="_blank" ' +
-       'class="bjs-powered-by" ' +
-       'title="Powered by bpmn.io" ' +
-       'style="position: absolute; bottom: 15px; right: 15px; z-index: 100">' +
-      img +
-    '</a>';
+    'target="_blank" ' +
+    'class="bjs-powered-by" ' +
+    'title="Powered by bpmn.io" ' +
+    'style="position: absolute; bottom: 15px; right: 15px; z-index: 100">' +
+    img +
+    "</a>";
 
   var linkElement = domify(linkMarkup);
 
   container.appendChild(linkElement);
 
-  domEvent.bind(linkElement, 'click', function(event) {
+  domEvent.bind(linkElement, "click", function(event) {
     openPoweredBy();
 
     event.preventDefault();

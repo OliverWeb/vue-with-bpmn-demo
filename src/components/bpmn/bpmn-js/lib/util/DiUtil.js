@@ -1,24 +1,17 @@
-import {
-  is,
-  getBusinessObject
-} from './ModelUtil';
+import { is, getBusinessObject } from "./ModelUtil";
 
-import {
-  forEach
-} from 'min-dash';
-
+import { forEach } from "min-dash";
 
 export function isExpanded(element) {
-
-  if (is(element, 'bpmn:CallActivity')) {
+  if (is(element, "bpmn:CallActivity")) {
     return false;
   }
 
-  if (is(element, 'bpmn:SubProcess')) {
+  if (is(element, "bpmn:SubProcess")) {
     return !!getBusinessObject(element).di.isExpanded;
   }
 
-  if (is(element, 'bpmn:Participant')) {
+  if (is(element, "bpmn:Participant")) {
     return !!getBusinessObject(element).processRef;
   }
 
@@ -35,7 +28,7 @@ export function isEventSubProcess(element) {
 
 export function hasEventDefinition(element, eventType) {
   var bo = getBusinessObject(element),
-      hasEventDefinition = false;
+    hasEventDefinition = false;
 
   if (bo.eventDefinitions) {
     forEach(bo.eventDefinitions, function(event) {
@@ -49,13 +42,13 @@ export function hasEventDefinition(element, eventType) {
 }
 
 export function hasErrorEventDefinition(element) {
-  return hasEventDefinition(element, 'bpmn:ErrorEventDefinition');
+  return hasEventDefinition(element, "bpmn:ErrorEventDefinition");
 }
 
 export function hasEscalationEventDefinition(element) {
-  return hasEventDefinition(element, 'bpmn:EscalationEventDefinition');
+  return hasEventDefinition(element, "bpmn:EscalationEventDefinition");
 }
 
 export function hasCompensateEventDefinition(element) {
-  return hasEventDefinition(element, 'bpmn:CompensateEventDefinition');
+  return hasEventDefinition(element, "bpmn:CompensateEventDefinition");
 }

@@ -1,8 +1,4 @@
-import {
-  getChildLanes,
-  LANE_INDENTATION
-} from '../util/LaneUtil';
-
+import { getChildLanes, LANE_INDENTATION } from "../util/LaneUtil";
 
 /**
  * A handler that splits a lane into a number of sub-lanes,
@@ -15,25 +11,22 @@ export default function SplitLaneHandler(modeling, translate) {
   this._translate = translate;
 }
 
-SplitLaneHandler.$inject = [
-  'modeling',
-  'translate'
-];
-
+SplitLaneHandler.$inject = ["modeling", "translate"];
 
 SplitLaneHandler.prototype.preExecute = function(context) {
-
   var modeling = this._modeling,
-      translate = this._translate;
+    translate = this._translate;
 
   var shape = context.shape,
-      newLanesCount = context.count;
+    newLanesCount = context.count;
 
   var childLanes = getChildLanes(shape),
-      existingLanesCount = childLanes.length;
+    existingLanesCount = childLanes.length;
 
   if (existingLanesCount > newLanesCount) {
-    throw new Error(translate('more than {count} child lanes', { count: newLanesCount }));
+    throw new Error(
+      translate("more than {count} child lanes", { count: newLanesCount })
+    );
   }
 
   var newLanesHeight = Math.round(shape.height / newLanesCount);
@@ -44,19 +37,14 @@ SplitLaneHandler.prototype.preExecute = function(context) {
   //
   // Due to rounding related errors, the bottom lane
   // needs to take up all the remaining space.
-  var laneY,
-      laneHeight,
-      laneBounds,
-      newLaneAttrs,
-      idx;
+  var laneY, laneHeight, laneBounds, newLaneAttrs, idx;
 
   for (idx = 0; idx < newLanesCount; idx++) {
-
     laneY = shape.y + idx * newLanesHeight;
 
     // if bottom lane
     if (idx === newLanesCount - 1) {
-      laneHeight = shape.height - (newLanesHeight * idx);
+      laneHeight = shape.height - newLanesHeight * idx;
     } else {
       laneHeight = newLanesHeight;
     }
@@ -74,7 +62,7 @@ SplitLaneHandler.prototype.preExecute = function(context) {
     } else {
       // create a new lane at position
       newLaneAttrs = {
-        type: 'bpmn:Lane'
+        type: "bpmn:Lane"
       };
 
       modeling.createShape(newLaneAttrs, laneBounds, shape);

@@ -1,33 +1,21 @@
-import {
-  getDirection
-} from './SpaceUtil';
+import { getDirection } from "./SpaceUtil";
 
-import {
-  set as cursorSet
-} from '../../util/Cursor';
+import { set as cursorSet } from "../../util/Cursor";
 
-import {
-  hasPrimaryModifier
-} from '../../util/Mouse';
+import { hasPrimaryModifier } from "../../util/Mouse";
 
 var abs = Math.abs,
-    round = Math.round;
+  round = Math.round;
 
 var HIGH_PRIORITY = 1500,
-    SPACE_TOOL_CURSOR = 'crosshair';
+  SPACE_TOOL_CURSOR = "crosshair";
 
-var AXIS_TO_DIMENSION = { x: 'width', y: 'height' },
-    AXIS_INVERTED = { x: 'y', y: 'x' };
+var AXIS_TO_DIMENSION = { x: "width", y: "height" },
+  AXIS_INVERTED = { x: "y", y: "x" };
 
-import {
-  selfAndAllChildren as getAllChildren
-} from '../../util/Elements';
+import { selfAndAllChildren as getAllChildren } from "../../util/Elements";
 
-import {
-  assign,
-  forEach
-} from 'min-dash';
-
+import { assign, forEach } from "min-dash";
 
 /**
  * A tool that allows users to create and remove space in a diagram.
@@ -35,9 +23,13 @@ import {
  * The tool needs to be activated manually via {@link SpaceTool#activate(MouseEvent)}.
  */
 export default function SpaceTool(
-    eventBus, dragging, canvas,
-    modeling, rules, toolManager) {
-
+  eventBus,
+  dragging,
+  canvas,
+  modeling,
+  rules,
+  toolManager
+) {
   this._canvas = canvas;
   this._dragging = dragging;
   this._modeling = modeling;
@@ -46,12 +38,12 @@ export default function SpaceTool(
 
   var self = this;
 
-  toolManager.registerTool('space', {
-    tool: 'spaceTool.selection',
-    dragging: 'spaceTool'
+  toolManager.registerTool("space", {
+    tool: "spaceTool.selection",
+    dragging: "spaceTool"
   });
 
-  eventBus.on('spaceTool.selection.end', function(event) {
+  eventBus.on("spaceTool.selection.end", function(event) {
     var target = event.originalEvent.target;
 
     // only reactive on diagram click
@@ -60,14 +52,12 @@ export default function SpaceTool(
       return;
     }
 
-    eventBus.once('spaceTool.selection.ended', function() {
+    eventBus.once("spaceTool.selection.ended", function() {
       self.activateMakeSpace(event.originalEvent);
     });
   });
 
-
-  eventBus.on('spaceTool.move', HIGH_PRIORITY , function(event) {
-
+  eventBus.on("spaceTool.move", HIGH_PRIORITY, function(event) {
     var context = event.context;
 
     if (!context.initialized) {
@@ -75,14 +65,12 @@ export default function SpaceTool(
     }
   });
 
-
-  eventBus.on('spaceTool.end', function(event) {
-
+  eventBus.on("spaceTool.end", function(event) {
     var context = event.context,
-        axis = context.axis,
-        direction = context.direction,
-        movingShapes = context.movingShapes,
-        resizingShapes = context.resizingShapes;
+      axis = context.axis,
+      direction = context.direction,
+      movingShapes = context.movingShapes,
+      resizingShapes = context.resizingShapes;
 
     // skip if create space has not been initialized yet
     if (!context.initialized) {
@@ -90,19 +78,19 @@ export default function SpaceTool(
     }
 
     var delta = { x: round(event.dx), y: round(event.dy) };
-    delta[ AXIS_INVERTED[ axis ] ] = 0;
+    delta[AXIS_INVERTED[axis]] = 0;
 
     var insideBounds = true;
 
     // check if the space tool cursor is inside of bounds of
     // any of the shapes that would be resized.
     forEach(resizingShapes, function(shape) {
-
-      if ((direction === 'w' && event.x > shape.x + shape.width) ||
-          (direction === 'e' && event.x < shape.x) ||
-          (direction === 'n' && event.y > shape.y + shape.height) ||
-          (direction === 's' && event.y < shape.y)) {
-
+      if (
+        (direction === "w" && event.x > shape.x + shape.width) ||
+        (direction === "e" && event.x < shape.x) ||
+        (direction === "n" && event.y > shape.y + shape.height) ||
+        (direction === "s" && event.y < shape.y)
+      ) {
         insideBounds = false;
         return;
       }
@@ -113,23 +101,21 @@ export default function SpaceTool(
       self.makeSpace(movingShapes, resizingShapes, delta, direction);
     }
 
-    eventBus.once('spaceTool.ended', function(event) {
+    eventBus.once("spaceTool.ended", function(event) {
       // reactivate space tool after usage
       self.activateSelection(event.originalEvent, true, true);
     });
-
   });
 }
 
 SpaceTool.$inject = [
-  'eventBus',
-  'dragging',
-  'canvas',
-  'modeling',
-  'rules',
-  'toolManager'
+  "eventBus",
+  "dragging",
+  "canvas",
+  "modeling",
+  "rules",
+  "toolManager"
 ];
-
 
 /**
  * Activate space tool selection
@@ -137,8 +123,12 @@ SpaceTool.$inject = [
  * @param  {MouseEvent} event
  * @param  {Boolean} autoActivate
  */
-SpaceTool.prototype.activateSelection = function(event, autoActivate, reactivate) {
-  this._dragging.init(event, 'spaceTool.selection', {
+SpaceTool.prototype.activateSelection = function(
+  event,
+  autoActivate,
+  reactivate
+) {
+  this._dragging.init(event, "spaceTool.selection", {
     trapClick: false,
     cursor: SPACE_TOOL_CURSOR,
     autoActivate: autoActivate,
@@ -156,7 +146,7 @@ SpaceTool.prototype.activateSelection = function(event, autoActivate, reactivate
  * @param  {MouseEvent} event
  */
 SpaceTool.prototype.activateMakeSpace = function(event) {
-  this._dragging.init(event, 'spaceTool', {
+  this._dragging.init(event, "spaceTool", {
     autoActivate: true,
     cursor: SPACE_TOOL_CURSOR,
     data: {
@@ -173,8 +163,18 @@ SpaceTool.prototype.activateMakeSpace = function(event) {
  * @param  {Point} delta
  * @param  {String} direction
  */
-SpaceTool.prototype.makeSpace = function(movingShapes, resizingShapes, delta, direction) {
-  return this._modeling.createSpace(movingShapes, resizingShapes, delta, direction);
+SpaceTool.prototype.makeSpace = function(
+  movingShapes,
+  resizingShapes,
+  delta,
+  direction
+) {
+  return this._modeling.createSpace(
+    movingShapes,
+    resizingShapes,
+    delta,
+    direction
+  );
 };
 
 /**
@@ -186,11 +186,10 @@ SpaceTool.prototype.makeSpace = function(movingShapes, resizingShapes, delta, di
  * @return {Boolean} true, if successful
  */
 SpaceTool.prototype.initializeMakeSpace = function(event, context) {
-
-  var axis = abs(event.dx) > abs(event.dy) ? 'x' : 'y',
-      offset = event['d' + axis],
-      // start point of create space operation
-      spacePos = event[axis] - offset;
+  var axis = abs(event.dx) > abs(event.dy) ? "x" : "y",
+    offset = event["d" + axis],
+    // start point of create space operation
+    spacePos = event[axis] - offset;
 
   if (abs(offset) < 5) {
     return false;
@@ -212,7 +211,12 @@ SpaceTool.prototype.initializeMakeSpace = function(event, context) {
 
   var allShapes = getAllChildren(rootShape, true);
 
-  var adjustments = this.calculateAdjustments(allShapes, axis, offset, spacePos);
+  var adjustments = this.calculateAdjustments(
+    allShapes,
+    axis,
+    offset,
+    spacePos
+  );
 
   // store data in context
   assign(context, adjustments, {
@@ -220,7 +224,7 @@ SpaceTool.prototype.initializeMakeSpace = function(event, context) {
     direction: getDirection(axis, offset)
   });
 
-  cursorSet('resize-' + (axis === 'x' ? 'ew' : 'ns'));
+  cursorSet("resize-" + (axis === "x" ? "ew" : "ns"));
 
   return true;
 };
@@ -235,19 +239,22 @@ SpaceTool.prototype.initializeMakeSpace = function(event, context) {
  *
  * @return {Object}
  */
-SpaceTool.prototype.calculateAdjustments = function(elements, axis, offset, spacePos) {
-
+SpaceTool.prototype.calculateAdjustments = function(
+  elements,
+  axis,
+  offset,
+  spacePos
+) {
   var movingShapes = [],
-      resizingShapes = [];
+    resizingShapes = [];
 
   var rules = this._rules;
 
   // collect all elements that need to be moved _AND_
   // resized given on the initial create space position
   elements.forEach(function(shape) {
-
     var shapeStart = shape[axis],
-        shapeEnd = shapeStart + shape[AXIS_TO_DIMENSION[axis]];
+      shapeEnd = shapeStart + shape[AXIS_TO_DIMENSION[axis]];
 
     // checking if it's root
     if (!shape.parent) {
@@ -270,10 +277,11 @@ SpaceTool.prototype.calculateAdjustments = function(elements, axis, offset, spac
     }
 
     // shape on top of spacePos, resize only if allowed
-    if (shapeStart < spacePos &&
-        shapeEnd > spacePos &&
-        rules.allowed('shape.resize', { shape: shape })) {
-
+    if (
+      shapeStart < spacePos &&
+      shapeEnd > spacePos &&
+      rules.allowed("shape.resize", { shape: shape })
+    ) {
       return resizingShapes.push(shape);
     }
   });

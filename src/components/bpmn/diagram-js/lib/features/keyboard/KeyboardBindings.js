@@ -1,11 +1,6 @@
-import {
-  isCmd,
-  isKey,
-  isShift
-} from './KeyboardUtil';
+import { isCmd, isKey, isShift } from "./KeyboardUtil";
 
 var LOW_PRIORITY = 500;
-
 
 /**
  * Adds default keyboard bindings.
@@ -17,22 +12,16 @@ var LOW_PRIORITY = 500;
  * @param {Keyboard} keyboard
  */
 export default function KeyboardBindings(eventBus, keyboard) {
-
   var self = this;
 
-  eventBus.on('editorActions.init', LOW_PRIORITY, function(event) {
-
+  eventBus.on("editorActions.init", LOW_PRIORITY, function(event) {
     var editorActions = event.editorActions;
 
     self.registerBindings(keyboard, editorActions);
   });
 }
 
-KeyboardBindings.$inject = [
-  'eventBus',
-  'keyboard'
-];
-
+KeyboardBindings.$inject = ["eventBus", "keyboard"];
 
 /**
  * Register available keyboard bindings.
@@ -40,8 +29,10 @@ KeyboardBindings.$inject = [
  * @param {Keyboard} keyboard
  * @param {EditorActions} editorActions
  */
-KeyboardBindings.prototype.registerBindings = function(keyboard, editorActions) {
-
+KeyboardBindings.prototype.registerBindings = function(
+  keyboard,
+  editorActions
+) {
   /**
    * Add keyboard binding if respective editor action
    * is registered.
@@ -50,21 +41,18 @@ KeyboardBindings.prototype.registerBindings = function(keyboard, editorActions) 
    * @param {Function} fn that implements the key binding
    */
   function addListener(action, fn) {
-
     if (editorActions.isRegistered(action)) {
       keyboard.addListener(fn);
     }
   }
 
-
   // undo
   // (CTRL|CMD) + Z
-  addListener('undo', function(context) {
-
+  addListener("undo", function(context) {
     var event = context.keyEvent;
 
-    if (isCmd(event) && !isShift(event) && isKey(['z', 'Z'], event)) {
-      editorActions.trigger('undo');
+    if (isCmd(event) && !isShift(event) && isKey(["z", "Z"], event)) {
+      editorActions.trigger("undo");
 
       return true;
     }
@@ -73,12 +61,14 @@ KeyboardBindings.prototype.registerBindings = function(keyboard, editorActions) 
   // redo
   // CTRL + Y
   // CMD + SHIFT + Z
-  addListener('redo', function(context) {
-
+  addListener("redo", function(context) {
     var event = context.keyEvent;
 
-    if (isCmd(event) && (isKey(['y', 'Y'], event) || (isKey(['z', 'Z'], event) && isShift(event)))) {
-      editorActions.trigger('redo');
+    if (
+      isCmd(event) &&
+      (isKey(["y", "Y"], event) || (isKey(["z", "Z"], event) && isShift(event)))
+    ) {
+      editorActions.trigger("redo");
 
       return true;
     }
@@ -86,12 +76,11 @@ KeyboardBindings.prototype.registerBindings = function(keyboard, editorActions) 
 
   // copy
   // CTRL/CMD + C
-  addListener('copy', function(context) {
-
+  addListener("copy", function(context) {
     var event = context.keyEvent;
 
-    if (isCmd(event) && isKey(['c', 'C'], event)) {
-      editorActions.trigger('copy');
+    if (isCmd(event) && isKey(["c", "C"], event)) {
+      editorActions.trigger("copy");
 
       return true;
     }
@@ -99,12 +88,11 @@ KeyboardBindings.prototype.registerBindings = function(keyboard, editorActions) 
 
   // paste
   // CTRL/CMD + V
-  addListener('paste', function(context) {
-
+  addListener("paste", function(context) {
     var event = context.keyEvent;
 
-    if (isCmd(event) && isKey(['v', 'V'], event)) {
-      editorActions.trigger('paste');
+    if (isCmd(event) && isKey(["v", "V"], event)) {
+      editorActions.trigger("paste");
 
       return true;
     }
@@ -112,12 +100,11 @@ KeyboardBindings.prototype.registerBindings = function(keyboard, editorActions) 
 
   // zoom in one step
   // CTRL/CMD + +
-  addListener('stepZoom', function(context) {
-
+  addListener("stepZoom", function(context) {
     var event = context.keyEvent;
 
-    if (isKey([ '+', 'Add' ], event) && isCmd(event)) {
-      editorActions.trigger('stepZoom', { value: 1 });
+    if (isKey(["+", "Add"], event) && isCmd(event)) {
+      editorActions.trigger("stepZoom", { value: 1 });
 
       return true;
     }
@@ -125,12 +112,11 @@ KeyboardBindings.prototype.registerBindings = function(keyboard, editorActions) 
 
   // zoom out one step
   // CTRL + -
-  addListener('stepZoom', function(context) {
-
+  addListener("stepZoom", function(context) {
     var event = context.keyEvent;
 
-    if (isKey([ '-', 'Subtract' ], event) && isCmd(event)) {
-      editorActions.trigger('stepZoom', { value: -1 });
+    if (isKey(["-", "Subtract"], event) && isCmd(event)) {
+      editorActions.trigger("stepZoom", { value: -1 });
 
       return true;
     }
@@ -138,12 +124,11 @@ KeyboardBindings.prototype.registerBindings = function(keyboard, editorActions) 
 
   // zoom to the default level
   // CTRL + 0
-  addListener('zoom', function(context) {
-
+  addListener("zoom", function(context) {
     var event = context.keyEvent;
 
-    if (isKey('0', event) && isCmd(event)) {
-      editorActions.trigger('zoom', { value: 1 });
+    if (isKey("0", event) && isCmd(event)) {
+      editorActions.trigger("zoom", { value: 1 });
 
       return true;
     }
@@ -151,12 +136,11 @@ KeyboardBindings.prototype.registerBindings = function(keyboard, editorActions) 
 
   // delete selected element
   // DEL
-  addListener('removeSelection', function(context) {
-
+  addListener("removeSelection", function(context) {
     var event = context.keyEvent;
 
-    if (isKey([ 'Delete', 'Del' ], event)) {
-      editorActions.trigger('removeSelection');
+    if (isKey(["Delete", "Del"], event)) {
+      editorActions.trigger("removeSelection");
 
       return true;
     }

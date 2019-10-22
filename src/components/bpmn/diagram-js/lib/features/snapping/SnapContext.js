@@ -1,11 +1,6 @@
-import {
-  forEach
-} from 'min-dash';
+import { forEach } from "min-dash";
 
-import {
-  snapTo
-} from './SnapUtil';
-
+import { snapTo } from "./SnapUtil";
 
 /**
  * A snap context, containing the (possibly incomplete)
@@ -13,7 +8,6 @@ import {
  * to computed snap points.
  */
 export default function SnapContext() {
-
   /**
    * Map<String, SnapPoints> mapping drop targets to
    * a list of possible snappings.
@@ -45,11 +39,9 @@ export default function SnapContext() {
   this._defaultSnaps = {};
 }
 
-
 SnapContext.prototype.getSnapOrigin = function(snapLocation) {
   return this._snapOrigins[snapLocation];
 };
-
 
 SnapContext.prototype.setSnapOrigin = function(snapLocation, initialValue) {
   this._snapOrigins[snapLocation] = initialValue;
@@ -59,9 +51,7 @@ SnapContext.prototype.setSnapOrigin = function(snapLocation, initialValue) {
   }
 };
 
-
 SnapContext.prototype.addDefaultSnap = function(type, point) {
-
   var snapValues = this._defaultSnaps[type];
 
   if (!snapValues) {
@@ -98,7 +88,6 @@ SnapContext.prototype.setSnapLocations = function(snapLocations) {
  * @param {Element|String} target
  */
 SnapContext.prototype.pointsForTarget = function(target) {
-
   var targetId = target.id || target;
 
   var snapPoints = this._targets[targetId];
@@ -111,7 +100,6 @@ SnapContext.prototype.pointsForTarget = function(target) {
   return snapPoints;
 };
 
-
 /**
  * Creates the snap points and initializes them with the
  * given default values.
@@ -119,7 +107,6 @@ SnapContext.prototype.pointsForTarget = function(target) {
  * @param {Object<String, Array<Point>>} [defaultPoints]
  */
 export function SnapPoints(defaultSnaps) {
-
   /**
    * Map<String, Map<(x|y), Array<Number>>> mapping snap locations,
    * i.e. top-left, bottom-right, center to actual snap values.
@@ -130,7 +117,6 @@ export function SnapPoints(defaultSnaps) {
 }
 
 SnapPoints.prototype.add = function(snapLocation, point) {
-
   var snapValues = this._snapValues[snapLocation];
 
   if (!snapValues) {
@@ -146,7 +132,6 @@ SnapPoints.prototype.add = function(snapLocation, point) {
   }
 };
 
-
 SnapPoints.prototype.snap = function(point, snapLocation, axis, tolerance) {
   var snappingValues = this._snapValues[snapLocation];
 
@@ -159,7 +144,6 @@ SnapPoints.prototype.snap = function(point, snapLocation, axis, tolerance) {
  * @param  {Object} defaultSnaps
  */
 SnapPoints.prototype.initDefaults = function(defaultSnaps) {
-
   var self = this;
 
   forEach(defaultSnaps || {}, function(snapPoints, snapLocation) {

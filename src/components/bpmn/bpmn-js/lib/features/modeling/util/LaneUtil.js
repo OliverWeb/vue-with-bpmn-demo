@@ -1,34 +1,23 @@
-import { is } from '../../../util/ModelUtil';
+import { is } from "../../../util/ModelUtil";
 
-import {
-  getParent
-} from './ModelingUtil';
+import { getParent } from "./ModelingUtil";
 
-import {
-  asTRBL
-} from './../../../../../diagram-js/lib/layout/LayoutUtil';
+import { asTRBL } from "./../../../../../diagram-js/lib/layout/LayoutUtil";
 
 import {
   substractTRBL,
   resizeTRBL
-} from './../../../../../diagram-js/lib/features/resize/ResizeUtil';
+} from "./../../../../../diagram-js/lib/features/resize/ResizeUtil";
 
 var abs = Math.abs;
-
 
 function getTRBLResize(oldBounds, newBounds) {
   return substractTRBL(asTRBL(newBounds), asTRBL(oldBounds));
 }
 
-
-var LANE_PARENTS = [
-  'bpmn:Participant',
-  'bpmn:Process',
-  'bpmn:SubProcess'
-];
+var LANE_PARENTS = ["bpmn:Participant", "bpmn:Process", "bpmn:SubProcess"];
 
 export var LANE_INDENTATION = 30;
-
 
 /**
  * Collect all lane shapes in the given paren
@@ -39,11 +28,10 @@ export var LANE_INDENTATION = 30;
  * @return {Array<djs.model.Base>}
  */
 export function collectLanes(shape, collectedShapes) {
-
   collectedShapes = collectedShapes || [];
 
   shape.children.filter(function(s) {
-    if (is(s, 'bpmn:Lane')) {
+    if (is(s, "bpmn:Lane")) {
       collectLanes(s, collectedShapes);
 
       collectedShapes.push(s);
@@ -52,7 +40,6 @@ export function collectLanes(shape, collectedShapes) {
 
   return collectedShapes;
 }
-
 
 /**
  * Return the lane children of the given element.
@@ -63,10 +50,9 @@ export function collectLanes(shape, collectedShapes) {
  */
 export function getChildLanes(shape) {
   return shape.children.filter(function(c) {
-    return is(c, 'bpmn:Lane');
+    return is(c, "bpmn:Lane");
   });
 }
-
 
 /**
  * Return the root element containing the given lane shape
@@ -79,7 +65,6 @@ export function getLanesRoot(shape) {
   return getParent(shape, LANE_PARENTS) || shape;
 }
 
-
 /**
  * Compute the required resize operations for lanes
  * adjacent to the given shape, assuming it will be
@@ -91,27 +76,25 @@ export function getLanesRoot(shape) {
  * @return {Array<Object>}
  */
 export function computeLanesResize(shape, newBounds) {
-
   var rootElement = getLanesRoot(shape);
 
-  var initialShapes = is(rootElement, 'bpmn:Process') ? [] : [ rootElement ];
+  var initialShapes = is(rootElement, "bpmn:Process") ? [] : [rootElement];
 
   var allLanes = collectLanes(rootElement, initialShapes),
-      shapeTrbl = asTRBL(shape),
-      shapeNewTrbl = asTRBL(newBounds),
-      trblResize = getTRBLResize(shape, newBounds),
-      resizeNeeded = [];
+    shapeTrbl = asTRBL(shape),
+    shapeNewTrbl = asTRBL(newBounds),
+    trblResize = getTRBLResize(shape, newBounds),
+    resizeNeeded = [];
 
   allLanes.forEach(function(other) {
-
     if (other === shape) {
       return;
     }
 
     var topResize = 0,
-        rightResize = trblResize.right,
-        bottomResize = 0,
-        leftResize = trblResize.left;
+      rightResize = trblResize.right,
+      bottomResize = 0,
+      leftResize = trblResize.left;
 
     var otherTrbl = asTRBL(other);
 
@@ -136,7 +119,6 @@ export function computeLanesResize(shape, newBounds) {
     }
 
     if (topResize || rightResize || bottomResize || leftResize) {
-
       resizeNeeded.push({
         shape: other,
         newBounds: resizeTRBL(other, {
@@ -147,7 +129,6 @@ export function computeLanesResize(shape, newBounds) {
         })
       });
     }
-
   });
 
   return resizeNeeded;

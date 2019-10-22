@@ -1,16 +1,11 @@
-import {
-  sortBy,
-  forEach,
-  filter
-} from 'min-dash';
+import { sortBy, forEach, filter } from "min-dash";
 
 var AXIS_DIMENSIONS = {
-  horizontal: [ 'x', 'width' ],
-  vertical: [ 'y', 'height' ]
+  horizontal: ["x", "width"],
+  vertical: ["y", "height"]
 };
 
 var THRESHOLD = 5;
-
 
 /**
  * Groups and filters elements and then trigger even distribution.
@@ -23,8 +18,8 @@ export default function DistributeElements(modeling) {
   // register filter for filtering big elements
   this.registerFilter(function(elements, axis, dimension) {
     var elementsSize = 0,
-        numOfShapes = 0,
-        avgDimension;
+      numOfShapes = 0,
+      avgDimension;
 
     forEach(elements, function(element) {
       if (element.waypoints || element.labelTarget) {
@@ -39,14 +34,12 @@ export default function DistributeElements(modeling) {
     avgDimension = Math.round(elementsSize / numOfShapes);
 
     return filter(elements, function(element) {
-      return element[dimension] < (avgDimension + 50);
+      return element[dimension] < avgDimension + 50;
     });
   });
-
 }
 
-DistributeElements.$inject = [ 'modeling' ];
-
+DistributeElements.$inject = ["modeling"];
 
 /**
  * Registers filter functions that allow external parties to filter
@@ -55,8 +48,8 @@ DistributeElements.$inject = [ 'modeling' ];
  * @param  {Function} filterFn
  */
 DistributeElements.prototype.registerFilter = function(filterFn) {
-  if (typeof filterFn !== 'function') {
-    throw new Error('the filter has to be a function');
+  if (typeof filterFn !== "function") {
+    throw new Error("the filter has to be a function");
   }
 
   this._filters.push(filterFn);
@@ -71,8 +64,7 @@ DistributeElements.prototype.registerFilter = function(filterFn) {
 DistributeElements.prototype.trigger = function(elements, orientation) {
   var modeling = this._modeling;
 
-  var groups,
-      distributableElements;
+  var groups, distributableElements;
 
   if (elements.length < 3) {
     return;
@@ -103,9 +95,9 @@ DistributeElements.prototype.trigger = function(elements, orientation) {
  */
 DistributeElements.prototype._filterElements = function(elements) {
   var filters = this._filters,
-      axis = this._axis,
-      dimension = this._dimension,
-      distributableElements = [].concat(elements);
+    axis = this._axis,
+    dimension = this._dimension,
+    distributableElements = [].concat(elements);
 
   if (!filters.length) {
     return elements;
@@ -117,7 +109,6 @@ DistributeElements.prototype._filterElements = function(elements) {
 
   return distributableElements;
 };
-
 
 /**
  * Create range (min, max) groups. Also tries to group elements
@@ -140,9 +131,9 @@ DistributeElements.prototype._filterElements = function(elements) {
  */
 DistributeElements.prototype._createGroups = function(elements) {
   var rangeGroups = [],
-      self = this,
-      axis = this._axis,
-      dimension = this._dimension;
+    self = this,
+    axis = this._axis,
+    dimension = this._dimension;
 
   if (!axis) {
     throw new Error('must have a defined "axis" and "dimension"');
@@ -153,14 +144,14 @@ DistributeElements.prototype._createGroups = function(elements) {
 
   forEach(sortedElements, function(element, idx) {
     var elementRange = self._findRange(element, axis, dimension),
-        range;
+      range;
 
     var previous = rangeGroups[rangeGroups.length - 1];
 
     if (previous && self._hasIntersection(previous.range, elementRange)) {
       rangeGroups[rangeGroups.length - 1].elements.push(element);
     } else {
-      range = { range: elementRange, elements: [ element ] };
+      range = { range: elementRange, elements: [element] };
 
       rangeGroups.push(range);
     }
@@ -168,7 +159,6 @@ DistributeElements.prototype._createGroups = function(elements) {
 
   return rangeGroups;
 };
-
 
 /**
  * Maps a direction to the according axis and dimension
@@ -182,7 +172,6 @@ DistributeElements.prototype._setOrientation = function(direction) {
   this._dimension = orientation[1];
 };
 
-
 /**
  * Checks if the two ranges intercept each other
  *
@@ -192,10 +181,11 @@ DistributeElements.prototype._setOrientation = function(direction) {
  * @return {Boolean}
  */
 DistributeElements.prototype._hasIntersection = function(rangeA, rangeB) {
-  return Math.max(rangeA.min, rangeA.max) >= Math.min(rangeB.min, rangeB.max) &&
-         Math.min(rangeA.min, rangeA.max) <= Math.max(rangeB.min, rangeB.max);
+  return (
+    Math.max(rangeA.min, rangeA.max) >= Math.min(rangeB.min, rangeB.max) &&
+    Math.min(rangeA.min, rangeA.max) <= Math.max(rangeB.min, rangeB.max)
+  );
 };
-
 
 /**
  * Returns the min and max values for an element
@@ -208,7 +198,7 @@ DistributeElements.prototype._hasIntersection = function(rangeA, rangeB) {
  */
 DistributeElements.prototype._findRange = function(element) {
   var axis = element[this._axis],
-      dimension = element[this._dimension];
+    dimension = element[this._dimension];
 
   return {
     min: axis + THRESHOLD,

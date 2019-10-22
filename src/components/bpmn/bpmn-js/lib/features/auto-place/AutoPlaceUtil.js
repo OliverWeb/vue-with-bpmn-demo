@@ -1,16 +1,13 @@
-import { is } from '../../util/ModelUtil';
-import { isAny } from '../modeling/util/ModelingUtil';
+import { is } from "../../util/ModelUtil";
+import { isAny } from "../modeling/util/ModelingUtil";
 
 import {
   getMid,
   asTRBL,
   getOrientation
-} from './../../../../diagram-js/lib/layout/LayoutUtil';
+} from "./../../../../diagram-js/lib/layout/LayoutUtil";
 
-import {
-  find,
-  reduce
-} from 'min-dash';
+import { find, reduce } from "min-dash";
 
 var DEFAULT_HORIZONTAL_DISTANCE = 50;
 
@@ -29,16 +26,15 @@ var PLACEMENT_DETECTION_PAD = 10;
  * @return {Point}
  */
 export function getNewShapePosition(source, element) {
-
-  if (is(element, 'bpmn:TextAnnotation')) {
+  if (is(element, "bpmn:TextAnnotation")) {
     return getTextAnnotationPosition(source, element);
   }
 
-  if (isAny(element, [ 'bpmn:DataObjectReference', 'bpmn:DataStoreReference' ])) {
+  if (isAny(element, ["bpmn:DataObjectReference", "bpmn:DataStoreReference"])) {
     return getDataElementPosition(source, element);
   }
 
-  if (is(element, 'bpmn:FlowNode')) {
+  if (is(element, "bpmn:FlowNode")) {
     return getFlowNodePosition(source, element);
   }
 
@@ -50,28 +46,27 @@ export function getNewShapePosition(source, element) {
  * compute actual distance from previous nodes in flow.
  */
 export function getFlowNodePosition(source, element) {
-
   var sourceTrbl = asTRBL(source);
   var sourceMid = getMid(source);
 
   var horizontalDistance = getFlowNodeDistance(source, element);
 
-  var orientation = 'left',
-      rowSize = 80,
-      margin = 30;
+  var orientation = "left",
+    rowSize = 80,
+    margin = 30;
 
-  if (is(source, 'bpmn:BoundaryEvent')) {
+  if (is(source, "bpmn:BoundaryEvent")) {
     orientation = getOrientation(source, source.host, -25);
 
-    if (orientation.indexOf('top') !== -1) {
+    if (orientation.indexOf("top") !== -1) {
       margin *= -1;
     }
   }
 
   function getVerticalDistance(orient) {
-    if (orient.indexOf('top') != -1) {
+    if (orient.indexOf("top") != -1) {
       return -1 * rowSize;
-    } else if (orient.indexOf('bottom') != -1) {
+    } else if (orient.indexOf("bottom") != -1) {
       return rowSize;
     } else {
       return 0;
@@ -93,7 +88,6 @@ export function getFlowNodePosition(source, element) {
   return deconflictPosition(source, element, position, escapeDirection);
 }
 
-
 /**
  * Compute best distance between source and target,
  * based on existing connections to and from source.
@@ -104,16 +98,14 @@ export function getFlowNodePosition(source, element) {
  * @return {Number} distance
  */
 export function getFlowNodeDistance(source, element) {
-
   var sourceTrbl = asTRBL(source);
 
   // is connection a reference to consider?
   function isReference(c) {
-    return is(c, 'bpmn:SequenceFlow');
+    return is(c, "bpmn:SequenceFlow");
   }
 
   function toTargetNode(weight) {
-
     return function(shape) {
       return {
         shape: shape,
@@ -147,54 +139,61 @@ export function getFlowNodeDistance(source, element) {
   //   * weight existing target nodes higher than source nodes
   //   * only take into account individual nodes once
   //
-  var nodes = reduce([].concat(
-    getTargets(source, isReference).map(toTargetNode(5)),
-    getSources(source, isReference).map(toSourceNode(1))
-  ), function(nodes, node) {
-    // filter out shapes connected twice via source or target
-    nodes[node.shape.id + '__weight_' + node.weight] = node;
+  var nodes = reduce(
+    [].concat(
+      getTargets(source, isReference).map(toTargetNode(5)),
+      getSources(source, isReference).map(toSourceNode(1))
+    ),
+    function(nodes, node) {
+      // filter out shapes connected twice via source or target
+      nodes[node.shape.id + "__weight_" + node.weight] = node;
 
-    return nodes;
-  }, {});
+      return nodes;
+    },
+    {}
+  );
 
   // compute distances between source and incoming nodes;
   // group at the same time by distance and expose the
   // favourite distance as { fav: { count, value } }.
-  var distancesGrouped = reduce(nodes, function(result, node) {
-
-    var shape = node.shape,
+  var distancesGrouped = reduce(
+    nodes,
+    function(result, node) {
+      var shape = node.shape,
         weight = node.weight,
         distanceTo = node.distanceTo;
 
-    var fav = result.fav,
+      var fav = result.fav,
         currentDistance,
         currentDistanceCount,
         currentDistanceEntry;
 
-    currentDistance = distanceTo(shape);
+      currentDistance = distanceTo(shape);
 
-    // ignore too far away peers
-    // or non-left to right modeled nodes
-    if (currentDistance < 0 || currentDistance > MAX_HORIZONTAL_DISTANCE) {
-      return result;
-    }
+      // ignore too far away peers
+      // or non-left to right modeled nodes
+      if (currentDistance < 0 || currentDistance > MAX_HORIZONTAL_DISTANCE) {
+        return result;
+      }
 
-    currentDistanceEntry = result[String(currentDistance)] =
-      result[String(currentDistance)] || {
+      currentDistanceEntry = result[String(currentDistance)] = result[
+        String(currentDistance)
+      ] || {
         value: currentDistance,
         count: 0
       };
 
-    // inc diff count
-    currentDistanceCount = currentDistanceEntry.count += 1 * weight;
+      // inc diff count
+      currentDistanceCount = currentDistanceEntry.count += 1 * weight;
 
-    if (!fav || fav.count < currentDistanceCount) {
-      result.fav = currentDistanceEntry;
-    }
+      if (!fav || fav.count < currentDistanceCount) {
+        result.fav = currentDistanceEntry;
+      }
 
-    return result;
-  }, { });
-
+      return result;
+    },
+    {}
+  );
 
   if (distancesGrouped.fav) {
     return distancesGrouped.fav.value;
@@ -203,12 +202,10 @@ export function getFlowNodeDistance(source, element) {
   }
 }
 
-
 /**
  * Always try to place text annotations top right of source.
  */
 export function getTextAnnotationPosition(source, element) {
-
   var sourceTrbl = asTRBL(source);
 
   var position = {
@@ -226,12 +223,10 @@ export function getTextAnnotationPosition(source, element) {
   return deconflictPosition(source, element, position, escapeDirection);
 }
 
-
 /**
  * Always put element bottom right of source.
  */
 export function getDataElementPosition(source, element) {
-
   var sourceTrbl = asTRBL(source);
 
   var position = {
@@ -249,12 +244,10 @@ export function getDataElementPosition(source, element) {
   return deconflictPosition(source, element, position, escapeDirection);
 }
 
-
 /**
  * Always put element right of source per default.
  */
 export function getDefaultPosition(source, element) {
-
   var sourceTrbl = asTRBL(source);
 
   var sourceMid = getMid(source);
@@ -265,7 +258,6 @@ export function getDefaultPosition(source, element) {
     y: sourceMid.y
   };
 }
-
 
 /**
  * Returns all connected elements around the given source.
@@ -282,7 +274,6 @@ export function getDefaultPosition(source, element) {
  * @return {Array<djs.model.Shape>}
  */
 function getAutoPlaceClosure(source, element) {
-
   var allConnected = getConnected(source);
 
   if (source.host) {
@@ -290,9 +281,11 @@ function getAutoPlaceClosure(source, element) {
   }
 
   if (source.attachers) {
-    allConnected = allConnected.concat(source.attachers.reduce(function(shapes, attacher) {
-      return shapes.concat(getConnected(attacher));
-    }, []));
+    allConnected = allConnected.concat(
+      source.attachers.reduce(function(shapes, attacher) {
+        return shapes.concat(getConnected(attacher));
+      }, [])
+    );
   }
 
   return allConnected;
@@ -305,10 +298,9 @@ function getAutoPlaceClosure(source, element) {
  * into account, too.
  */
 export function getConnectedAtPosition(source, position, element) {
-
   var bounds = {
-    x: position.x - (element.width / 2),
-    y: position.y - (element.height / 2),
+    x: position.x - element.width / 2,
+    y: position.y - element.height / 2,
     width: element.width,
     height: element.height
   };
@@ -316,17 +308,15 @@ export function getConnectedAtPosition(source, position, element) {
   var closure = getAutoPlaceClosure(source, element);
 
   return find(closure, function(target) {
-
     if (target === element) {
       return false;
     }
 
     var orientation = getOrientation(target, bounds, PLACEMENT_DETECTION_PAD);
 
-    return orientation === 'intersect';
+    return orientation === "intersect";
   });
 }
-
 
 /**
  * Returns a new, position for the given element
@@ -344,26 +334,23 @@ export function getConnectedAtPosition(source, position, element) {
  * @return {Point}
  */
 export function deconflictPosition(source, element, position, escapeDelta) {
-
   function nextPosition(existingElement) {
-
     var newPosition = {
       x: position.x,
       y: position.y
     };
 
-    [ 'x', 'y' ].forEach(function(axis) {
-
+    ["x", "y"].forEach(function(axis) {
       var axisDelta = escapeDelta[axis];
 
       if (!axisDelta) {
         return;
       }
 
-      var dimension = axis === 'x' ? 'width' : 'height';
+      var dimension = axis === "x" ? "width" : "height";
 
       var margin = axisDelta.margin,
-          rowSize = axisDelta.rowSize;
+        rowSize = axisDelta.rowSize;
 
       if (margin < 0) {
         newPosition[axis] = Math.min(
@@ -372,7 +359,10 @@ export function deconflictPosition(source, element, position, escapeDelta) {
         );
       } else {
         newPosition[axis] = Math.max(
-          existingTarget[axis] + existingTarget[dimension] + margin + element[dimension] / 2,
+          existingTarget[axis] +
+            existingTarget[dimension] +
+            margin +
+            element[dimension] / 2,
           position[axis] + rowSize + margin
         );
       }
@@ -391,8 +381,6 @@ export function deconflictPosition(source, element, position, escapeDelta) {
   return position;
 }
 
-
-
 // helpers //////////////////////
 
 function noneFilter() {
@@ -407,7 +395,6 @@ function getConnected(element, connectionFilter) {
 }
 
 function getSources(shape, connectionFilter) {
-
   if (!connectionFilter) {
     connectionFilter = noneFilter;
   }
@@ -418,7 +405,6 @@ function getSources(shape, connectionFilter) {
 }
 
 function getTargets(shape, connectionFilter) {
-
   if (!connectionFilter) {
     connectionFilter = noneFilter;
   }

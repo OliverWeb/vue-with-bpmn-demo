@@ -1,5 +1,4 @@
-import { forEach } from 'min-dash';
-
+import { forEach } from "min-dash";
 
 /**
  * A handler that implements reversible replacing of shapes.
@@ -16,11 +15,9 @@ export default function ReplaceShapeHandler(modeling, rules) {
   this._rules = rules;
 }
 
-ReplaceShapeHandler.$inject = [ 'modeling', 'rules' ];
-
+ReplaceShapeHandler.$inject = ["modeling", "rules"];
 
 // api //////////////////////
-
 
 /**
  * Replaces a shape with an replacement Element.
@@ -33,15 +30,14 @@ ReplaceShapeHandler.$inject = [ 'modeling', 'rules' ];
  * @param {Object} context
  */
 ReplaceShapeHandler.prototype.preExecute = function(context) {
-
   var self = this,
-      modeling = this._modeling,
-      rules = this._rules;
+    modeling = this._modeling,
+    rules = this._rules;
 
   var oldShape = context.oldShape,
-      newData = context.newData,
-      hints = context.hints,
-      newShape;
+    newData = context.newData,
+    hints = context.hints,
+    newShape;
 
   function canReconnect(type, source, target, connection) {
     return rules.allowed(type, {
@@ -50,7 +46,6 @@ ReplaceShapeHandler.prototype.preExecute = function(context) {
       connection: connection
     });
   }
-
 
   // (1) place a new shape at the given position
 
@@ -63,13 +58,11 @@ ReplaceShapeHandler.prototype.preExecute = function(context) {
     context.newShape ||
     self.createShape(newData, position, oldShape.parent, hints);
 
-
   // (2) update the host
 
   if (oldShape.host) {
     modeling.updateAttachment(newShape, oldShape.host);
   }
-
 
   // (3) adopt all children from the old shape
 
@@ -84,39 +77,51 @@ ReplaceShapeHandler.prototype.preExecute = function(context) {
   // (4) reconnect connections to the new shape (where allowed)
 
   var incoming = oldShape.incoming.slice(),
-      outgoing = oldShape.outgoing.slice();
+    outgoing = oldShape.outgoing.slice();
 
   forEach(incoming, function(connection) {
     var waypoints = connection.waypoints,
-        docking = waypoints[waypoints.length - 1],
-        source = connection.source,
-        allowed = canReconnect('connection.reconnectEnd', source, newShape, connection);
+      docking = waypoints[waypoints.length - 1],
+      source = connection.source,
+      allowed = canReconnect(
+        "connection.reconnectEnd",
+        source,
+        newShape,
+        connection
+      );
 
     if (allowed) {
-      self.reconnectEnd(connection, newShape, docking, { layoutConnection: hints.layoutConnection });
+      self.reconnectEnd(connection, newShape, docking, {
+        layoutConnection: hints.layoutConnection
+      });
     }
   });
 
   forEach(outgoing, function(connection) {
     var waypoints = connection.waypoints,
-        docking = waypoints[0],
-        target = connection.target,
-        allowed = canReconnect('connection.reconnectStart', newShape, target, connection);
+      docking = waypoints[0],
+      target = connection.target,
+      allowed = canReconnect(
+        "connection.reconnectStart",
+        newShape,
+        target,
+        connection
+      );
 
     if (allowed) {
-      self.reconnectStart(connection, newShape, docking, { layoutConnection: hints.layoutConnection });
+      self.reconnectStart(connection, newShape, docking, {
+        layoutConnection: hints.layoutConnection
+      });
     }
-
   });
 };
-
 
 ReplaceShapeHandler.prototype.postExecute = function(context) {
   var modeling = this._modeling;
 
   var oldShape = context.oldShape,
-      newShape = context.newShape,
-      layoutConnection = context.hints.layoutConnection;
+    newShape = context.newShape,
+    layoutConnection = context.hints.layoutConnection;
 
   // do not layout if explicitly excluded
   if (layoutConnection !== false) {
@@ -132,22 +137,33 @@ ReplaceShapeHandler.prototype.postExecute = function(context) {
   modeling.removeShape(oldShape);
 };
 
-
 ReplaceShapeHandler.prototype.execute = function(context) {};
 
 ReplaceShapeHandler.prototype.revert = function(context) {};
 
-
-ReplaceShapeHandler.prototype.createShape = function(shape, position, target, hints) {
+ReplaceShapeHandler.prototype.createShape = function(
+  shape,
+  position,
+  target,
+  hints
+) {
   return this._modeling.createShape(shape, position, target, hints);
 };
 
-
-ReplaceShapeHandler.prototype.reconnectStart = function(connection, newSource, dockingPoint, hints) {
+ReplaceShapeHandler.prototype.reconnectStart = function(
+  connection,
+  newSource,
+  dockingPoint,
+  hints
+) {
   this._modeling.reconnectStart(connection, newSource, dockingPoint, hints);
 };
 
-
-ReplaceShapeHandler.prototype.reconnectEnd = function(connection, newTarget, dockingPoint, hints) {
+ReplaceShapeHandler.prototype.reconnectEnd = function(
+  connection,
+  newTarget,
+  dockingPoint,
+  hints
+) {
   this._modeling.reconnectEnd(connection, newTarget, dockingPoint, hints);
 };

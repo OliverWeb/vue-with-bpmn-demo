@@ -17,10 +17,9 @@
  * @return {String} the translated string
  */
 export default function translate(template, replacements) {
-
   replacements = replacements || {};
 
   return template.replace(/{([^}]+)}/g, function(_, key) {
-    return replacements[key] || '{' + key + '}';
+    return replacements[key] || "{" + key + "}";
   });
 }

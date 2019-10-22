@@ -1,5 +1,5 @@
-import Clipboard from './Clipboard';
+import Clipboard from "./Clipboard";
 
 export default {
-  clipboard: [ 'type', Clipboard ]
+  clipboard: ["type", Clipboard]
 };

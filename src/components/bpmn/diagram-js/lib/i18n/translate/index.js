@@ -1,5 +1,5 @@
-import translate from './translate';
+import translate from "./translate";
 
 export default {
-  translate: [ 'value', translate ]
+  translate: ["value", translate]
 };

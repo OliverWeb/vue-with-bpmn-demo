@@ -1,11 +1,4 @@
-import {
-  forEach,
-  isFunction,
-  isArray,
-  isNumber,
-  isObject
-} from 'min-dash';
-
+import { forEach, isFunction, isArray, isNumber, isObject } from "min-dash";
 
 var DEFAULT_PRIORITY = 1000;
 
@@ -36,7 +29,7 @@ export default function CommandInterceptor(eventBus) {
   this._eventBus = eventBus;
 }
 
-CommandInterceptor.$inject = [ 'eventBus' ];
+CommandInterceptor.$inject = ["eventBus"];
 
 function unwrapEvent(fn, that) {
   return function(event) {
@@ -55,8 +48,14 @@ function unwrapEvent(fn, that) {
  *                          listener instead
  * @param {Object} [that] Pass context (`this`) to the handler function
  */
-CommandInterceptor.prototype.on = function(events, hook, priority, handlerFn, unwrap, that) {
-
+CommandInterceptor.prototype.on = function(
+  events,
+  hook,
+  priority,
+  handlerFn,
+  unwrap,
+  that
+) {
   if (isFunction(hook) || isNumber(hook)) {
     that = unwrap;
     unwrap = handlerFn;
@@ -78,34 +77,42 @@ CommandInterceptor.prototype.on = function(events, hook, priority, handlerFn, un
   }
 
   if (!isFunction(handlerFn)) {
-    throw new Error('handlerFn must be a function');
+    throw new Error("handlerFn must be a function");
   }
 
   if (!isArray(events)) {
-    events = [ events ];
+    events = [events];
   }
 
   var eventBus = this._eventBus;
 
   forEach(events, function(event) {
     // concat commandStack(.event)?(.hook)?
-    var fullEvent = [ 'commandStack', event, hook ].filter(function(e) { return e; }).join('.');
+    var fullEvent = ["commandStack", event, hook]
+      .filter(function(e) {
+        return e;
+      })
+      .join(".");
 
-    eventBus.on(fullEvent, priority, unwrap ? unwrapEvent(handlerFn, that) : handlerFn, that);
+    eventBus.on(
+      fullEvent,
+      priority,
+      unwrap ? unwrapEvent(handlerFn, that) : handlerFn,
+      that
+    );
   });
 };
 
-
 var hooks = [
-  'canExecute',
-  'preExecute',
-  'preExecuted',
-  'execute',
-  'executed',
-  'postExecute',
-  'postExecuted',
-  'revert',
-  'reverted'
+  "canExecute",
+  "preExecute",
+  "preExecuted",
+  "execute",
+  "executed",
+  "postExecute",
+  "postExecuted",
+  "revert",
+  "reverted"
 ];
 
 /*
@@ -115,7 +122,6 @@ var hooks = [
  * which will in term forward to CommandInterceptor#on.
  */
 forEach(hooks, function(hook) {
-
   /**
    * {canExecute|preExecute|preExecuted|execute|executed|postExecute|postExecuted|revert|reverted}
    *
@@ -128,8 +134,13 @@ forEach(hooks, function(hook) {
    *                          listener instead
    * @param {Object} [that] Pass context (`this`) to the handler function
    */
-  CommandInterceptor.prototype[hook] = function(events, priority, handlerFn, unwrap, that) {
-
+  CommandInterceptor.prototype[hook] = function(
+    events,
+    priority,
+    handlerFn,
+    unwrap,
+    that
+  ) {
     if (isFunction(events) || isNumber(events)) {
       that = unwrap;
       unwrap = handlerFn;

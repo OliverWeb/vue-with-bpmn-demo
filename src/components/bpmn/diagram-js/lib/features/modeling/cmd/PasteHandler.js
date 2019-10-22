@@ -1,9 +1,4 @@
-import {
-  forEach,
-  map,
-  sortBy,
-  assign,
-} from 'min-dash';
+import { forEach, map, sortBy, assign } from "min-dash";
 
 function removeProperties(element, properties) {
   forEach(properties, function(prop) {
@@ -24,9 +19,13 @@ function removeProperties(element, properties) {
  * @param {rules} Rules
  */
 export default function PasteHandler(
-    eventBus, canvas, selection,
-    elementFactory, modeling, rules) {
-
+  eventBus,
+  canvas,
+  selection,
+  elementFactory,
+  modeling,
+  rules
+) {
   this._eventBus = eventBus;
   this._canvas = canvas;
   this._selection = selection;
@@ -35,16 +34,14 @@ export default function PasteHandler(
   this._rules = rules;
 }
 
-
 PasteHandler.$inject = [
-  'eventBus',
-  'canvas',
-  'selection',
-  'elementFactory',
-  'modeling',
-  'rules'
+  "eventBus",
+  "canvas",
+  "selection",
+  "elementFactory",
+  "modeling",
+  "rules"
 ];
-
 
 // api //////////////////////
 
@@ -57,11 +54,11 @@ PasteHandler.$inject = [
  */
 PasteHandler.prototype.preExecute = function(context) {
   var eventBus = this._eventBus,
-      self = this;
+    self = this;
 
   var tree = context.tree,
-      topParent = context.topParent,
-      position = context.position;
+    topParent = context.topParent,
+    position = context.position;
 
   tree.createdElements = {};
 
@@ -84,13 +81,13 @@ PasteHandler.prototype.preExecute = function(context) {
     }
 
     // Order by priority for element creation
-    elements = sortBy(elements, 'priority');
+    elements = sortBy(elements, "priority");
 
     forEach(elements, function(descriptor) {
       var id = descriptor.id,
-          parent = descriptor.parent,
-          hints = {},
-          newPosition;
+        parent = descriptor.parent,
+        hints = {},
+        newPosition;
 
       var element = assign({}, descriptor);
 
@@ -103,7 +100,7 @@ PasteHandler.prototype.preExecute = function(context) {
         return;
       }
 
-      eventBus.fire('element.paste', {
+      eventBus.fire("element.paste", {
         createdElements: tree.createdElements,
         descriptor: element
       });
@@ -124,7 +121,6 @@ PasteHandler.prototype.preExecute = function(context) {
         return;
       }
 
-
       // supply not-root information as hint
       if (element.parent !== topParent) {
         hints.root = false;
@@ -143,17 +139,11 @@ PasteHandler.prototype.preExecute = function(context) {
       }
 
       newPosition = {
-        x: Math.round(position.x + element.delta.x + (element.width / 2)),
-        y: Math.round(position.y + element.delta.y + (element.height / 2))
+        x: Math.round(position.x + element.delta.x + element.width / 2),
+        y: Math.round(position.y + element.delta.y + element.height / 2)
       };
 
-      removeProperties(element, [
-        'id',
-        'parent',
-        'delta',
-        'host',
-        'priority'
-      ]);
+      removeProperties(element, ["id", "parent", "delta", "host", "priority"]);
 
       element = self._createShape(element, parent, newPosition, hints);
 
@@ -170,16 +160,21 @@ PasteHandler.prototype.preExecute = function(context) {
 // move label's to their relative position
 PasteHandler.prototype.postExecute = function(context) {
   var modeling = this._modeling,
-      selection = this._selection,
-      self = this;
+    selection = this._selection,
+    self = this;
 
   var tree = context.tree,
-      labels = tree.labels,
-      topLevelElements = [];
+    labels = tree.labels,
+    topLevelElements = [];
 
   forEach(labels, function(labelDescriptor) {
-    var labelTarget = self._getCreatedElement(labelDescriptor.labelTarget, tree),
-        labels, labelTargetPos, newPosition;
+    var labelTarget = self._getCreatedElement(
+        labelDescriptor.labelTarget,
+        tree
+      ),
+      labels,
+      labelTargetPos,
+      newPosition;
 
     if (!labelTarget) {
       return;
@@ -202,8 +197,8 @@ PasteHandler.prototype.postExecute = function(context) {
 
     forEach(labels, function(label) {
       newPosition = {
-        x: Math.round((labelTargetPos.x - label.x) + labelDescriptor.delta.x),
-        y: Math.round((labelTargetPos.y - label.y) + labelDescriptor.delta.y)
+        x: Math.round(labelTargetPos.x - label.x + labelDescriptor.delta.x),
+        y: Math.round(labelTargetPos.y - label.y + labelDescriptor.delta.y)
       };
 
       modeling.moveShape(label, newPosition, labelTarget.parent);
@@ -212,7 +207,7 @@ PasteHandler.prototype.postExecute = function(context) {
 
   forEach(tree[0], function(descriptor) {
     var id = descriptor.id,
-        toplevel = tree.createdElements[id];
+      toplevel = tree.createdElements[id];
 
     if (toplevel) {
       topLevelElements.push(toplevel.element);
@@ -222,10 +217,14 @@ PasteHandler.prototype.postExecute = function(context) {
   selection.select(topLevelElements);
 };
 
-
-PasteHandler.prototype._createConnection = function(element, parent, parentCenter, tree) {
+PasteHandler.prototype._createConnection = function(
+  element,
+  parent,
+  parentCenter,
+  tree
+) {
   var modeling = this._modeling,
-      rules = this._rules;
+    rules = this._rules;
 
   var connection, source, target, canPaste;
 
@@ -243,7 +242,7 @@ PasteHandler.prototype._createConnection = function(element, parent, parentCente
     return null;
   }
 
-  canPaste = rules.allowed('element.paste', {
+  canPaste = rules.allowed("element.paste", {
     source: source,
     target: target
   });
@@ -253,14 +252,14 @@ PasteHandler.prototype._createConnection = function(element, parent, parentCente
   }
 
   removeProperties(element, [
-    'id',
-    'parent',
-    'delta',
-    'source',
-    'target',
-    'width',
-    'height',
-    'priority'
+    "id",
+    "parent",
+    "delta",
+    "source",
+    "target",
+    "width",
+    "height",
+    "priority"
   ]);
 
   connection = modeling.createConnection(source, target, element, parent);
@@ -268,13 +267,18 @@ PasteHandler.prototype._createConnection = function(element, parent, parentCente
   return connection;
 };
 
-
-PasteHandler.prototype._createShape = function(element, parent, position, isAttach, hints) {
+PasteHandler.prototype._createShape = function(
+  element,
+  parent,
+  position,
+  isAttach,
+  hints
+) {
   var modeling = this._modeling,
-      elementFactory = this._elementFactory,
-      rules = this._rules;
+    elementFactory = this._elementFactory,
+    rules = this._rules;
 
-  var canPaste = rules.allowed('element.paste', {
+  var canPaste = rules.allowed("element.paste", {
     element: element,
     position: position,
     parent: parent
@@ -290,7 +294,6 @@ PasteHandler.prototype._createShape = function(element, parent, position, isAtta
 
   return shape;
 };
-
 
 PasteHandler.prototype._getCreatedElement = function(id, tree) {
   return tree.createdElements[id] && tree.createdElements[id].element;

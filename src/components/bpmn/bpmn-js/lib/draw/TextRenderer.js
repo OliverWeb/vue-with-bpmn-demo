@@ -1,27 +1,33 @@
-import { assign } from 'min-dash';
+import { assign } from "min-dash";
 
-import TextUtil from './../../../diagram-js/lib/util/Text';
+import TextUtil from "./../../../diagram-js/lib/util/Text";
 
 var DEFAULT_FONT_SIZE = 12;
 var LINE_HEIGHT_RATIO = 1.2;
 
 var MIN_TEXT_ANNOTATION_HEIGHT = 30;
 
-
 export default function TextRenderer(config) {
-
-  var defaultStyle = assign({
-    fontFamily: 'Arial, sans-serif',
-    fontSize: DEFAULT_FONT_SIZE,
-    fontWeight: 'normal',
-    lineHeight: LINE_HEIGHT_RATIO
-  }, config && config.defaultStyle || {});
+  var defaultStyle = assign(
+    {
+      fontFamily: "Arial, sans-serif",
+      fontSize: DEFAULT_FONT_SIZE,
+      fontWeight: "normal",
+      lineHeight: LINE_HEIGHT_RATIO
+    },
+    (config && config.defaultStyle) || {}
+  );
 
   var fontSize = parseInt(defaultStyle.fontSize, 10) - 1;
 
-  var externalStyle = assign({}, defaultStyle, {
-    fontSize: fontSize
-  }, config && config.externalStyle || {});
+  var externalStyle = assign(
+    {},
+    defaultStyle,
+    {
+      fontSize: fontSize
+    },
+    (config && config.externalStyle) || {}
+  );
 
   var textUtil = new TextUtil({
     style: defaultStyle
@@ -37,7 +43,6 @@ export default function TextRenderer(config) {
    * @return {Bounds}
    */
   this.getExternalLabelBounds = function(bounds, text) {
-
     var layoutedDimensions = textUtil.getDimensions(text, {
       box: {
         width: 90,
@@ -55,7 +60,6 @@ export default function TextRenderer(config) {
       width: Math.ceil(layoutedDimensions.width),
       height: Math.ceil(layoutedDimensions.height)
     };
-
   };
 
   /**
@@ -67,11 +71,10 @@ export default function TextRenderer(config) {
    * @return {Bounds}
    */
   this.getTextAnnotationBounds = function(bounds, text) {
-
     var layoutedDimensions = textUtil.getDimensions(text, {
       box: bounds,
       style: defaultStyle,
-      align: 'left-top',
+      align: "left-top",
       padding: 5
     });
 
@@ -79,7 +82,10 @@ export default function TextRenderer(config) {
       x: bounds.x,
       y: bounds.y,
       width: bounds.width,
-      height: Math.max(MIN_TEXT_ANNOTATION_HEIGHT, Math.round(layoutedDimensions.height))
+      height: Math.max(
+        MIN_TEXT_ANNOTATION_HEIGHT,
+        Math.round(layoutedDimensions.height)
+      )
     };
   };
 
@@ -108,9 +114,6 @@ export default function TextRenderer(config) {
   this.getExternalStyle = function() {
     return externalStyle;
   };
-
 }
 
-TextRenderer.$inject = [
-  'config.textRenderer'
-];
+TextRenderer.$inject = ["config.textRenderer"];

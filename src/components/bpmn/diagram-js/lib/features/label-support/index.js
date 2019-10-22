@@ -1,6 +1,6 @@
-import LabelSupport from './LabelSupport';
+import LabelSupport from "./LabelSupport";
 
 export default {
-  __init__: [ 'labelSupport'],
-  labelSupport: [ 'type', LabelSupport ]
+  __init__: ["labelSupport"],
+  labelSupport: ["type", LabelSupport]
 };

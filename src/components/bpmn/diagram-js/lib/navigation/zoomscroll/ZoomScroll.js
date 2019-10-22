@@ -1,27 +1,19 @@
-import {
-  event as domEvent,
-  closest as domClosest
-} from 'min-dom';
+import { event as domEvent, closest as domClosest } from "min-dom";
 
-import {
-  getStepSize,
-  cap
-} from './ZoomUtil';
+import { getStepSize, cap } from "./ZoomUtil";
 
-import {
-  log10
-} from '../../util/Math';
+import { log10 } from "../../util/Math";
 
-import {
-  bind
-} from 'min-dash';
+import { bind } from "min-dash";
 
-var sign = Math.sign || function(n) {
-  return n >= 0 ? 1 : -1;
-};
+var sign =
+  Math.sign ||
+  function(n) {
+    return n >= 0 ? 1 : -1;
+  };
 
 var RANGE = { min: 0.2, max: 4 },
-    NUM_STEPS = 10;
+  NUM_STEPS = 10;
 
 var DELTA_THRESHOLD = 0.1;
 
@@ -41,7 +33,6 @@ var DEFAULT_SCALE = 0.75;
  * @param {Canvas} canvas
  */
 export default function ZoomScroll(config, eventBus, canvas) {
-
   config = config || {};
 
   this._enabled = false;
@@ -56,24 +47,19 @@ export default function ZoomScroll(config, eventBus, canvas) {
 
   var self = this;
 
-  eventBus.on('canvas.init', function(e) {
+  eventBus.on("canvas.init", function(e) {
     self._init(config.enabled !== false);
   });
 }
 
-ZoomScroll.$inject = [
-  'config.zoomScroll',
-  'eventBus',
-  'canvas'
-];
+ZoomScroll.$inject = ["config.zoomScroll", "eventBus", "canvas"];
 
 ZoomScroll.prototype.scroll = function scroll(delta) {
   this._canvas.scroll(delta);
 };
 
-
 ZoomScroll.prototype.reset = function reset() {
-  this._canvas.zoom('fit-viewport');
+  this._canvas.zoom("fit-viewport");
 };
 
 /**
@@ -83,7 +69,6 @@ ZoomScroll.prototype.reset = function reset() {
  * @param {Object} position
  */
 ZoomScroll.prototype.zoom = function zoom(delta, position) {
-
   // zoom with half the step size of stepZoom
   var stepSize = getStepSize(RANGE, NUM_STEPS * 2);
 
@@ -98,10 +83,9 @@ ZoomScroll.prototype.zoom = function zoom(delta, position) {
   }
 };
 
-
 ZoomScroll.prototype._handleWheel = function handleWheel(event) {
   // event is already handled by '.djs-scrollable'
-  if (domClosest(event.target, '.djs-scrollable', true)) {
+  if (domClosest(event.target, ".djs-scrollable", true)) {
     return;
   }
 
@@ -117,10 +101,10 @@ ZoomScroll.prototype._handleWheel = function handleWheel(event) {
   var isHorizontalScroll = event.shiftKey;
 
   var factor = -1 * this._scale,
-      delta;
+    delta;
 
   if (isZoom) {
-    factor *= event.deltaMode === 0 ? 0.020 : 0.32;
+    factor *= event.deltaMode === 0 ? 0.02 : 0.32;
   } else {
     factor *= event.deltaMode === 0 ? 1.0 : 16.0;
   }
@@ -133,17 +117,14 @@ ZoomScroll.prototype._handleWheel = function handleWheel(event) {
       y: event.clientY - elementRect.top
     };
 
-    delta = (
-      Math.sqrt(
-        Math.pow(event.deltaY, 2) +
-        Math.pow(event.deltaX, 2)
-      ) * sign(event.deltaY) * factor
-    );
+    delta =
+      Math.sqrt(Math.pow(event.deltaY, 2) + Math.pow(event.deltaX, 2)) *
+      sign(event.deltaY) *
+      factor;
 
     // zoom in relative to diagram {x,y} coordinates
     this.zoom(delta, offset);
   } else {
-
     if (isHorizontalScroll) {
       delta = {
         dx: factor * event.deltaY,
@@ -167,12 +148,10 @@ ZoomScroll.prototype._handleWheel = function handleWheel(event) {
  * @param {Object} position
  */
 ZoomScroll.prototype.stepZoom = function stepZoom(delta, position) {
-
   var stepSize = getStepSize(RANGE, NUM_STEPS);
 
   this._zoom(delta, position, stepSize);
 };
-
 
 /**
  * Zoom in/out given a step size.
@@ -189,7 +168,8 @@ ZoomScroll.prototype._zoom = function(delta, position, stepSize) {
   var currentLinearZoomLevel = log10(canvas.zoom());
 
   // snap to a proximate zoom step
-  var newLinearZoomLevel = Math.round(currentLinearZoomLevel / stepSize) * stepSize;
+  var newLinearZoomLevel =
+    Math.round(currentLinearZoomLevel / stepSize) * stepSize;
 
   // increase or decrease one zoom step in the given direction
   newLinearZoomLevel += stepSize * direction;
@@ -201,36 +181,37 @@ ZoomScroll.prototype._zoom = function(delta, position, stepSize) {
   canvas.zoom(cap(RANGE, newLogZoomLevel), position);
 };
 
-
 /**
  * Toggle the zoom scroll ability via mouse wheel.
  *
  * @param  {Boolean} [newEnabled] new enabled state
  */
 ZoomScroll.prototype.toggle = function toggle(newEnabled) {
-
   var element = this._container;
   var handleWheel = this._handleWheel;
 
   var oldEnabled = this._enabled;
 
-  if (typeof newEnabled === 'undefined') {
+  if (typeof newEnabled === "undefined") {
     newEnabled = !oldEnabled;
   }
 
   // only react on actual changes
   if (oldEnabled !== newEnabled) {
-
     // add or remove wheel listener based on
     // changed enabled state
-    domEvent[newEnabled ? 'bind' : 'unbind'](element, 'wheel', handleWheel, false);
+    domEvent[newEnabled ? "bind" : "unbind"](
+      element,
+      "wheel",
+      handleWheel,
+      false
+    );
   }
 
   this._enabled = newEnabled;
 
   return newEnabled;
 };
-
 
 ZoomScroll.prototype._init = function(newEnabled) {
   this.toggle(newEnabled);

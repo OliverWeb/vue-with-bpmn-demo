@@ -1,21 +1,16 @@
-import {
-  assign,
-  forEach,
-  pick
-} from 'min-dash';
+import { assign, forEach, pick } from "min-dash";
 
-import MoveHelper from './helper/MoveHelper';
+import MoveHelper from "./helper/MoveHelper";
 
 import {
   add as collectionAdd,
   remove as collectionRemove
-} from '../../../util/Collections';
+} from "../../../util/Collections";
 
 import {
   getMovedSourceAnchor,
   getMovedTargetAnchor
-} from './helper/AnchorsHelper';
-
+} from "./helper/AnchorsHelper";
 
 /**
  * A handler that implements reversible moving of shapes.
@@ -26,18 +21,16 @@ export default function MoveShapeHandler(modeling) {
   this._helper = new MoveHelper(modeling);
 }
 
-MoveShapeHandler.$inject = [ 'modeling' ];
-
+MoveShapeHandler.$inject = ["modeling"];
 
 MoveShapeHandler.prototype.execute = function(context) {
-
   var shape = context.shape,
-      delta = context.delta,
-      newParent = context.newParent || shape.parent,
-      newParentIndex = context.newParentIndex,
-      oldParent = shape.parent;
+    delta = context.delta,
+    newParent = context.newParent || shape.parent,
+    newParentIndex = context.newParentIndex,
+    oldParent = shape.parent;
 
-  context.oldBounds = pick(shape, [ 'x', 'y', 'width', 'height']);
+  context.oldBounds = pick(shape, ["x", "y", "width", "height"]);
 
   // save old parent in context
   context.oldParent = oldParent;
@@ -57,15 +50,13 @@ MoveShapeHandler.prototype.execute = function(context) {
 };
 
 MoveShapeHandler.prototype.postExecute = function(context) {
-
   var shape = context.shape,
-      delta = context.delta,
-      hints = context.hints;
+    delta = context.delta,
+    hints = context.hints;
 
   var modeling = this._modeling;
 
   if (hints.layout !== false) {
-
     forEach(shape.incoming, function(c) {
       modeling.layoutConnection(c, {
         connectionEnd: getMovedTargetAnchor(c, shape, delta)
@@ -85,11 +76,10 @@ MoveShapeHandler.prototype.postExecute = function(context) {
 };
 
 MoveShapeHandler.prototype.revert = function(context) {
-
   var shape = context.shape,
-      oldParent = context.oldParent,
-      oldParentIndex = context.oldParentIndex,
-      delta = context.delta;
+    oldParent = context.oldParent,
+    oldParentIndex = context.oldParentIndex,
+    delta = context.delta;
 
   // restore previous location in old parent
   collectionAdd(oldParent.children, shape, oldParentIndex);
@@ -105,9 +95,8 @@ MoveShapeHandler.prototype.revert = function(context) {
 };
 
 MoveShapeHandler.prototype.moveChildren = function(context) {
-
   var delta = context.delta,
-      shape = context.shape;
+    shape = context.shape;
 
   this._helper.moveRecursive(shape.children, delta, null);
 };

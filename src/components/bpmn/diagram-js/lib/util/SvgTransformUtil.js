@@ -1,8 +1,4 @@
-import {
-  transform as svgTransform,
-  createTransform
-} from 'tiny-svg';
-
+import { transform as svgTransform, createTransform } from "tiny-svg";
 
 /**
  * @param {<SVGElement>} element
@@ -21,9 +17,8 @@ export function transform(gfx, x, y, angle, amount) {
   var scale = createTransform();
   scale.setScale(amount || 1, amount || 1);
 
-  svgTransform(gfx, [ translate, rotate, scale ]);
+  svgTransform(gfx, [translate, rotate, scale]);
 }
-
 
 /**
  * @param {SVGElement} element
@@ -37,7 +32,6 @@ export function translate(gfx, x, y) {
   svgTransform(gfx, translate);
 }
 
-
 /**
  * @param {SVGElement} element
  * @param {Number} angle
@@ -48,7 +42,6 @@ export function rotate(gfx, angle) {
 
   svgTransform(gfx, rotate);
 }
-
 
 /**
  * @param {SVGElement} element

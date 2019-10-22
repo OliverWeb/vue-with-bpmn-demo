@@ -1,34 +1,26 @@
-import {
-  isArray,
-  find,
-  without,
-  assign
-} from 'min-dash';
+import { isArray, find, without, assign } from "min-dash";
 
-import {
-  getOrientation,
-  getMid
-} from './LayoutUtil';
+import { getOrientation, getMid } from "./LayoutUtil";
 
 import {
   pointInRect,
   pointDistance,
   pointsAligned,
   pointsOnLine
-} from '../util/Geometry';
+} from "../util/Geometry";
 
 var MIN_SEGMENT_LENGTH = 20,
-    POINT_ORIENTATION_PADDING = 5;
+  POINT_ORIENTATION_PADDING = 5;
 
 var round = Math.round;
 
 var INTERSECTION_THRESHOLD = 20,
-    ORIENTATION_THRESHOLD = {
-      'h:h': 20,
-      'v:v': 20,
-      'h:v': -10,
-      'v:h': -10
-    };
+  ORIENTATION_THRESHOLD = {
+    "h:h": 20,
+    "v:v": 20,
+    "h:v": -10,
+    "v:h": -10
+  };
 
 function needsTurn(orientation, startDirection) {
   return !{
@@ -55,30 +47,29 @@ function canLayoutStraight(direction, targetOrientation) {
 function getSegmentBendpoints(a, b, directions) {
   var orientation = getOrientation(b, a, POINT_ORIENTATION_PADDING);
 
-  var startDirection = directions.split(':')[0];
+  var startDirection = directions.split(":")[0];
 
   var xmid = round((b.x - a.x) / 2 + a.x),
-      ymid = round((b.y - a.y) / 2 + a.y);
+    ymid = round((b.y - a.y) / 2 + a.y);
 
   var segmentEnd, segmentDirections;
 
   var layoutStraight = canLayoutStraight(startDirection, orientation),
-      layoutHorizontal = /h|r|l/.test(startDirection),
-      layoutTurn = false;
+    layoutHorizontal = /h|r|l/.test(startDirection),
+    layoutTurn = false;
 
   var turnNextDirections = false;
 
   if (layoutStraight) {
     segmentEnd = layoutHorizontal ? { x: xmid, y: a.y } : { x: a.x, y: ymid };
 
-    segmentDirections = layoutHorizontal ? 'h:h' : 'v:v';
+    segmentDirections = layoutHorizontal ? "h:h" : "v:v";
   } else {
     layoutTurn = needsTurn(orientation, startDirection);
 
-    segmentDirections = layoutHorizontal ? 'h:v' : 'v:h';
+    segmentDirections = layoutHorizontal ? "h:v" : "v:h";
 
     if (layoutTurn) {
-
       if (layoutHorizontal) {
         turnNextDirections = ymid === a.y;
 
@@ -94,7 +85,6 @@ function getSegmentBendpoints(a, b, directions) {
           y: a.y + MIN_SEGMENT_LENGTH * (/t/.test(startDirection) ? -1 : 1)
         };
       }
-
     } else {
       segmentEnd = {
         x: xmid,
@@ -104,8 +94,10 @@ function getSegmentBendpoints(a, b, directions) {
   }
 
   return {
-    waypoints: getBendpoints(a, segmentEnd, segmentDirections).concat(segmentEnd),
-    directions:  segmentDirections,
+    waypoints: getBendpoints(a, segmentEnd, segmentDirections).concat(
+      segmentEnd
+    ),
+    directions: segmentDirections,
     turnNextDirections: turnNextDirections
   };
 }
@@ -115,7 +107,11 @@ function getStartSegment(a, b, directions) {
 }
 
 function getEndSegment(a, b, directions) {
-  var invertedSegment = getSegmentBendpoints(b, a, invertDirections(directions));
+  var invertedSegment = getSegmentBendpoints(
+    b,
+    a,
+    invertDirections(directions)
+  );
 
   return {
     waypoints: invertedSegment.waypoints.slice().reverse(),
@@ -125,19 +121,18 @@ function getEndSegment(a, b, directions) {
 }
 
 function getMidSegment(startSegment, endSegment) {
-
-  var startDirection = startSegment.directions.split(':')[1],
-      endDirection = endSegment.directions.split(':')[0];
+  var startDirection = startSegment.directions.split(":")[1],
+    endDirection = endSegment.directions.split(":")[0];
 
   if (startSegment.turnNextDirections) {
-    startDirection = startDirection == 'h' ? 'v' : 'h';
+    startDirection = startDirection == "h" ? "v" : "h";
   }
 
   if (endSegment.turnNextDirections) {
-    endDirection = endDirection == 'h' ? 'v' : 'h';
+    endDirection = endDirection == "h" ? "v" : "h";
   }
 
-  var directions = startDirection + ':' + endDirection;
+  var directions = startDirection + ":" + endDirection;
 
   var bendpoints = getBendpoints(
     startSegment.waypoints[startSegment.waypoints.length - 1],
@@ -152,46 +147,41 @@ function getMidSegment(startSegment, endSegment) {
 }
 
 function invertDirections(directions) {
-  return directions.split(':').reverse().join(':');
+  return directions
+    .split(":")
+    .reverse()
+    .join(":");
 }
 
 /**
  * Handle simple layouts with maximum two bendpoints.
  */
 function getSimpleBendpoints(a, b, directions) {
-
   var xmid = round((b.x - a.x) / 2 + a.x),
-      ymid = round((b.y - a.y) / 2 + a.y);
+    ymid = round((b.y - a.y) / 2 + a.y);
 
   // one point, right or left from a
-  if (directions === 'h:v') {
-    return [ { x: b.x, y: a.y } ];
+  if (directions === "h:v") {
+    return [{ x: b.x, y: a.y }];
   }
 
   // one point, above or below a
-  if (directions === 'v:h') {
-    return [ { x: a.x, y: b.y } ];
+  if (directions === "v:h") {
+    return [{ x: a.x, y: b.y }];
   }
 
   // vertical segment between a and b
-  if (directions === 'h:h') {
-    return [
-      { x: xmid, y: a.y },
-      { x: xmid, y: b.y }
-    ];
+  if (directions === "h:h") {
+    return [{ x: xmid, y: a.y }, { x: xmid, y: b.y }];
   }
 
   // horizontal segment between a and b
-  if (directions === 'v:v') {
-    return [
-      { x: a.x, y: ymid },
-      { x: b.x, y: ymid }
-    ];
+  if (directions === "v:v") {
+    return [{ x: a.x, y: ymid }, { x: b.x, y: ymid }];
   }
 
-  throw new Error('invalid directions: can only handle varians of [hv]:[hv]');
+  throw new Error("invalid directions: can only handle varians of [hv]:[hv]");
 }
-
 
 /**
  * Returns the mid points for a manhattan connection between two points.
@@ -221,13 +211,15 @@ function getSimpleBendpoints(a, b, directions) {
  * @return {Array<Point>}
  */
 function getBendpoints(a, b, directions) {
-  directions = directions || 'h:h';
+  directions = directions || "h:h";
 
   if (!isValidDirections(directions)) {
     throw new Error(
-      'unknown directions: <' + directions + '>: ' +
-      'must be specified as <start>:<end> ' +
-      'with start/end in { h,v,t,r,b,l }'
+      "unknown directions: <" +
+        directions +
+        ">: " +
+        "must be specified as <start>:<end> " +
+        "with start/end in { h,v,t,r,b,l }"
     );
   }
 
@@ -235,8 +227,8 @@ function getBendpoints(a, b, directions) {
   // using a three segmented layouting algorithm
   if (isExplicitDirections(directions)) {
     var startSegment = getStartSegment(a, b, directions),
-        endSegment = getEndSegment(a, b, directions),
-        midSegment = getMidSegment(startSegment, endSegment);
+      endSegment = getEndSegment(a, b, directions),
+      midSegment = getMidSegment(startSegment, endSegment);
 
     return [].concat(
       startSegment.waypoints,
@@ -262,7 +254,6 @@ function getBendpoints(a, b, directions) {
  * @return {Array<Point>}
  */
 export function connectPoints(a, b, directions) {
-
   var points = getBendpoints(a, b, directions);
 
   points.unshift(a);
@@ -270,7 +261,6 @@ export function connectPoints(a, b, directions) {
 
   return withoutRedundantPoints(points);
 }
-
 
 /**
  * Connect two rectangles using a manhattan layouted connection.
@@ -289,10 +279,9 @@ export function connectPoints(a, b, directions) {
  * @return {Array<Point>} connection points
  */
 export function connectRectangles(source, target, start, end, hints) {
+  var preferredLayouts = (hints && hints.preferredLayouts) || [];
 
-  var preferredLayouts = hints && hints.preferredLayouts || [];
-
-  var preferredLayout = without(preferredLayouts, 'straight')[0] || 'h:h';
+  var preferredLayout = without(preferredLayouts, "straight")[0] || "h:h";
 
   var threshold = ORIENTATION_THRESHOLD[preferredLayout] || 0;
 
@@ -303,17 +292,21 @@ export function connectRectangles(source, target, start, end, hints) {
   start = start || getMid(source);
   end = end || getMid(target);
 
-  var directionSplit = directions.split(':');
+  var directionSplit = directions.split(":");
 
   // compute actual docking points for start / end
   // this ensures we properly layout only parts of the
   // connection that lies in between the two rectangles
-  var startDocking = getDockingPoint(start, source, directionSplit[0], invertOrientation(orientation)),
-      endDocking = getDockingPoint(end, target, directionSplit[1], orientation);
+  var startDocking = getDockingPoint(
+      start,
+      source,
+      directionSplit[0],
+      invertOrientation(orientation)
+    ),
+    endDocking = getDockingPoint(end, target, directionSplit[1], orientation);
 
   return connectPoints(startDocking, endDocking, directions);
 }
-
 
 /**
  * Repair the connection between two rectangles, of which one has been updated.
@@ -331,7 +324,6 @@ export function connectRectangles(source, target, start, end, hints) {
  * @return {Array<Point>} repaired waypoints
  */
 export function repairConnection(source, target, start, end, waypoints, hints) {
-
   if (isArray(start)) {
     waypoints = start;
     hints = end;
@@ -344,35 +336,45 @@ export function repairConnection(source, target, start, end, waypoints, hints) {
   waypoints = waypoints || [];
 
   var preferredLayouts = hints.preferredLayouts,
-      preferStraight = preferredLayouts.indexOf('straight') !== -1,
-      repairedWaypoints;
+    preferStraight = preferredLayouts.indexOf("straight") !== -1,
+    repairedWaypoints;
 
   // just layout non-existing or simple connections
   // attempt to render straight lines, if required
 
   // attempt to layout a straight line
-  repairedWaypoints = preferStraight && tryLayoutStraight(source, target, start, end, hints);
+  repairedWaypoints =
+    preferStraight && tryLayoutStraight(source, target, start, end, hints);
 
   if (repairedWaypoints) {
     return repairedWaypoints;
   }
 
   // try to layout from end
-  repairedWaypoints = hints.connectionEnd && tryRepairConnectionEnd(target, source, end, waypoints);
+  repairedWaypoints =
+    hints.connectionEnd &&
+    tryRepairConnectionEnd(target, source, end, waypoints);
 
   if (repairedWaypoints) {
     return repairedWaypoints;
   }
 
   // try to layout from start
-  repairedWaypoints = hints.connectionStart && tryRepairConnectionStart(source, target, start, waypoints);
+  repairedWaypoints =
+    hints.connectionStart &&
+    tryRepairConnectionStart(source, target, start, waypoints);
 
   if (repairedWaypoints) {
     return repairedWaypoints;
   }
 
   // or whether nothing seems to have changed
-  if (!hints.connectionStart && !hints.connectionEnd && waypoints && waypoints.length) {
+  if (
+    !hints.connectionStart &&
+    !hints.connectionEnd &&
+    waypoints &&
+    waypoints.length
+  ) {
     return waypoints;
   }
 
@@ -380,15 +382,14 @@ export function repairConnection(source, target, start, end, waypoints, hints) {
   return connectRectangles(source, target, start, end, hints);
 }
 
-
 function inRange(a, start, end) {
   return a >= start && a <= end;
 }
 
 function isInRange(axis, a, b) {
   var size = {
-    x: 'width',
-    y: 'height'
+    x: "width",
+    y: "height"
   };
 
   return inRange(a[axis], b[axis], b[axis] + b[size[axis]]);
@@ -407,8 +408,8 @@ function isInRange(axis, a, b) {
  */
 export function tryLayoutStraight(source, target, start, end, hints) {
   var axis = {},
-      primaryAxis,
-      orientation;
+    primaryAxis,
+    orientation;
 
   orientation = getOrientation(source, target);
 
@@ -419,15 +420,14 @@ export function tryLayoutStraight(source, target, start, end, hints) {
   }
 
   if (/top|bottom/.test(orientation)) {
-    primaryAxis = 'x';
+    primaryAxis = "x";
   }
 
   if (/left|right/.test(orientation)) {
-    primaryAxis = 'y';
+    primaryAxis = "y";
   }
 
-  if (hints.preserveDocking === 'target') {
-
+  if (hints.preserveDocking === "target") {
     if (!isInRange(primaryAxis, end, source)) {
       return null;
     }
@@ -448,9 +448,7 @@ export function tryLayoutStraight(source, target, start, end, hints) {
         y: end.y
       }
     ];
-
   } else {
-
     if (!isInRange(primaryAxis, start, target)) {
       return null;
     }
@@ -472,7 +470,6 @@ export function tryLayoutStraight(source, target, start, end, hints) {
       }
     ];
   }
-
 }
 
 /**
@@ -518,9 +515,7 @@ function tryRepairConnectionEnd(moved, other, newDocking, points) {
  * @return {Array<Point>} the repaired points between the two rectangles
  */
 function _tryRepairConnectionSide(moved, other, newDocking, points) {
-
   function needsRelayout(moved, other, points) {
-
     if (points.length < 3) {
       return true;
     }
@@ -539,30 +534,29 @@ function _tryRepairConnectionSide(moved, other, newDocking, points) {
   }
 
   function repairBendpoint(candidate, oldPeer, newPeer) {
-
     var alignment = pointsAligned(oldPeer, candidate);
 
     switch (alignment) {
-    case 'v':
-      // repair horizontal alignment
-      return { x: newPeer.x, y: candidate.y };
-    case 'h':
-      // repair vertical alignment
-      return { x: candidate.x, y: newPeer.y };
+      case "v":
+        // repair horizontal alignment
+        return { x: newPeer.x, y: candidate.y };
+      case "h":
+        // repair vertical alignment
+        return { x: candidate.x, y: newPeer.y };
     }
 
-    return { x: candidate.x, y: candidate. y };
+    return { x: candidate.x, y: candidate.y };
   }
 
   function removeOverlapping(points, a, b) {
     var i;
 
     for (i = points.length - 2; i !== 0; i--) {
-
       // intersects (?) break, remove all bendpoints up to this one and relayout
-      if (pointInRect(points[i], a, INTERSECTION_THRESHOLD) ||
-          pointInRect(points[i], b, INTERSECTION_THRESHOLD)) {
-
+      if (
+        pointInRect(points[i], a, INTERSECTION_THRESHOLD) ||
+        pointInRect(points[i], b, INTERSECTION_THRESHOLD)
+      ) {
         // return sliced old connection
         return points.slice(i);
       }
@@ -570,7 +564,6 @@ function _tryRepairConnectionSide(moved, other, newDocking, points) {
 
     return points;
   }
-
 
   // (0) only repair what has layoutable bendpoints
 
@@ -582,14 +575,13 @@ function _tryRepairConnectionSide(moved, other, newDocking, points) {
   }
 
   var oldDocking = points[0],
-      newPoints = points.slice(),
-      slicedPoints;
+    newPoints = points.slice(),
+    slicedPoints;
 
   // (2) repair only last line segment and only if it was layouted before
 
   newPoints[0] = newDocking;
   newPoints[1] = repairBendpoint(newPoints[1], oldDocking, newDocking);
-
 
   // (3) if shape intersects with any bendpoint after repair,
   //     remove all segments up to this bendpoint and repair from there
@@ -602,7 +594,6 @@ function _tryRepairConnectionSide(moved, other, newDocking, points) {
 
   return newPoints;
 }
-
 
 /**
  * Returns the manhattan directions connecting two rectangles
@@ -626,30 +617,29 @@ function _tryRepairConnectionSide(moved, other, newDocking, points) {
  * @return {String}
  */
 function getDirections(orientation, defaultLayout) {
-
   // don't override specific trbl directions
   if (isExplicitDirections(defaultLayout)) {
     return defaultLayout;
   }
 
   switch (orientation) {
-  case 'intersect':
-    return 't:t';
+    case "intersect":
+      return "t:t";
 
-  case 'top':
-  case 'bottom':
-    return 'v:v';
+    case "top":
+    case "bottom":
+      return "v:v";
 
-  case 'left':
-  case 'right':
-    return 'h:h';
+    case "left":
+    case "right":
+      return "h:h";
 
-  // 'top-left'
-  // 'top-right'
-  // 'bottom-left'
-  // 'bottom-right'
-  default:
-    return defaultLayout;
+    // 'top-left'
+    // 'top-right'
+    // 'bottom-left'
+    // 'bottom-right'
+    default:
+      return defaultLayout;
   }
 }
 
@@ -663,49 +653,52 @@ function isExplicitDirections(directions) {
 
 function invertOrientation(orientation) {
   return {
-    'top': 'bottom',
-    'bottom': 'top',
-    'left': 'right',
-    'right': 'left',
-    'top-left': 'bottom-right',
-    'bottom-right': 'top-left',
-    'top-right': 'bottom-left',
-    'bottom-left': 'top-right',
+    top: "bottom",
+    bottom: "top",
+    left: "right",
+    right: "left",
+    "top-left": "bottom-right",
+    "bottom-right": "top-left",
+    "top-right": "bottom-left",
+    "bottom-left": "top-right"
   }[orientation];
 }
 
-function getDockingPoint(point, rectangle, dockingDirection, targetOrientation) {
-
+function getDockingPoint(
+  point,
+  rectangle,
+  dockingDirection,
+  targetOrientation
+) {
   // ensure we end up with a specific docking direction
   // based on the targetOrientation, if <h|v> is being passed
 
-  if (dockingDirection === 'h') {
-    dockingDirection = /left/.test(targetOrientation) ? 'l' : 'r';
+  if (dockingDirection === "h") {
+    dockingDirection = /left/.test(targetOrientation) ? "l" : "r";
   }
 
-  if (dockingDirection === 'v') {
-    dockingDirection = /top/.test(targetOrientation) ? 't' : 'b';
+  if (dockingDirection === "v") {
+    dockingDirection = /top/.test(targetOrientation) ? "t" : "b";
   }
 
-  if (dockingDirection === 't') {
+  if (dockingDirection === "t") {
     return { original: point, x: point.x, y: rectangle.y };
   }
 
-  if (dockingDirection === 'r') {
+  if (dockingDirection === "r") {
     return { original: point, x: rectangle.x + rectangle.width, y: point.y };
   }
 
-  if (dockingDirection === 'b') {
+  if (dockingDirection === "b") {
     return { original: point, x: point.x, y: rectangle.y + rectangle.height };
   }
 
-  if (dockingDirection === 'l') {
+  if (dockingDirection === "l") {
     return { original: point, x: rectangle.x, y: point.y };
   }
 
-  throw new Error('unexpected dockingDirection: <' + dockingDirection + '>');
+  throw new Error("unexpected dockingDirection: <" + dockingDirection + ">");
 }
-
 
 /**
  * Return list of waypoints with redundant ones filtered out.
@@ -730,9 +723,8 @@ function getDockingPoint(point, rectangle, dockingDirection, targetOrientation) 
  */
 export function withoutRedundantPoints(waypoints) {
   return waypoints.reduce(function(points, p, idx) {
-
     var previous = points[points.length - 1],
-        next = waypoints[idx + 1];
+      next = waypoints[idx + 1];
 
     if (!pointsOnLine(previous, next, p, 0)) {
       points.push(p);

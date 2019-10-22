@@ -1,7 +1,6 @@
-import inherits from 'inherits';
+import inherits from "inherits";
 
-import CreateShapeHandler from './CreateShapeHandler';
-
+import CreateShapeHandler from "./CreateShapeHandler";
 
 /**
  * A handler that attaches a label to a given target shape.
@@ -14,11 +13,9 @@ export default function CreateLabelHandler(canvas) {
 
 inherits(CreateLabelHandler, CreateShapeHandler);
 
-CreateLabelHandler.$inject = [ 'canvas' ];
-
+CreateLabelHandler.$inject = ["canvas"];
 
 // api //////////////////////
-
 
 var originalExecute = CreateShapeHandler.prototype.execute;
 
@@ -33,7 +30,6 @@ var originalExecute = CreateShapeHandler.prototype.execute;
  * @param {Point} context.position position of the new element
  */
 CreateLabelHandler.prototype.execute = function(context) {
-
   var label = context.shape;
 
   ensureValidDimensions(label);
@@ -54,13 +50,12 @@ CreateLabelHandler.prototype.revert = function(context) {
   return originalRevert.call(this, context);
 };
 
-
 // helpers //////////////////////
 
 function ensureValidDimensions(label) {
   // make sure a label has valid { width, height } dimensions
-  [ 'width', 'height' ].forEach(function(prop) {
-    if (typeof label[prop] === 'undefined') {
+  ["width", "height"].forEach(function(prop) {
+    if (typeof label[prop] === "undefined") {
       label[prop] = 0;
     }
   });

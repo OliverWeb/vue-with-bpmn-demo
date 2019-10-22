@@ -1,6 +1,6 @@
-import PreviewSupport from './PreviewSupport';
+import PreviewSupport from "./PreviewSupport";
 
 export default {
-  __init__: [ 'previewSupport' ],
-  previewSupport: [ 'type', PreviewSupport ]
+  __init__: ["previewSupport"],
+  previewSupport: ["type", PreviewSupport]
 };

@@ -1,11 +1,10 @@
-import { is } from '../../util/ModelUtil';
+import { is } from "../../util/ModelUtil";
 
-import inherits from 'inherits';
+import inherits from "inherits";
 
-import { forEach } from 'min-dash';
+import { forEach } from "min-dash";
 
-import AutoResizeProvider from './../../../../diagram-js/lib/features/auto-resize/AutoResizeProvider';
-
+import AutoResizeProvider from "./../../../../diagram-js/lib/features/auto-resize/AutoResizeProvider";
 
 /**
  * This module is a provider for automatically resizing parent BPMN elements
@@ -18,11 +17,7 @@ export default function BpmnAutoResizeProvider(eventBus, modeling) {
 
 inherits(BpmnAutoResizeProvider, AutoResizeProvider);
 
-BpmnAutoResizeProvider.$inject = [
-  'eventBus',
-  'modeling'
-];
-
+BpmnAutoResizeProvider.$inject = ["eventBus", "modeling"];
 
 /**
  * Check if the given target can be expanded
@@ -32,16 +27,18 @@ BpmnAutoResizeProvider.$inject = [
  * @return {boolean}
  */
 BpmnAutoResizeProvider.prototype.canResize = function(elements, target) {
-
-  if (!is(target, 'bpmn:Participant') && !is(target, 'bpmn:Lane') && !(is(target, 'bpmn:SubProcess'))) {
+  if (
+    !is(target, "bpmn:Participant") &&
+    !is(target, "bpmn:Lane") &&
+    !is(target, "bpmn:SubProcess")
+  ) {
     return false;
   }
 
   var canResize = true;
 
   forEach(elements, function(element) {
-
-    if (is(element, 'bpmn:Lane') || element.labelTarget) {
+    if (is(element, "bpmn:Lane") || element.labelTarget) {
       canResize = false;
       return;
     }

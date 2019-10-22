@@ -1,31 +1,28 @@
-import { forEach } from 'min-dash';
+import { forEach } from "min-dash";
 
-import {
-  Base
-} from '../../model';
+import { Base } from "../../model";
 
-import AppendShapeHandler from './cmd/AppendShapeHandler';
-import CreateShapeHandler from './cmd/CreateShapeHandler';
-import DeleteShapeHandler from './cmd/DeleteShapeHandler';
-import MoveShapeHandler from './cmd/MoveShapeHandler';
-import ResizeShapeHandler from './cmd/ResizeShapeHandler';
-import ReplaceShapeHandler from './cmd/ReplaceShapeHandler';
-import ToggleShapeCollapseHandler from './cmd/ToggleShapeCollapseHandler';
-import SpaceToolHandler from './cmd/SpaceToolHandler';
-import CreateLabelHandler from './cmd/CreateLabelHandler';
-import CreateConnectionHandler from './cmd/CreateConnectionHandler';
-import DeleteConnectionHandler from './cmd/DeleteConnectionHandler';
-import MoveConnectionHandler from './cmd/MoveConnectionHandler';
-import LayoutConnectionHandler from './cmd/LayoutConnectionHandler';
-import UpdateWaypointsHandler from './cmd/UpdateWaypointsHandler';
-import ReconnectConnectionHandler from './cmd/ReconnectConnectionHandler';
-import MoveElementsHandler from './cmd/MoveElementsHandler';
-import DeleteElementsHandler from './cmd/DeleteElementsHandler';
-import DistributeElementsHandler from './cmd/DistributeElementsHandler';
-import AlignElementsHandler from './cmd/AlignElementsHandler';
-import UpdateAttachmentHandler from './cmd/UpdateAttachmentHandler';
-import PasteHandler from './cmd/PasteHandler';
-
+import AppendShapeHandler from "./cmd/AppendShapeHandler";
+import CreateShapeHandler from "./cmd/CreateShapeHandler";
+import DeleteShapeHandler from "./cmd/DeleteShapeHandler";
+import MoveShapeHandler from "./cmd/MoveShapeHandler";
+import ResizeShapeHandler from "./cmd/ResizeShapeHandler";
+import ReplaceShapeHandler from "./cmd/ReplaceShapeHandler";
+import ToggleShapeCollapseHandler from "./cmd/ToggleShapeCollapseHandler";
+import SpaceToolHandler from "./cmd/SpaceToolHandler";
+import CreateLabelHandler from "./cmd/CreateLabelHandler";
+import CreateConnectionHandler from "./cmd/CreateConnectionHandler";
+import DeleteConnectionHandler from "./cmd/DeleteConnectionHandler";
+import MoveConnectionHandler from "./cmd/MoveConnectionHandler";
+import LayoutConnectionHandler from "./cmd/LayoutConnectionHandler";
+import UpdateWaypointsHandler from "./cmd/UpdateWaypointsHandler";
+import ReconnectConnectionHandler from "./cmd/ReconnectConnectionHandler";
+import MoveElementsHandler from "./cmd/MoveElementsHandler";
+import DeleteElementsHandler from "./cmd/DeleteElementsHandler";
+import DistributeElementsHandler from "./cmd/DistributeElementsHandler";
+import AlignElementsHandler from "./cmd/AlignElementsHandler";
+import UpdateAttachmentHandler from "./cmd/UpdateAttachmentHandler";
+import PasteHandler from "./cmd/PasteHandler";
 
 /**
  * The basic modeling entry point.
@@ -41,48 +38,47 @@ export default function Modeling(eventBus, elementFactory, commandStack) {
 
   var self = this;
 
-  eventBus.on('diagram.init', function() {
+  eventBus.on("diagram.init", function() {
     // register modeling handlers
     self.registerHandlers(commandStack);
   });
 }
 
-Modeling.$inject = [ 'eventBus', 'elementFactory', 'commandStack' ];
-
+Modeling.$inject = ["eventBus", "elementFactory", "commandStack"];
 
 Modeling.prototype.getHandlers = function() {
   return {
-    'shape.append': AppendShapeHandler,
-    'shape.create': CreateShapeHandler,
-    'shape.delete': DeleteShapeHandler,
-    'shape.move': MoveShapeHandler,
-    'shape.resize': ResizeShapeHandler,
-    'shape.replace': ReplaceShapeHandler,
-    'shape.toggleCollapse': ToggleShapeCollapseHandler,
+    "shape.append": AppendShapeHandler,
+    "shape.create": CreateShapeHandler,
+    "shape.delete": DeleteShapeHandler,
+    "shape.move": MoveShapeHandler,
+    "shape.resize": ResizeShapeHandler,
+    "shape.replace": ReplaceShapeHandler,
+    "shape.toggleCollapse": ToggleShapeCollapseHandler,
 
-    'spaceTool': SpaceToolHandler,
+    spaceTool: SpaceToolHandler,
 
-    'label.create': CreateLabelHandler,
+    "label.create": CreateLabelHandler,
 
-    'connection.create': CreateConnectionHandler,
-    'connection.delete': DeleteConnectionHandler,
-    'connection.move': MoveConnectionHandler,
-    'connection.layout': LayoutConnectionHandler,
+    "connection.create": CreateConnectionHandler,
+    "connection.delete": DeleteConnectionHandler,
+    "connection.move": MoveConnectionHandler,
+    "connection.layout": LayoutConnectionHandler,
 
-    'connection.updateWaypoints': UpdateWaypointsHandler,
+    "connection.updateWaypoints": UpdateWaypointsHandler,
 
-    'connection.reconnectStart': ReconnectConnectionHandler,
-    'connection.reconnectEnd': ReconnectConnectionHandler,
+    "connection.reconnectStart": ReconnectConnectionHandler,
+    "connection.reconnectEnd": ReconnectConnectionHandler,
 
-    'elements.move': MoveElementsHandler,
-    'elements.delete': DeleteElementsHandler,
+    "elements.move": MoveElementsHandler,
+    "elements.delete": DeleteElementsHandler,
 
-    'elements.distribute': DistributeElementsHandler,
-    'elements.align': AlignElementsHandler,
+    "elements.distribute": DistributeElementsHandler,
+    "elements.align": AlignElementsHandler,
 
-    'element.updateAttachment': UpdateAttachmentHandler,
+    "element.updateAttachment": UpdateAttachmentHandler,
 
-    'elements.paste': PasteHandler
+    "elements.paste": PasteHandler
   };
 };
 
@@ -97,27 +93,30 @@ Modeling.prototype.registerHandlers = function(commandStack) {
   });
 };
 
-
 // modeling helpers //////////////////////
 
-Modeling.prototype.moveShape = function(shape, delta, newParent, newParentIndex, hints) {
-
-  if (typeof newParentIndex === 'object') {
+Modeling.prototype.moveShape = function(
+  shape,
+  delta,
+  newParent,
+  newParentIndex,
+  hints
+) {
+  if (typeof newParentIndex === "object") {
     hints = newParentIndex;
     newParentIndex = null;
   }
 
   var context = {
     shape: shape,
-    delta:  delta,
+    delta: delta,
     newParent: newParent,
     newParentIndex: newParentIndex,
     hints: hints || {}
   };
 
-  this._commandStack.execute('shape.move', context);
+  this._commandStack.execute("shape.move", context);
 };
-
 
 /**
  * Update the attachment of the given shape.
@@ -131,9 +130,8 @@ Modeling.prototype.updateAttachment = function(shape, newHost) {
     newHost: newHost
   };
 
-  this._commandStack.execute('element.updateAttachment', context);
+  this._commandStack.execute("element.updateAttachment", context);
 };
-
 
 /**
  * Move a number of shapes to a new target, either setting it as
@@ -146,20 +144,17 @@ Modeling.prototype.updateAttachment = function(shape, newHost) {
  * @param {Boolean} [hints.attach=false]
  */
 Modeling.prototype.moveElements = function(shapes, delta, target, hints) {
-
   hints = hints || {};
 
   var attach = hints.attach;
 
   var newParent = target,
-      newHost;
+    newHost;
 
   if (attach === true) {
     newHost = target;
     newParent = target.parent;
-  } else
-
-  if (attach === false) {
+  } else if (attach === false) {
     newHost = null;
   }
 
@@ -171,13 +166,17 @@ Modeling.prototype.moveElements = function(shapes, delta, target, hints) {
     hints: hints
   };
 
-  this._commandStack.execute('elements.move', context);
+  this._commandStack.execute("elements.move", context);
 };
 
-
-Modeling.prototype.moveConnection = function(connection, delta, newParent, newParentIndex, hints) {
-
-  if (typeof newParentIndex === 'object') {
+Modeling.prototype.moveConnection = function(
+  connection,
+  delta,
+  newParent,
+  newParentIndex,
+  hints
+) {
+  if (typeof newParentIndex === "object") {
     hints = newParentIndex;
     newParentIndex = undefined;
   }
@@ -190,9 +189,8 @@ Modeling.prototype.moveConnection = function(connection, delta, newParent, newPa
     hints: hints || {}
   };
 
-  this._commandStack.execute('connection.move', context);
+  this._commandStack.execute("connection.move", context);
 };
-
 
 Modeling.prototype.layoutConnection = function(connection, hints) {
   var context = {
@@ -200,9 +198,8 @@ Modeling.prototype.layoutConnection = function(connection, hints) {
     hints: hints || {}
   };
 
-  this._commandStack.execute('connection.layout', context);
+  this._commandStack.execute("connection.layout", context);
 };
-
 
 /**
  * Create connection.
@@ -216,16 +213,22 @@ Modeling.prototype.layoutConnection = function(connection, hints) {
  *
  * @return {djs.model.Connection} the created connection.
  */
-Modeling.prototype.createConnection = function(source, target, parentIndex, connection, parent, hints) {
-
-  if (typeof parentIndex === 'object') {
+Modeling.prototype.createConnection = function(
+  source,
+  target,
+  parentIndex,
+  connection,
+  parent,
+  hints
+) {
+  if (typeof parentIndex === "object") {
     hints = parent;
     parent = connection;
     connection = parentIndex;
     parentIndex = undefined;
   }
 
-  connection = this._create('connection', connection);
+  connection = this._create("connection", connection);
 
   var context = {
     source: source,
@@ -236,11 +239,10 @@ Modeling.prototype.createConnection = function(source, target, parentIndex, conn
     hints: hints
   };
 
-  this._commandStack.execute('connection.create', context);
+  this._commandStack.execute("connection.create", context);
 
   return context.connection;
 };
-
 
 /**
  * Create a shape at the specified position.
@@ -254,9 +256,14 @@ Modeling.prototype.createConnection = function(source, target, parentIndex, conn
  *
  * @return {djs.model.Shape} the created shape
  */
-Modeling.prototype.createShape = function(shape, position, target, parentIndex, hints) {
-
-  if (typeof parentIndex !== 'number') {
+Modeling.prototype.createShape = function(
+  shape,
+  position,
+  target,
+  parentIndex,
+  hints
+) {
+  if (typeof parentIndex !== "number") {
     hints = parentIndex;
     parentIndex = undefined;
   }
@@ -264,10 +271,10 @@ Modeling.prototype.createShape = function(shape, position, target, parentIndex, 
   hints = hints || {};
 
   var attach = hints.attach,
-      parent,
-      host;
+    parent,
+    host;
 
-  shape = this._create('shape', shape);
+  shape = this._create("shape", shape);
 
   if (attach) {
     parent = target.parent;
@@ -285,15 +292,18 @@ Modeling.prototype.createShape = function(shape, position, target, parentIndex, 
     hints: hints
   };
 
-  this._commandStack.execute('shape.create', context);
+  this._commandStack.execute("shape.create", context);
 
   return context.shape;
 };
 
-
-Modeling.prototype.createLabel = function(labelTarget, position, label, parent) {
-
-  label = this._create('label', label);
+Modeling.prototype.createLabel = function(
+  labelTarget,
+  position,
+  label,
+  parent
+) {
+  label = this._create("label", label);
 
   var context = {
     labelTarget: labelTarget,
@@ -302,11 +312,10 @@ Modeling.prototype.createLabel = function(labelTarget, position, label, parent) 
     shape: label
   };
 
-  this._commandStack.execute('label.create', context);
+  this._commandStack.execute("label.create", context);
 
   return context.shape;
 };
-
 
 /**
  * Append shape to given source, drawing a connection
@@ -323,11 +332,16 @@ Modeling.prototype.createLabel = function(labelTarget, position, label, parent) 
  *
  * @return {djs.model.Shape} the newly created shape
  */
-Modeling.prototype.appendShape = function(source, shape, position, target, hints) {
-
+Modeling.prototype.appendShape = function(
+  source,
+  shape,
+  position,
+  target,
+  hints
+) {
   hints = hints || {};
 
-  shape = this._create('shape', shape);
+  shape = this._create("shape", shape);
 
   var context = {
     source: source,
@@ -339,20 +353,18 @@ Modeling.prototype.appendShape = function(source, shape, position, target, hints
     attach: hints.attach
   };
 
-  this._commandStack.execute('shape.append', context);
+  this._commandStack.execute("shape.append", context);
 
   return context.shape;
 };
-
 
 Modeling.prototype.removeElements = function(elements) {
   var context = {
     elements: elements
   };
 
-  this._commandStack.execute('elements.delete', context);
+  this._commandStack.execute("elements.delete", context);
 };
-
 
 Modeling.prototype.distributeElements = function(groups, axis, dimension) {
   var context = {
@@ -361,9 +373,8 @@ Modeling.prototype.distributeElements = function(groups, axis, dimension) {
     dimension: dimension
   };
 
-  this._commandStack.execute('elements.distribute', context);
+  this._commandStack.execute("elements.distribute", context);
 };
-
 
 Modeling.prototype.removeShape = function(shape, hints) {
   var context = {
@@ -371,9 +382,8 @@ Modeling.prototype.removeShape = function(shape, hints) {
     hints: hints || {}
   };
 
-  this._commandStack.execute('shape.delete', context);
+  this._commandStack.execute("shape.delete", context);
 };
-
 
 Modeling.prototype.removeConnection = function(connection, hints) {
   var context = {
@@ -381,7 +391,7 @@ Modeling.prototype.removeConnection = function(connection, hints) {
     hints: hints || {}
   };
 
-  this._commandStack.execute('connection.delete', context);
+  this._commandStack.execute("connection.delete", context);
 };
 
 Modeling.prototype.replaceShape = function(oldShape, newShape, hints) {
@@ -391,7 +401,7 @@ Modeling.prototype.replaceShape = function(oldShape, newShape, hints) {
     hints: hints || {}
   };
 
-  this._commandStack.execute('shape.replace', context);
+  this._commandStack.execute("shape.replace", context);
 
   return context.newShape;
 };
@@ -403,7 +413,7 @@ Modeling.prototype.pasteElements = function(tree, topParent, position) {
     position: position
   };
 
-  this._commandStack.execute('elements.paste', context);
+  this._commandStack.execute("elements.paste", context);
 };
 
 Modeling.prototype.alignElements = function(elements, alignment) {
@@ -412,7 +422,7 @@ Modeling.prototype.alignElements = function(elements, alignment) {
     alignment: alignment
   };
 
-  this._commandStack.execute('elements.align', context);
+  this._commandStack.execute("elements.align", context);
 };
 
 Modeling.prototype.resizeShape = function(shape, newBounds, minBounds, hints) {
@@ -423,10 +433,15 @@ Modeling.prototype.resizeShape = function(shape, newBounds, minBounds, hints) {
     hints: hints
   };
 
-  this._commandStack.execute('shape.resize', context);
+  this._commandStack.execute("shape.resize", context);
 };
 
-Modeling.prototype.createSpace = function(movingShapes, resizingShapes, delta, direction) {
+Modeling.prototype.createSpace = function(
+  movingShapes,
+  resizingShapes,
+  delta,
+  direction
+) {
   var context = {
     movingShapes: movingShapes,
     resizingShapes: resizingShapes,
@@ -434,7 +449,7 @@ Modeling.prototype.createSpace = function(movingShapes, resizingShapes, delta, d
     direction: direction
   };
 
-  this._commandStack.execute('spaceTool', context);
+  this._commandStack.execute("spaceTool", context);
 };
 
 Modeling.prototype.updateWaypoints = function(connection, newWaypoints, hints) {
@@ -444,10 +459,15 @@ Modeling.prototype.updateWaypoints = function(connection, newWaypoints, hints) {
     hints: hints || {}
   };
 
-  this._commandStack.execute('connection.updateWaypoints', context);
+  this._commandStack.execute("connection.updateWaypoints", context);
 };
 
-Modeling.prototype.reconnectStart = function(connection, newSource, dockingOrPoints, hints) {
+Modeling.prototype.reconnectStart = function(
+  connection,
+  newSource,
+  dockingOrPoints,
+  hints
+) {
   var context = {
     connection: connection,
     newSource: newSource,
@@ -455,10 +475,15 @@ Modeling.prototype.reconnectStart = function(connection, newSource, dockingOrPoi
     hints: hints || {}
   };
 
-  this._commandStack.execute('connection.reconnectStart', context);
+  this._commandStack.execute("connection.reconnectStart", context);
 };
 
-Modeling.prototype.reconnectEnd = function(connection, newTarget, dockingOrPoints, hints) {
+Modeling.prototype.reconnectEnd = function(
+  connection,
+  newTarget,
+  dockingOrPoints,
+  hints
+) {
   var context = {
     connection: connection,
     newTarget: newTarget,
@@ -466,11 +491,17 @@ Modeling.prototype.reconnectEnd = function(connection, newTarget, dockingOrPoint
     hints: hints || {}
   };
 
-  this._commandStack.execute('connection.reconnectEnd', context);
+  this._commandStack.execute("connection.reconnectEnd", context);
 };
 
 Modeling.prototype.connect = function(source, target, attrs, hints) {
-  return this.createConnection(source, target, attrs || {}, source.parent, hints);
+  return this.createConnection(
+    source,
+    target,
+    attrs || {},
+    source.parent,
+    hints
+  );
 };
 
 Modeling.prototype._create = function(type, attrs) {
@@ -487,5 +518,5 @@ Modeling.prototype.toggleCollapse = function(shape, hints) {
     hints: hints || {}
   };
 
-  this._commandStack.execute('shape.toggleCollapse', context);
+  this._commandStack.execute("shape.toggleCollapse", context);
 };

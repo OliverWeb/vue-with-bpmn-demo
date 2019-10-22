@@ -1,19 +1,12 @@
-import inherits from 'inherits';
+import inherits from "inherits";
 
-import ContextPadProvider from './../../bpmn-js/lib/features/context-pad/ContextPadProvider';
+import ContextPadProvider from "./../../bpmn-js/lib/features/context-pad/ContextPadProvider";
 
-import {
-  isAny
-} from './../../bpmn-js/lib/features/modeling/util/ModelingUtil';
+import { isAny } from "./../../bpmn-js/lib/features/modeling/util/ModelingUtil";
 
-import {
-  assign,
-  bind
-} from 'min-dash';
-
+import { assign, bind } from "min-dash";
 
 export default function CustomContextPadProvider(injector, connect, translate) {
-
   injector.invoke(ContextPadProvider, this);
 
   var cached = bind(this.getContextPadEntries, this);
@@ -22,17 +15,17 @@ export default function CustomContextPadProvider(injector, connect, translate) {
     var actions = cached(element);
 
     var businessObject = element.businessObject;
-// console.log(businessObject)
+    // console.log(businessObject)
     function startConnect(event, element, autoActivate) {
       connect.start(event, element, autoActivate);
     }
 
-    if (isAny(businessObject, [ 'custom:triangle', 'custom:circle'])) {
+    if (isAny(businessObject, ["custom:triangle", "custom:circle"])) {
       assign(actions, {
-        'connect': {
-          group: 'connect',
-          className: 'bpmn-icon-connection-multi',
-          title: translate('Connect using custom connection'),
+        connect: {
+          group: "connect",
+          className: "bpmn-icon-connection-multi",
+          title: translate("Connect using custom connection"),
           action: {
             click: startConnect,
             dragstart: startConnect
@@ -47,8 +40,4 @@ export default function CustomContextPadProvider(injector, connect, translate) {
 
 inherits(CustomContextPadProvider, ContextPadProvider);
 
-CustomContextPadProvider.$inject = [
-  'injector',
-  'connect',
-  'translate'
-];
+CustomContextPadProvider.$inject = ["injector", "connect", "translate"];

@@ -1,20 +1,20 @@
-import inherits from 'inherits';
+import inherits from "inherits";
 
-import CommandInterceptor from './../../../../../diagram-js/lib/command/CommandInterceptor';
+import CommandInterceptor from "./../../../../../diagram-js/lib/command/CommandInterceptor";
 
-import {
-  is
-} from '../../../util/ModelUtil';
+import { is } from "../../../util/ModelUtil";
 
 var LOW_PRIORITY = 500,
-    HIGH_PRIORITY = 5000;
-
+  HIGH_PRIORITY = 5000;
 
 /**
  * BPMN specific delete lane behavior
  */
-export default function UpdateFlowNodeRefsBehavior(eventBus, modeling, translate) {
-
+export default function UpdateFlowNodeRefsBehavior(
+  eventBus,
+  modeling,
+  translate
+) {
   CommandInterceptor.call(this, eventBus);
 
   /**
@@ -33,7 +33,6 @@ export default function UpdateFlowNodeRefsBehavior(eventBus, modeling, translate
   // the update context
   var context;
 
-
   function initContext() {
     context = context || new UpdateContext();
     context.enter();
@@ -43,16 +42,15 @@ export default function UpdateFlowNodeRefsBehavior(eventBus, modeling, translate
 
   function getContext() {
     if (!context) {
-      throw new Error(translate('out of bounds release'));
+      throw new Error(translate("out of bounds release"));
     }
 
     return context;
   }
 
   function releaseContext() {
-
     if (!context) {
-      throw new Error(translate('out of bounds release'));
+      throw new Error(translate("out of bounds release"));
     }
 
     var triggerUpdate = context.leave();
@@ -66,20 +64,18 @@ export default function UpdateFlowNodeRefsBehavior(eventBus, modeling, translate
     return triggerUpdate;
   }
 
-
   var laneRefUpdateEvents = [
-    'spaceTool',
-    'lane.add',
-    'lane.resize',
-    'lane.split',
-    'elements.move',
-    'elements.delete',
-    'shape.create',
-    'shape.delete',
-    'shape.move',
-    'shape.resize'
+    "spaceTool",
+    "lane.add",
+    "lane.resize",
+    "lane.split",
+    "elements.move",
+    "elements.delete",
+    "shape.create",
+    "shape.delete",
+    "shape.move",
+    "shape.resize"
   ];
-
 
   // listen to a lot of stuff to group lane updates
 
@@ -91,47 +87,37 @@ export default function UpdateFlowNodeRefsBehavior(eventBus, modeling, translate
     releaseContext();
   });
 
-
   // Mark flow nodes + lanes that need an update
 
-  this.preExecute([
-    'shape.create',
-    'shape.move',
-    'shape.delete',
-    'shape.resize'
-  ], function(event) {
-
-    var context = event.context,
+  this.preExecute(
+    ["shape.create", "shape.move", "shape.delete", "shape.resize"],
+    function(event) {
+      var context = event.context,
         shape = context.shape;
 
-    var updateContext = getContext();
+      var updateContext = getContext();
 
-    // no need to update labels
-    if (shape.labelTarget) {
-      return;
-    }
+      // no need to update labels
+      if (shape.labelTarget) {
+        return;
+      }
 
-    if (is(shape, 'bpmn:Lane')) {
-      updateContext.addLane(shape);
-    }
+      if (is(shape, "bpmn:Lane")) {
+        updateContext.addLane(shape);
+      }
 
-    if (is(shape, 'bpmn:FlowNode')) {
-      updateContext.addFlowNode(shape);
+      if (is(shape, "bpmn:FlowNode")) {
+        updateContext.addFlowNode(shape);
+      }
     }
-  });
+  );
 }
 
-UpdateFlowNodeRefsBehavior.$inject = [
-  'eventBus',
-  'modeling' ,
-  'translate'
-];
+UpdateFlowNodeRefsBehavior.$inject = ["eventBus", "modeling", "translate"];
 
 inherits(UpdateFlowNodeRefsBehavior, CommandInterceptor);
 
-
 function UpdateContext() {
-
   this.flowNodes = [];
   this.lanes = [];
 

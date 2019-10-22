@@ -1,18 +1,15 @@
-import {
-  assign
-} from 'min-dash';
+import { assign } from "min-dash";
 
-import {
-  getElementLineIntersection
-} from './LayoutUtil';
-
+import { getElementLineIntersection } from "./LayoutUtil";
 
 function dockingToPoint(docking) {
   // use the dockings actual point and
   // retain the original docking
-  return assign({ original: docking.point.original || docking.point }, docking.actual);
+  return assign(
+    { original: docking.point.original || docking.point },
+    docking.actual
+  );
 }
-
 
 /**
  * A {@link ConnectionDocking} that crops connection waypoints based on
@@ -20,26 +17,34 @@ function dockingToPoint(docking) {
  *
  * @param {djs.core.ElementRegistry} elementRegistry
  */
-export default function CroppingConnectionDocking(elementRegistry, graphicsFactory) {
+export default function CroppingConnectionDocking(
+  elementRegistry,
+  graphicsFactory
+) {
   this._elementRegistry = elementRegistry;
   this._graphicsFactory = graphicsFactory;
 }
 
-CroppingConnectionDocking.$inject = [ 'elementRegistry', 'graphicsFactory' ];
-
+CroppingConnectionDocking.$inject = ["elementRegistry", "graphicsFactory"];
 
 /**
  * @inheritDoc ConnectionDocking#getCroppedWaypoints
  */
-CroppingConnectionDocking.prototype.getCroppedWaypoints = function(connection, source, target) {
-
+CroppingConnectionDocking.prototype.getCroppedWaypoints = function(
+  connection,
+  source,
+  target
+) {
   source = source || connection.source;
   target = target || connection.target;
 
   var sourceDocking = this.getDockingPoint(connection, source, true),
-      targetDocking = this.getDockingPoint(connection, target);
+    targetDocking = this.getDockingPoint(connection, target);
 
-  var croppedWaypoints = connection.waypoints.slice(sourceDocking.idx + 1, targetDocking.idx);
+  var croppedWaypoints = connection.waypoints.slice(
+    sourceDocking.idx + 1,
+    targetDocking.idx
+  );
 
   croppedWaypoints.unshift(dockingToPoint(sourceDocking));
   croppedWaypoints.push(dockingToPoint(targetDocking));
@@ -52,12 +57,15 @@ CroppingConnectionDocking.prototype.getCroppedWaypoints = function(connection, s
  *
  * @inheritDoc ConnectionDocking#getDockingPoint
  */
-CroppingConnectionDocking.prototype.getDockingPoint = function(connection, shape, dockStart) {
-
+CroppingConnectionDocking.prototype.getDockingPoint = function(
+  connection,
+  shape,
+  dockStart
+) {
   var waypoints = connection.waypoints,
-      dockingIdx,
-      dockingPoint,
-      croppedPoint;
+    dockingIdx,
+    dockingPoint,
+    croppedPoint;
 
   dockingIdx = dockStart ? 0 : waypoints.length - 1;
   dockingPoint = waypoints[dockingIdx];
@@ -71,13 +79,15 @@ CroppingConnectionDocking.prototype.getDockingPoint = function(connection, shape
   };
 };
 
-
 // helpers //////////////////////
 
-CroppingConnectionDocking.prototype._getIntersection = function(shape, connection, takeFirst) {
-
+CroppingConnectionDocking.prototype._getIntersection = function(
+  shape,
+  connection,
+  takeFirst
+) {
   var shapePath = this._getShapePath(shape),
-      connectionPath = this._getConnectionPath(connection);
+    connectionPath = this._getConnectionPath(connection);
 
   return getElementLineIntersection(shapePath, connectionPath, takeFirst);
 };

@@ -1,59 +1,41 @@
-import {
-  assign
-} from 'min-dash';
+import { assign } from "min-dash";
 
-import inherits from 'inherits';
+import inherits from "inherits";
 
-import {
-  is,
-  getBusinessObject
-} from '../../../util/ModelUtil';
+import { is, getBusinessObject } from "../../../util/ModelUtil";
 
 import {
   isLabelExternal,
   getExternalLabelMid,
   hasExternalLabel
-} from '../../../util/LabelUtil';
+} from "../../../util/LabelUtil";
 
-import {
-  getLabel
-} from '../../label-editing/LabelUtil';
+import { getLabel } from "../../label-editing/LabelUtil";
 
-import {
-  getLabelAdjustment
-} from './util/LabelLayoutUtil';
+import { getLabelAdjustment } from "./util/LabelLayoutUtil";
 
-import CommandInterceptor from './../../../../../diagram-js/lib/command/CommandInterceptor';
+import CommandInterceptor from "./../../../../../diagram-js/lib/command/CommandInterceptor";
 
-import {
-  getNewAttachPoint
-} from './../../../../../diagram-js/lib/util/AttachUtil';
+import { getNewAttachPoint } from "./../../../../../diagram-js/lib/util/AttachUtil";
 
 import {
   getMid,
   roundPoint
-} from './../../../../../diagram-js/lib/layout/LayoutUtil';
+} from "./../../../../../diagram-js/lib/layout/LayoutUtil";
 
-import {
-  delta
-} from './../../../../../diagram-js/lib/util/PositionUtil';
+import { delta } from "./../../../../../diagram-js/lib/util/PositionUtil";
 
-import {
-  sortBy
-} from 'min-dash';
+import { sortBy } from "min-dash";
 
-import {
-  getDistancePointLine,
-  perpendicularFoot
-} from './util/GeometricUtil';
+import { getDistancePointLine, perpendicularFoot } from "./util/GeometricUtil";
 
 var DEFAULT_LABEL_DIMENSIONS = {
   width: 90,
   height: 20
 };
 
-var NAME_PROPERTY = 'name';
-var TEXT_PROPERTY = 'text';
+var NAME_PROPERTY = "name";
+var TEXT_PROPERTY = "text";
 
 /**
  * A component that makes sure that external labels are added
@@ -66,24 +48,24 @@ var TEXT_PROPERTY = 'text';
  * @param {TextRenderer} textRenderer
  */
 export default function LabelBehavior(
-    eventBus, modeling, bpmnFactory,
-    textRenderer) {
-
+  eventBus,
+  modeling,
+  bpmnFactory,
+  textRenderer
+) {
   CommandInterceptor.call(this, eventBus);
 
   // update label if name property was updated
-  this.postExecute('element.updateProperties', function(e) {
+  this.postExecute("element.updateProperties", function(e) {
     var context = e.context,
-        element = context.element,
-        properties = context.properties;
+      element = context.element,
+      properties = context.properties;
 
     if (NAME_PROPERTY in properties) {
       modeling.updateLabel(element, properties[NAME_PROPERTY]);
     }
 
-    if (TEXT_PROPERTY in properties
-        && is(element, 'bpmn:TextAnnotation')) {
-
+    if (TEXT_PROPERTY in properties && is(element, "bpmn:TextAnnotation")) {
       var newBounds = textRenderer.getTextAnnotationBounds(
         {
           x: element.x,
@@ -91,7 +73,7 @@ export default function LabelBehavior(
           width: element.width,
           height: element.height
         },
-        properties[TEXT_PROPERTY] || ''
+        properties[TEXT_PROPERTY] || ""
       );
 
       modeling.updateLabel(element, properties.text, newBounds);
@@ -99,11 +81,11 @@ export default function LabelBehavior(
   });
 
   // create label shape after shape/connection was created
-  this.postExecute([ 'shape.create', 'connection.create' ], function(e) {
+  this.postExecute(["shape.create", "connection.create"], function(e) {
     var context = e.context;
 
     var element = context.shape || context.connection,
-        businessObject = element.businessObject;
+      businessObject = element.businessObject;
 
     if (!isLabelExternal(element)) {
       return;
@@ -123,7 +105,7 @@ export default function LabelBehavior(
     );
 
     modeling.createLabel(element, labelCenter, {
-      id: businessObject.id + '_label',
+      id: businessObject.id + "_label",
       businessObject: businessObject,
       width: labelDimensions.width,
       height: labelDimensions.height
@@ -131,10 +113,10 @@ export default function LabelBehavior(
   });
 
   // update label after label shape was deleted
-  this.postExecute('shape.delete', function(event) {
+  this.postExecute("shape.delete", function(event) {
     var context = event.context,
-        labelTarget = context.labelTarget,
-        hints = context.hints || {};
+      labelTarget = context.labelTarget,
+      hints = context.hints || {};
 
     // check if label
     if (labelTarget && hints.unsetLabel !== false) {
@@ -143,12 +125,11 @@ export default function LabelBehavior(
   });
 
   // update di information on label creation
-  this.postExecute([ 'label.create' ], function(event) {
-
+  this.postExecute(["label.create"], function(event) {
     var context = event.context,
-        element = context.shape,
-        businessObject,
-        di;
+      element = context.shape,
+      businessObject,
+      di;
 
     // we want to trigger on real labels only
     if (!element.labelTarget) {
@@ -156,17 +137,15 @@ export default function LabelBehavior(
     }
 
     // we want to trigger on BPMN elements only
-    if (!is(element.labelTarget || element, 'bpmn:BaseElement')) {
+    if (!is(element.labelTarget || element, "bpmn:BaseElement")) {
       return;
     }
 
-    businessObject = element.businessObject,
-    di = businessObject.di;
-
+    (businessObject = element.businessObject), (di = businessObject.di);
 
     if (!di.label) {
-      di.label = bpmnFactory.create('bpmndi:BPMNLabel', {
-        bounds: bpmnFactory.create('dc:Bounds')
+      di.label = bpmnFactory.create("bpmndi:BPMNLabel", {
+        bounds: bpmnFactory.create("dc:Bounds")
       });
     }
 
@@ -179,75 +158,70 @@ export default function LabelBehavior(
   });
 
   function getVisibleLabelAdjustment(event) {
-
     var context = event.context,
-        connection = context.connection,
-        label = connection.label,
-        hints = assign({}, context.hints),
-        newWaypoints = context.newWaypoints || connection.waypoints,
-        oldWaypoints = context.oldWaypoints;
+      connection = context.connection,
+      label = connection.label,
+      hints = assign({}, context.hints),
+      newWaypoints = context.newWaypoints || connection.waypoints,
+      oldWaypoints = context.oldWaypoints;
 
-
-    if (typeof hints.startChanged === 'undefined') {
+    if (typeof hints.startChanged === "undefined") {
       hints.startChanged = !!hints.connectionStart;
     }
 
-    if (typeof hints.endChanged === 'undefined') {
+    if (typeof hints.endChanged === "undefined") {
       hints.endChanged = !!hints.connectionEnd;
     }
 
     return getLabelAdjustment(label, newWaypoints, oldWaypoints, hints);
   }
 
-  this.postExecute([
-    'connection.layout',
-    'connection.updateWaypoints'
-  ], function(event) {
-
-    var label = event.context.connection.label,
+  this.postExecute(
+    ["connection.layout", "connection.updateWaypoints"],
+    function(event) {
+      var label = event.context.connection.label,
         labelAdjustment;
 
-    if (!label) {
-      return;
+      if (!label) {
+        return;
+      }
+
+      labelAdjustment = getVisibleLabelAdjustment(event);
+
+      modeling.moveShape(label, labelAdjustment);
     }
-
-    labelAdjustment = getVisibleLabelAdjustment(event);
-
-    modeling.moveShape(label, labelAdjustment);
-  });
-
+  );
 
   // keep label position on shape replace
-  this.postExecute([ 'shape.replace' ], function(event) {
+  this.postExecute(["shape.replace"], function(event) {
     var context = event.context,
-        newShape = context.newShape,
-        oldShape = context.oldShape;
+      newShape = context.newShape,
+      oldShape = context.oldShape;
 
     var businessObject = getBusinessObject(newShape);
 
-    if (businessObject
-      && isLabelExternal(businessObject)
-      && oldShape.label
-      && newShape.label) {
+    if (
+      businessObject &&
+      isLabelExternal(businessObject) &&
+      oldShape.label &&
+      newShape.label
+    ) {
       newShape.label.x = oldShape.label.x;
       newShape.label.y = oldShape.label.y;
     }
   });
 
-
   // move external label after resizing
-  this.postExecute('shape.resize', function(event) {
-
+  this.postExecute("shape.resize", function(event) {
     var context = event.context,
-        shape = context.shape,
-        newBounds = context.newBounds,
-        oldBounds = context.oldBounds;
+      shape = context.shape,
+      newBounds = context.newBounds,
+      oldBounds = context.oldBounds;
 
     if (hasExternalLabel(shape)) {
-
       var label = shape.label,
-          labelMid = getMid(label),
-          edges = asEdges(oldBounds);
+        labelMid = getMid(label),
+        edges = asEdges(oldBounds);
 
       // get nearest border point to label as reference point
       var referencePoint = getReferencePoint(labelMid, edges);
@@ -255,21 +229,13 @@ export default function LabelBehavior(
       var delta = getReferencePointDelta(referencePoint, oldBounds, newBounds);
 
       modeling.moveShape(label, delta);
-
     }
-
   });
-
 }
 
 inherits(LabelBehavior, CommandInterceptor);
 
-LabelBehavior.$inject = [
-  'eventBus',
-  'modeling',
-  'bpmnFactory',
-  'textRenderer'
-];
+LabelBehavior.$inject = ["eventBus", "modeling", "bpmnFactory", "textRenderer"];
 
 // helpers //////////////////////
 
@@ -284,8 +250,11 @@ LabelBehavior.$inject = [
  * @return {Delta} delta
  */
 export function getReferencePointDelta(referencePoint, oldBounds, newBounds) {
-
-  var newReferencePoint = getNewAttachPoint(referencePoint, oldBounds, newBounds);
+  var newReferencePoint = getNewAttachPoint(
+    referencePoint,
+    oldBounds,
+    newBounds
+  );
 
   return roundPoint(delta(newReferencePoint, referencePoint));
 }
@@ -300,7 +269,6 @@ export function getReferencePointDelta(referencePoint, oldBounds, newBounds) {
  * @param {Point}
  */
 export function getReferencePoint(point, lines) {
-
   if (!lines.length) {
     return;
   }
@@ -319,7 +287,8 @@ export function getReferencePoint(point, lines) {
  */
 export function asEdges(bounds) {
   return [
-    [ // top
+    [
+      // top
       {
         x: bounds.x,
         y: bounds.y
@@ -329,7 +298,8 @@ export function asEdges(bounds) {
         y: bounds.y
       }
     ],
-    [ // right
+    [
+      // right
       {
         x: bounds.x + (bounds.width || 0),
         y: bounds.y
@@ -339,7 +309,8 @@ export function asEdges(bounds) {
         y: bounds.y + (bounds.height || 0)
       }
     ],
-    [ // bottom
+    [
+      // bottom
       {
         x: bounds.x,
         y: bounds.y + (bounds.height || 0)
@@ -349,7 +320,8 @@ export function asEdges(bounds) {
         y: bounds.y + (bounds.height || 0)
       }
     ],
-    [ // left
+    [
+      // left
       {
         x: bounds.x,
         y: bounds.y
@@ -370,7 +342,6 @@ export function asEdges(bounds) {
  * @return Array<Point>
  */
 function getNearestLine(point, lines) {
-
   var distances = lines.map(function(l) {
     return {
       line: l,
@@ -378,7 +349,7 @@ function getNearestLine(point, lines) {
     };
   });
 
-  var sorted = sortBy(distances, 'distance');
+  var sorted = sortBy(distances, "distance");
 
   return sorted[0].line;
 }

@@ -1,45 +1,33 @@
-import {
-  assign
-} from 'min-dash';
+import { assign } from "min-dash";
 
-import { is } from '../util/ModelUtil';
+import { is } from "../util/ModelUtil";
 
-import {
-  isLabelExternal,
-  getExternalLabelBounds
-} from '../util/LabelUtil';
+import { isLabelExternal, getExternalLabelBounds } from "../util/LabelUtil";
 
-import {
-  getMid
-} from './../../../diagram-js/lib/layout/LayoutUtil';
+import { getMid } from "./../../../diagram-js/lib/layout/LayoutUtil";
 
-import {
-  isExpanded
-} from '../util/DiUtil';
+import { isExpanded } from "../util/DiUtil";
 
-import {
-  getLabel
-} from '../features/label-editing/LabelUtil';
+import { getLabel } from "../features/label-editing/LabelUtil";
 
-import {
-  elementToString
-} from './Util';
-
+import { elementToString } from "./Util";
 
 function elementData(semantic, attrs) {
-  return assign({
-    id: semantic.id,
-    type: semantic.$type,
-    businessObject: semantic
-  }, attrs);
+  return assign(
+    {
+      id: semantic.id,
+      type: semantic.$type,
+      businessObject: semantic
+    },
+    attrs
+  );
 }
 
 function getWaypoints(bo, source, target) {
-
   var waypoints = bo.di.waypoint;
 
   if (!waypoints || waypoints.length < 2) {
-    return [ getMid(source), getMid(target) ];
+    return [getMid(source), getMid(target)];
   }
 
   return waypoints.map(function(p) {
@@ -48,13 +36,17 @@ function getWaypoints(bo, source, target) {
 }
 
 function notYetDrawn(translate, semantic, refSemantic, property) {
-  return new Error(translate('element {element} referenced by {referenced}#{property} not yet drawn', {
-    element: elementToString(refSemantic),
-    referenced: elementToString(semantic),
-    property: property
-  }));
+  return new Error(
+    translate(
+      "element {element} referenced by {referenced}#{property} not yet drawn",
+      {
+        element: elementToString(refSemantic),
+        referenced: elementToString(semantic),
+        property: property
+      }
+    )
+  );
 }
-
 
 /**
  * An importer that adds bpmn elements to the canvas
@@ -67,9 +59,13 @@ function notYetDrawn(translate, semantic, refSemantic, property) {
  * @param {TextRenderer} textRenderer
  */
 export default function BpmnImporter(
-    eventBus, canvas, elementFactory,
-    elementRegistry, translate, textRenderer) {
-
+  eventBus,
+  canvas,
+  elementFactory,
+  elementRegistry,
+  translate,
+  textRenderer
+) {
   this._eventBus = eventBus;
   this._canvas = canvas;
   this._elementFactory = elementFactory;
@@ -79,33 +75,30 @@ export default function BpmnImporter(
 }
 
 BpmnImporter.$inject = [
-  'eventBus',
-  'canvas',
-  'elementFactory',
-  'elementRegistry',
-  'translate',
-  'textRenderer'
+  "eventBus",
+  "canvas",
+  "elementFactory",
+  "elementRegistry",
+  "translate",
+  "textRenderer"
 ];
-
 
 /**
  * Add bpmn element (semantic) to the canvas onto the
  * specified parent shape.
  */
 BpmnImporter.prototype.add = function(semantic, parentElement) {
-
   var di = semantic.di,
-      element,
-      translate = this._translate,
-      hidden;
+    element,
+    translate = this._translate,
+    hidden;
 
   var parentIndex;
 
   // ROOT ELEMENT
   // handle the special case that we deal with a
   // invisible root element (process or collaboration)
-  if (is(di, 'bpmndi:BPMNPlane')) {
-
+  if (is(di, "bpmndi:BPMNPlane")) {
     // add a virtual element (not being drawn)
     element = this._elementFactory.createRoot(elementData(semantic));
 
@@ -113,33 +106,33 @@ BpmnImporter.prototype.add = function(semantic, parentElement) {
   }
 
   // SHAPE
-  else if (is(di, 'bpmndi:BPMNShape')) {
-
+  else if (is(di, "bpmndi:BPMNShape")) {
     var collapsed = !isExpanded(semantic);
     hidden = parentElement && (parentElement.hidden || parentElement.collapsed);
 
     var bounds = semantic.di.bounds;
 
-    element = this._elementFactory.createShape(elementData(semantic, {
-      collapsed: collapsed,
-      hidden: hidden,
-      x: Math.round(bounds.x),
-      y: Math.round(bounds.y),
-      width: Math.round(bounds.width),
-      height: Math.round(bounds.height)
-    }));
+    element = this._elementFactory.createShape(
+      elementData(semantic, {
+        collapsed: collapsed,
+        hidden: hidden,
+        x: Math.round(bounds.x),
+        y: Math.round(bounds.y),
+        width: Math.round(bounds.width),
+        height: Math.round(bounds.height)
+      })
+    );
 
-    if (is(semantic, 'bpmn:BoundaryEvent')) {
+    if (is(semantic, "bpmn:BoundaryEvent")) {
       this._attachBoundary(semantic, element);
     }
 
     // insert lanes behind other flow nodes (cf. #727)
-    if (is(semantic, 'bpmn:Lane')) {
+    if (is(semantic, "bpmn:Lane")) {
       parentIndex = 0;
     }
 
-    if (is(semantic, 'bpmn:DataStoreReference')) {
-
+    if (is(semantic, "bpmn:DataStoreReference")) {
       // check wether data store is inside our outside of its semantic parent
       if (!isPointInsideBBox(parentElement, getMid(bounds))) {
         parentElement = this._canvas.getRootElement();
@@ -150,22 +143,22 @@ BpmnImporter.prototype.add = function(semantic, parentElement) {
   }
 
   // CONNECTION
-  else if (is(di, 'bpmndi:BPMNEdge')) {
-
+  else if (is(di, "bpmndi:BPMNEdge")) {
     var source = this._getSource(semantic),
-        target = this._getTarget(semantic);
+      target = this._getTarget(semantic);
 
     hidden = parentElement && (parentElement.hidden || parentElement.collapsed);
 
-    element = this._elementFactory.createConnection(elementData(semantic, {
-      hidden: hidden,
-      source: source,
-      target: target,
-      waypoints: getWaypoints(semantic, source, target)
-    }));
+    element = this._elementFactory.createConnection(
+      elementData(semantic, {
+        hidden: hidden,
+        source: source,
+        target: target,
+        waypoints: getWaypoints(semantic, source, target)
+      })
+    );
 
-    if (is(semantic, 'bpmn:DataAssociation')) {
-
+    if (is(semantic, "bpmn:DataAssociation")) {
       // render always on top; this ensures DataAssociations
       // are rendered correctly across different "hacks" people
       // love to model such as cross participant / sub process
@@ -174,28 +167,28 @@ BpmnImporter.prototype.add = function(semantic, parentElement) {
     }
 
     // insert sequence flows behind other flow nodes (cf. #727)
-    if (is(semantic, 'bpmn:SequenceFlow')) {
+    if (is(semantic, "bpmn:SequenceFlow")) {
       parentIndex = 0;
     }
 
     this._canvas.addConnection(element, parentElement, parentIndex);
   } else {
-    throw new Error(translate('unknown di {di} for element {semantic}', {
-      di: elementToString(di),
-      semantic: elementToString(semantic)
-    }));
+    throw new Error(
+      translate("unknown di {di} for element {semantic}", {
+        di: elementToString(di),
+        semantic: elementToString(semantic)
+      })
+    );
   }
   // (optional) LABEL
   if (isLabelExternal(semantic) && getLabel(element)) {
     this.addLabel(semantic, element);
   }
 
-
-  this._eventBus.fire('bpmnElement.added', { element: element });
+  this._eventBus.fire("bpmnElement.added", { element: element });
 
   return element;
 };
-
 
 /**
  * Attach the boundary element to the given host
@@ -203,21 +196,31 @@ BpmnImporter.prototype.add = function(semantic, parentElement) {
  * @param {ModdleElement} boundarySemantic
  * @param {djs.model.Base} boundaryElement
  */
-BpmnImporter.prototype._attachBoundary = function(boundarySemantic, boundaryElement) {
+BpmnImporter.prototype._attachBoundary = function(
+  boundarySemantic,
+  boundaryElement
+) {
   var translate = this._translate;
   var hostSemantic = boundarySemantic.attachedToRef;
 
   if (!hostSemantic) {
-    throw new Error(translate('missing {semantic}#attachedToRef', {
-      semantic: elementToString(boundarySemantic)
-    }));
+    throw new Error(
+      translate("missing {semantic}#attachedToRef", {
+        semantic: elementToString(boundarySemantic)
+      })
+    );
   }
 
   var host = this._elementRegistry.get(hostSemantic.id),
-      attachers = host && host.attachers;
+    attachers = host && host.attachers;
 
   if (!host) {
-    throw notYetDrawn(translate, boundarySemantic, hostSemantic, 'attachedToRef');
+    throw notYetDrawn(
+      translate,
+      boundarySemantic,
+      hostSemantic,
+      "attachedToRef"
+    );
   }
 
   // wire element.host <> host.attachers
@@ -232,35 +235,34 @@ BpmnImporter.prototype._attachBoundary = function(boundarySemantic, boundaryElem
   }
 };
 
-
 /**
  * add label for an element
  */
 BpmnImporter.prototype.addLabel = function(semantic, element) {
-  var bounds,
-      text,
-      label;
+  var bounds, text, label;
 
   bounds = getExternalLabelBounds(semantic, element);
 
   text = getLabel(element);
-  console.log(bounds)
+  console.log(bounds);
 
   if (text) {
     // get corrected bounds from actual layouted text
     bounds = this._textRenderer.getExternalLabelBounds(bounds, text);
   }
 
-  label = this._elementFactory.createLabel(elementData(semantic, {
-    id: semantic.id + '_label',
-    labelTarget: element,
-    type: 'label',
-    hidden: element.hidden || !getLabel(element),
-    x: Math.round(bounds.x),
-    y: Math.round(bounds.y),
-    width: Math.round(bounds.width),
-    height: Math.round(bounds.height)
-  }));
+  label = this._elementFactory.createLabel(
+    elementData(semantic, {
+      id: semantic.id + "_label",
+      labelTarget: element,
+      type: "label",
+      hidden: element.hidden || !getLabel(element),
+      x: Math.round(bounds.x),
+      y: Math.round(bounds.y),
+      width: Math.round(bounds.width),
+      height: Math.round(bounds.height)
+    })
+  );
 
   return this._canvas.addShape(label, element.parent);
 };
@@ -271,23 +273,23 @@ BpmnImporter.prototype.addLabel = function(semantic, element) {
  * @throws {Error} if the end is not yet drawn
  */
 BpmnImporter.prototype._getEnd = function(semantic, side) {
-
   var element,
-      refSemantic,
-      type = semantic.$type,
-      translate = this._translate;
+    refSemantic,
+    type = semantic.$type,
+    translate = this._translate;
 
-  refSemantic = semantic[side + 'Ref'];
+  refSemantic = semantic[side + "Ref"];
 
   // handle mysterious isMany DataAssociation#sourceRef
-  if (side === 'source' && type === 'bpmn:DataInputAssociation') {
+  if (side === "source" && type === "bpmn:DataInputAssociation") {
     refSemantic = refSemantic && refSemantic[0];
   }
 
   // fix source / target for DataInputAssociation / DataOutputAssociation
-  if (side === 'source' && type === 'bpmn:DataOutputAssociation' ||
-      side === 'target' && type === 'bpmn:DataInputAssociation') {
-
+  if (
+    (side === "source" && type === "bpmn:DataOutputAssociation") ||
+    (side === "target" && type === "bpmn:DataInputAssociation")
+  ) {
     refSemantic = semantic.$parent;
   }
 
@@ -298,37 +300,39 @@ BpmnImporter.prototype._getEnd = function(semantic, side) {
   }
 
   if (refSemantic) {
-    throw notYetDrawn(translate, semantic, refSemantic, side + 'Ref');
+    throw notYetDrawn(translate, semantic, refSemantic, side + "Ref");
   } else {
-    throw new Error(translate('{semantic}#{side} Ref not specified', {
-      semantic: elementToString(semantic),
-      side: side
-    }));
+    throw new Error(
+      translate("{semantic}#{side} Ref not specified", {
+        semantic: elementToString(semantic),
+        side: side
+      })
+    );
   }
 };
 
 BpmnImporter.prototype._getSource = function(semantic) {
-  return this._getEnd(semantic, 'source');
+  return this._getEnd(semantic, "source");
 };
 
 BpmnImporter.prototype._getTarget = function(semantic) {
-  return this._getEnd(semantic, 'target');
+  return this._getEnd(semantic, "target");
 };
-
 
 BpmnImporter.prototype._getElement = function(semantic) {
   return this._elementRegistry.get(semantic.id);
 };
 
-
 // helpers ////////////////////
 
 function isPointInsideBBox(bbox, point) {
   var x = point.x,
-      y = point.y;
+    y = point.y;
 
-  return x >= bbox.x &&
+  return (
+    x >= bbox.x &&
     x <= bbox.x + bbox.width &&
     y >= bbox.y &&
-    y <= bbox.y + bbox.height;
+    y <= bbox.y + bbox.height
+  );
 }

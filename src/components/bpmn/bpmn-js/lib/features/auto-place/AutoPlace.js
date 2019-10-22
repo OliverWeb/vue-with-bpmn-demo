@@ -1,5 +1,4 @@
-import { getNewShapePosition } from './AutoPlaceUtil';
-
+import { getNewShapePosition } from "./AutoPlaceUtil";
 
 /**
  * A service that places elements connected to existing ones
@@ -9,11 +8,9 @@ import { getNewShapePosition } from './AutoPlaceUtil';
  * @param {Modeling} modeling
  */
 export default function AutoPlace(eventBus, modeling) {
-
   function emit(event, payload) {
     return eventBus.fire(event, payload);
   }
-
 
   /**
    * Append shape to source at appropriate position.
@@ -24,9 +21,8 @@ export default function AutoPlace(eventBus, modeling) {
    * @return {djs.model.Shape} appended shape
    */
   this.append = function(source, shape) {
-
     // allow others to provide the position
-    var position = emit('autoPlace', {
+    var position = emit("autoPlace", {
       source: source,
       shape: shape
     });
@@ -38,16 +34,12 @@ export default function AutoPlace(eventBus, modeling) {
     var newShape = modeling.appendShape(source, shape, position, source.parent);
 
     // notify interested parties on new shape placed
-    emit('autoPlace.end', {
+    emit("autoPlace.end", {
       shape: newShape
     });
 
     return newShape;
   };
-
 }
 
-AutoPlace.$inject = [
-  'eventBus',
-  'modeling'
-];
+AutoPlace.$inject = ["eventBus", "modeling"];

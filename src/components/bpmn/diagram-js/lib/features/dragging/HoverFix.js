@@ -1,13 +1,8 @@
-import {
-  closest as domClosest
-} from 'min-dom';
+import { closest as domClosest } from "min-dom";
 
-import {
-  toPoint
-} from '../../util/Event';
+import { toPoint } from "../../util/Event";
 
 var HIGH_PRIORITY = 1500;
-
 
 /**
  * Browsers may swallow certain events (hover, out ...) if users are to
@@ -25,7 +20,6 @@ var HIGH_PRIORITY = 1500;
  * @param {ElementRegistry} elementRegistry
  */
 export default function HoverFix(eventBus, dragging, elementRegistry) {
-
   var self = this;
 
   /**
@@ -38,18 +32,13 @@ export default function HoverFix(eventBus, dragging, elementRegistry) {
    * drag.move
    * drag.move >> ensure we are hovering
    */
-  eventBus.on('drag.start', function(event) {
-
-    eventBus.once('drag.move', function() {
-
-      eventBus.once('drag.move', function(event) {
-
+  eventBus.on("drag.start", function(event) {
+    eventBus.once("drag.move", function() {
+      eventBus.once("drag.move", function(event) {
         self.ensureHover(event);
       });
     });
-
   });
-
 
   /**
    * We make sure that drag.out is always fired, even if the
@@ -61,8 +50,7 @@ export default function HoverFix(eventBus, dragging, elementRegistry) {
    * (element.out >> sometimes swallowed)
    * element.hover >> ensure we fired drag.out
    */
-  eventBus.on('drag.init', function() {
-
+  eventBus.on("drag.init", function() {
     var hover, hoverGfx;
 
     function setDragHover(event) {
@@ -76,13 +64,12 @@ export default function HoverFix(eventBus, dragging, elementRegistry) {
     }
 
     function ensureOut() {
-
       if (!hover) {
         return;
       }
 
       var element = hover,
-          gfx = hoverGfx;
+        gfx = hoverGfx;
 
       hover = null;
       hoverGfx = null;
@@ -94,18 +81,16 @@ export default function HoverFix(eventBus, dragging, elementRegistry) {
       });
     }
 
-    eventBus.on('drag.hover', setDragHover);
-    eventBus.on('element.out', unsetHover);
-    eventBus.on('element.hover', HIGH_PRIORITY, ensureOut);
+    eventBus.on("drag.hover", setDragHover);
+    eventBus.on("element.out", unsetHover);
+    eventBus.on("element.hover", HIGH_PRIORITY, ensureOut);
 
-    eventBus.once('drag.cleanup', function() {
-      eventBus.off('drag.hover', setDragHover);
-      eventBus.off('element.out', unsetHover);
-      eventBus.off('element.hover', ensureOut);
+    eventBus.once("drag.cleanup", function() {
+      eventBus.off("drag.hover", setDragHover);
+      eventBus.off("element.out", unsetHover);
+      eventBus.off("element.hover", ensureOut);
     });
-
   });
-
 
   /**
    * Make sure we are god damn hovering!
@@ -113,16 +98,15 @@ export default function HoverFix(eventBus, dragging, elementRegistry) {
    * @param {Event} dragging event
    */
   this.ensureHover = function(event) {
-
     if (event.hover) {
       return;
     }
 
     var originalEvent = event.originalEvent,
-        position,
-        target,
-        element,
-        gfx;
+      position,
+      target,
+      element,
+      gfx;
 
     if (!(originalEvent instanceof MouseEvent)) {
       return;
@@ -141,18 +125,12 @@ export default function HoverFix(eventBus, dragging, elementRegistry) {
       dragging.hover({ element: element, gfx: gfx });
     }
   };
-
 }
 
-HoverFix.$inject = [
-  'eventBus',
-  'dragging',
-  'elementRegistry'
-];
-
+HoverFix.$inject = ["eventBus", "dragging", "elementRegistry"];
 
 // helpers /////////////////////
 
 function getGfx(target) {
-  return domClosest(target, 'svg, .djs-element', true);
+  return domClosest(target, "svg, .djs-element", true);
 }

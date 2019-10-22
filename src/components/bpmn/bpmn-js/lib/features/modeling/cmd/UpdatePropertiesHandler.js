@@ -1,17 +1,10 @@
-import {
-  reduce,
-  keys,
-  forEach,
-  assign
-} from 'min-dash';
+import { reduce, keys, forEach, assign } from "min-dash";
 
-import {
-  getBusinessObject
-} from '../../../util/ModelUtil';
+import { getBusinessObject } from "../../../util/ModelUtil";
 
-var DEFAULT_FLOW = 'default',
-    ID = 'id',
-    DI = 'di';
+var DEFAULT_FLOW = "default",
+  ID = "id",
+  DI = "di";
 
 var NULL_DIMENSIONS = {
   width: 0,
@@ -28,9 +21,12 @@ var NULL_DIMENSIONS = {
  * like to perform automated modeling.
  */
 export default function UpdatePropertiesHandler(
-    elementRegistry, moddle, translate,
-    modeling, textRenderer) {
-
+  elementRegistry,
+  moddle,
+  translate,
+  modeling,
+  textRenderer
+) {
   this._elementRegistry = elementRegistry;
   this._moddle = moddle;
   this._translate = translate;
@@ -39,13 +35,12 @@ export default function UpdatePropertiesHandler(
 }
 
 UpdatePropertiesHandler.$inject = [
-  'elementRegistry',
-  'moddle',
-  'translate',
-  'modeling',
-  'textRenderer'
+  "elementRegistry",
+  "moddle",
+  "translate",
+  "modeling",
+  "textRenderer"
 ];
-
 
 // api //////////////////////
 
@@ -60,21 +55,21 @@ UpdatePropertiesHandler.$inject = [
  * @return {Array<djs.model.Base>} the updated element
  */
 UpdatePropertiesHandler.prototype.execute = function(context) {
-
   var element = context.element,
-      changed = [ element ],
-      translate = this._translate;
+    changed = [element],
+    translate = this._translate;
 
   if (!element) {
-    throw new Error(translate('element required'));
+    throw new Error(translate("element required"));
   }
 
   var elementRegistry = this._elementRegistry,
-      ids = this._moddle.ids;
+    ids = this._moddle.ids;
 
   var businessObject = element.businessObject,
-      properties = unwrapBusinessObjects(context.properties),
-      oldProperties = context.oldProperties || getProperties(businessObject, properties);
+    properties = unwrapBusinessObjects(context.properties),
+    oldProperties =
+      context.oldProperties || getProperties(businessObject, properties);
 
   if (isIdChange(properties, businessObject)) {
     ids.unclaim(businessObject[ID]);
@@ -86,7 +81,6 @@ UpdatePropertiesHandler.prototype.execute = function(context) {
 
   // correctly indicate visual changes on default flow updates
   if (DEFAULT_FLOW in properties) {
-
     if (properties[DEFAULT_FLOW]) {
       changed.push(elementRegistry.get(properties[DEFAULT_FLOW].id));
     }
@@ -107,10 +101,9 @@ UpdatePropertiesHandler.prototype.execute = function(context) {
   return changed;
 };
 
-
 UpdatePropertiesHandler.prototype.postExecute = function(context) {
   var element = context.element,
-      label = element.label;
+    label = element.label;
 
   var text = label && getBusinessObject(label).name;
 
@@ -133,13 +126,12 @@ UpdatePropertiesHandler.prototype.postExecute = function(context) {
  * @return {djs.model.Base} the updated element
  */
 UpdatePropertiesHandler.prototype.revert = function(context) {
-
   var element = context.element,
-      properties = context.properties,
-      oldProperties = context.oldProperties,
-      businessObject = element.businessObject,
-      elementRegistry = this._elementRegistry,
-      ids = this._moddle.ids;
+    properties = context.properties,
+    oldProperties = context.oldProperties,
+    businessObject = element.businessObject,
+    elementRegistry = this._elementRegistry,
+    ids = this._moddle.ids;
 
   // update properties
   setProperties(businessObject, oldProperties);
@@ -155,41 +147,43 @@ UpdatePropertiesHandler.prototype.revert = function(context) {
   return context.changed;
 };
 
-
 function isIdChange(properties, businessObject) {
   return ID in properties && properties[ID] !== businessObject[ID];
 }
 
-
 function getProperties(businessObject, properties) {
   var propertyNames = keys(properties);
 
-  return reduce(propertyNames, function(result, key) {
+  return reduce(
+    propertyNames,
+    function(result, key) {
+      // handle DI seperately
+      if (key !== DI) {
+        result[key] = businessObject.get(key);
+      } else {
+        result[key] = getDiProperties(businessObject.di, keys(properties.di));
+      }
 
-    // handle DI seperately
-    if (key !== DI) {
-      result[key] = businessObject.get(key);
-    } else {
-      result[key] = getDiProperties(businessObject.di, keys(properties.di));
-    }
-
-    return result;
-  }, {});
+      return result;
+    },
+    {}
+  );
 }
-
 
 function getDiProperties(di, propertyNames) {
-  return reduce(propertyNames, function(result, key) {
-    result[key] = di.get(key);
+  return reduce(
+    propertyNames,
+    function(result, key) {
+      result[key] = di.get(key);
 
-    return result;
-  }, {});
+      return result;
+    },
+    {}
+  );
 }
-
 
 function setProperties(businessObject, properties) {
   forEach(properties, function(value, key) {
-
     if (key !== DI) {
       businessObject.set(key, value);
     } else {
@@ -201,15 +195,13 @@ function setProperties(businessObject, properties) {
   });
 }
 
-
 function setDiProperties(di, properties) {
   forEach(properties, function(value, key) {
     di.set(key, value);
   });
 }
 
-
-var referencePropertyNames = [ 'default' ];
+var referencePropertyNames = ["default"];
 
 /**
  * Make sure we unwrap the actual business object
@@ -221,7 +213,6 @@ var referencePropertyNames = [ 'default' ];
  * @return {Object} unwrappedProps
  */
 function unwrapBusinessObjects(properties) {
-
   var unwrappedProps = assign({}, properties);
 
   referencePropertyNames.forEach(function(name) {

@@ -1,18 +1,12 @@
-import {
-  filter,
-  find,
-  forEach
-} from 'min-dash';
+import { filter, find, forEach } from "min-dash";
 
-import Refs from 'object-refs';
+import Refs from "object-refs";
 
-import {
-  elementToString
-} from './Util';
+import { elementToString } from "./Util";
 
 var diRefs = new Refs(
-  { name: 'bpmnElement', enumerable: true },
-  { name: 'di', configurable: true }
+  { name: "bpmnElement", enumerable: true },
+  { name: "di", configurable: true }
 );
 
 /**
@@ -27,20 +21,17 @@ function is(element, type) {
   return element.$instanceOf(type);
 }
 
-
 /**
  * Find a suitable display candidate for definitions where the DI does not
  * correctly specify one.
  */
 function findDisplayCandidate(definitions) {
   return find(definitions.rootElements, function(e) {
-    return is(e, 'bpmn:Process') || is(e, 'bpmn:Collaboration');
+    return is(e, "bpmn:Process") || is(e, "bpmn:Collaboration");
   });
 }
 
-
 export default function BpmnTreeWalker(handler, translate) {
-
   // list of containers already walked
   var handledElements = {};
 
@@ -65,13 +56,14 @@ export default function BpmnTreeWalker(handler, translate) {
   }
 
   function visit(element, ctx) {
-
     var gfx = element.gfx;
 
     // avoid multiple rendering of elements
     if (gfx) {
       throw new Error(
-        translate('already rendered {element}', { element: elementToString(element) })
+        translate("already rendered {element}", {
+          element: elementToString(element)
+        })
       );
     }
 
@@ -84,7 +76,6 @@ export default function BpmnTreeWalker(handler, translate) {
   }
 
   function visitIfDi(element, ctx) {
-
     try {
       var gfx = element.di && visit(element, ctx);
 
@@ -94,7 +85,11 @@ export default function BpmnTreeWalker(handler, translate) {
     } catch (e) {
       logError(e.message, { element: element, error: e });
 
-      console.error(translate('failed to import {element}', { element: elementToString(element) }));
+      console.error(
+        translate("failed to import {element}", {
+          element: elementToString(element)
+        })
+      );
       console.error(e);
     }
   }
@@ -111,18 +106,18 @@ export default function BpmnTreeWalker(handler, translate) {
     if (bpmnElement) {
       if (bpmnElement.di) {
         logError(
-          translate('multiple DI elements defined for {element}', {
+          translate("multiple DI elements defined for {element}", {
             element: elementToString(bpmnElement)
           }),
           { element: bpmnElement }
         );
       } else {
-        diRefs.bind(bpmnElement, 'di');
+        diRefs.bind(bpmnElement, "di");
         bpmnElement.di = di;
       }
     } else {
       logError(
-        translate('no bpmnElement referenced in {element}', {
+        translate("no bpmnElement referenced in {element}", {
           element: elementToString(di)
         }),
         { element: di }
@@ -144,7 +139,6 @@ export default function BpmnTreeWalker(handler, translate) {
     registerDi(planeElement);
   }
 
-
   // Semantic handling //////////////////////
 
   /**
@@ -161,7 +155,7 @@ export default function BpmnTreeWalker(handler, translate) {
     var diagrams = definitions.diagrams;
 
     if (diagram && diagrams.indexOf(diagram) === -1) {
-      throw new Error(translate('diagram not part of bpmn:Definitions'));
+      throw new Error(translate("diagram not part of bpmn:Definitions"));
     }
 
     if (!diagram && diagrams && diagrams.length) {
@@ -170,20 +164,20 @@ export default function BpmnTreeWalker(handler, translate) {
 
     // no diagram -> nothing to import
     if (!diagram) {
-      throw new Error(translate('no diagram to display'));
+      throw new Error(translate("no diagram to display"));
     }
 
     // load DI from selected diagram only
     handleDiagram(diagram);
 
-
     var plane = diagram.plane;
 
     if (!plane) {
-      throw new Error(translate(
-        'no plane for {element}',
-        { element: elementToString(diagram) }
-      ));
+      throw new Error(
+        translate("no plane for {element}", {
+          element: elementToString(diagram)
+        })
+      );
     }
 
     var rootElement = plane.bpmnElement;
@@ -194,14 +188,16 @@ export default function BpmnTreeWalker(handler, translate) {
       rootElement = findDisplayCandidate(definitions);
 
       if (!rootElement) {
-        throw new Error(translate('no process or collaboration to display'));
+        throw new Error(translate("no process or collaboration to display"));
       } else {
-
         logError(
-          translate('correcting missing bpmnElement on {plane} to {rootElement}', {
-            plane: elementToString(plane),
-            rootElement: elementToString(rootElement)
-          })
+          translate(
+            "correcting missing bpmnElement on {plane} to {rootElement}",
+            {
+              plane: elementToString(plane),
+              rootElement: elementToString(rootElement)
+            }
+          )
         );
 
         // correct DI on the fly
@@ -210,19 +206,18 @@ export default function BpmnTreeWalker(handler, translate) {
       }
     }
 
-
     var ctx = visitRoot(rootElement, plane);
 
-    if (is(rootElement, 'bpmn:Process')) {
+    if (is(rootElement, "bpmn:Process")) {
       handleProcess(rootElement, ctx);
-    } else if (is(rootElement, 'bpmn:Collaboration')) {
+    } else if (is(rootElement, "bpmn:Collaboration")) {
       handleCollaboration(rootElement, ctx);
 
       // force drawing of everything not yet drawn that is part of the target DI
       handleUnhandledProcesses(definitions.rootElements, ctx);
     } else {
       throw new Error(
-        translate('unsupported bpmnElement for {plane}: {rootElement}', {
+        translate("unsupported bpmnElement for {plane}: {rootElement}", {
           plane: elementToString(plane),
           rootElement: elementToString(rootElement)
         })
@@ -234,7 +229,6 @@ export default function BpmnTreeWalker(handler, translate) {
   }
 
   function handleDeferred() {
-
     var fn;
 
     // drain deferred until empty
@@ -256,12 +250,11 @@ export default function BpmnTreeWalker(handler, translate) {
   }
 
   function handleUnhandledProcesses(rootElements, ctx) {
-
     // walk through all processes that have not yet been drawn and draw them
     // if they contain lanes with DI information.
     // we do this to pass the free-floating lane test cases in the MIWG test suite
     var processes = filter(rootElements, function(e) {
-      return !isHandled(e) && is(e, 'bpmn:Process') && e.laneSets;
+      return !isHandled(e) && is(e, "bpmn:Process") && e.laneSets;
     });
 
     processes.forEach(contextual(handleProcess, ctx));
@@ -288,7 +281,6 @@ export default function BpmnTreeWalker(handler, translate) {
   }
 
   function handleArtifact(artifact, context) {
-
     // bpmn:TextAnnotation
     // bpmn:Group
     // bpmn:Association
@@ -297,9 +289,8 @@ export default function BpmnTreeWalker(handler, translate) {
   }
 
   function handleArtifacts(artifacts, context) {
-
     forEach(artifacts, function(e) {
-      if (is(e, 'bpmn:Association')) {
+      if (is(e, "bpmn:Association")) {
         deferred.push(function() {
           handleArtifact(e, context);
         });
@@ -310,7 +301,6 @@ export default function BpmnTreeWalker(handler, translate) {
   }
 
   function handleIoSpecification(ioSpecification, context) {
-
     if (!ioSpecification) {
       return;
     }
@@ -327,11 +317,11 @@ export default function BpmnTreeWalker(handler, translate) {
   function handleFlowNode(flowNode, context) {
     var childCtx = visitIfDi(flowNode, context);
 
-    if (is(flowNode, 'bpmn:SubProcess')) {
+    if (is(flowNode, "bpmn:SubProcess")) {
       handleSubProcess(flowNode, childCtx || context);
     }
 
-    if (is(flowNode, 'bpmn:Activity')) {
+    if (is(flowNode, "bpmn:Activity")) {
       handleIoSpecification(flowNode.ioSpecification, context);
     }
 
@@ -343,8 +333,14 @@ export default function BpmnTreeWalker(handler, translate) {
     //   * bpmn:CatchEvent
     //
     deferred.push(function() {
-      forEach(flowNode.dataInputAssociations, contextual(handleDataAssociation, context));
-      forEach(flowNode.dataOutputAssociations, contextual(handleDataAssociation, context));
+      forEach(
+        flowNode.dataInputAssociations,
+        contextual(handleDataAssociation, context)
+      );
+      forEach(
+        flowNode.dataOutputAssociations,
+        contextual(handleDataAssociation, context)
+      );
     });
   }
 
@@ -361,9 +357,7 @@ export default function BpmnTreeWalker(handler, translate) {
   }
 
   function handleLane(lane, context) {
-
     deferred.push(function() {
-
       var newContext = visitIfDi(lane, context);
 
       if (lane.childLaneSet) {
@@ -392,27 +386,27 @@ export default function BpmnTreeWalker(handler, translate) {
 
   function handleFlowElements(flowElements, context) {
     forEach(flowElements, function(e) {
-      if (is(e, 'bpmn:SequenceFlow')) {
+      if (is(e, "bpmn:SequenceFlow")) {
         deferred.push(function() {
           handleSequenceFlow(e, context);
         });
-      } else if (is(e, 'bpmn:BoundaryEvent')) {
+      } else if (is(e, "bpmn:BoundaryEvent")) {
         deferred.unshift(function() {
           handleBoundaryEvent(e, context);
         });
-      } else if (is(e, 'bpmn:FlowNode')) {
+      } else if (is(e, "bpmn:FlowNode")) {
         handleFlowNode(e, context);
-      } else if (is(e, 'bpmn:DataObject')) {
+      } else if (is(e, "bpmn:DataObject")) {
         // SKIP (assume correct referencing via DataObjectReference)
-      } else if (is(e, 'bpmn:DataStoreReference')) {
+      } else if (is(e, "bpmn:DataStoreReference")) {
         handleDataElement(e, context);
-      } else if (is(e, 'bpmn:DataObjectReference')) {
+      } else if (is(e, "bpmn:DataObjectReference")) {
         handleDataElement(e, context);
       } else {
         logError(
-          translate('unrecognized flowElement {element} in context {context}', {
+          translate("unrecognized flowElement {element} in context {context}", {
             element: elementToString(e),
-            context: (context ? elementToString(context.businessObject) : 'null')
+            context: context ? elementToString(context.businessObject) : "null"
           }),
           { element: e, context: context }
         );
@@ -430,7 +424,6 @@ export default function BpmnTreeWalker(handler, translate) {
   }
 
   function handleCollaboration(collaboration) {
-
     forEach(collaboration.participants, contextual(handleParticipant));
 
     handleArtifacts(collaboration.artifacts);
@@ -441,11 +434,10 @@ export default function BpmnTreeWalker(handler, translate) {
     });
   }
 
-
   function wireFlowNodeRefs(lane) {
     // wire the virtual flowNodeRefs <-> relationship
     forEach(lane.flowNodeRef, function(flowNode) {
-      var lanes = flowNode.get('lanes');
+      var lanes = flowNode.get("lanes");
 
       if (lanes) {
         lanes.push(lane);

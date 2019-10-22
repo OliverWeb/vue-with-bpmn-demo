@@ -1,6 +1,6 @@
-import Grid from './Grid';
+import Grid from "./Grid";
 
 export default {
-  __init__: [ 'grid' ],
-  grid: [ 'type', Grid ]
+  __init__: ["grid"],
+  grid: ["type", Grid]
 };

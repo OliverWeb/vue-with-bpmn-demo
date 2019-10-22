@@ -1,8 +1,6 @@
-import BpmnTreeWalker from './BpmnTreeWalker';
+import BpmnTreeWalker from "./BpmnTreeWalker";
 
-import {
-  isFunction
-} from 'min-dash';
+import { isFunction } from "min-dash";
 
 /**
  * Import the definitions into a diagram.
@@ -16,18 +14,15 @@ import {
  * @param  {Function} done the callback, invoked with (err, [ warning ]) once the import is done
  */
 export function importBpmnDiagram(diagram, definitions, bpmnDiagram, done) {
-
   if (isFunction(bpmnDiagram)) {
     done = bpmnDiagram;
     bpmnDiagram = null;
   }
 
-  var importer,
-      eventBus,
-      translate;
+  var importer, eventBus, translate;
 
   var error,
-      warnings = [];
+    warnings = [];
 
   /**
    * Walk the diagram semantically, importing (=drawing)
@@ -37,9 +32,7 @@ export function importBpmnDiagram(diagram, definitions, bpmnDiagram, done) {
    * @param {ModdleElement<BPMNDiagram>} bpmnDiagram
    */
   function render(definitions, bpmnDiagram) {
-
     var visitor = {
-
       root: function(element) {
         return importer.add(element);
       },
@@ -61,15 +54,15 @@ export function importBpmnDiagram(diagram, definitions, bpmnDiagram, done) {
   }
 
   try {
-    importer = diagram.get('bpmnImporter');
-    eventBus = diagram.get('eventBus');
-    translate = diagram.get('translate');
+    importer = diagram.get("bpmnImporter");
+    eventBus = diagram.get("eventBus");
+    translate = diagram.get("translate");
 
-    eventBus.fire('import.render.start', { definitions: definitions });
+    eventBus.fire("import.render.start", { definitions: definitions });
 
     render(definitions, bpmnDiagram);
 
-    eventBus.fire('import.render.complete', {
+    eventBus.fire("import.render.complete", {
       error: error,
       warnings: warnings
     });

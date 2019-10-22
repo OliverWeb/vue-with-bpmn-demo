@@ -1,7 +1,5 @@
-import TouchModule from '../../features/touch';
+import TouchModule from "../../features/touch";
 
 export default {
-  __depends__: [
-    TouchModule
-  ]
+  __depends__: [TouchModule]
 };

@@ -1,22 +1,18 @@
-import {
-  forEach,
-  filter
-} from 'min-dash';
+import { forEach, filter } from "min-dash";
 
-import inherits from 'inherits';
+import inherits from "inherits";
 
 var LOW_PRIORITY = 250,
-    HIGH_PRIORITY = 1400;
+  HIGH_PRIORITY = 1400;
 
 import {
   add as collectionAdd,
   indexOf as collectionIdx
-} from '../../util/Collections';
+} from "../../util/Collections";
 
-import { saveClear } from '../../util/Removal';
+import { saveClear } from "../../util/Removal";
 
-import CommandInterceptor from '../../command/CommandInterceptor';
-
+import CommandInterceptor from "../../command/CommandInterceptor";
 
 /**
  * A handler that makes sure labels are properly moved with
@@ -27,56 +23,51 @@ import CommandInterceptor from '../../command/CommandInterceptor';
  * @param {Modeling} modeling
  */
 export default function LabelSupport(injector, eventBus, modeling) {
-
   CommandInterceptor.call(this, eventBus);
 
-  var movePreview = injector.get('movePreview', false);
+  var movePreview = injector.get("movePreview", false);
 
   // remove labels from the collection that are being
   // moved with other elements anyway
-  eventBus.on('shape.move.start', HIGH_PRIORITY, function(e) {
-
+  eventBus.on("shape.move.start", HIGH_PRIORITY, function(e) {
     var context = e.context,
-        shapes = context.shapes,
-        validatedShapes = context.validatedShapes;
+      shapes = context.shapes,
+      validatedShapes = context.validatedShapes;
 
     context.shapes = removeLabels(shapes);
     context.validatedShapes = removeLabels(validatedShapes);
   });
 
   // add labels to visual's group
-  movePreview && eventBus.on('shape.move.start', LOW_PRIORITY, function(e) {
-
-    var context = e.context,
+  movePreview &&
+    eventBus.on("shape.move.start", LOW_PRIORITY, function(e) {
+      var context = e.context,
         shapes = context.shapes;
 
-    var labels = [];
+      var labels = [];
 
-    forEach(shapes, function(element) {
+      forEach(shapes, function(element) {
+        forEach(element.labels, function(label) {
+          if (!label.hidden && context.shapes.indexOf(label) === -1) {
+            labels.push(label);
+          }
 
-      forEach(element.labels, function(label) {
+          if (element.labelTarget) {
+            labels.push(element);
+          }
+        });
+      });
 
-        if (!label.hidden && context.shapes.indexOf(label) === -1) {
-          labels.push(label);
-        }
-
-        if (element.labelTarget) {
-          labels.push(element);
-        }
+      forEach(labels, function(label) {
+        movePreview.makeDraggable(context, label, true);
       });
     });
 
-    forEach(labels, function(label) {
-      movePreview.makeDraggable(context, label, true);
-    });
-
-  });
-
   // add all labels to move closure
-  this.preExecuted('elements.move', HIGH_PRIORITY, function(e) {
+  this.preExecuted("elements.move", HIGH_PRIORITY, function(e) {
     var context = e.context,
-        closure = context.closure,
-        enclosedElements = closure.enclosedElements;
+      closure = context.closure,
+      enclosedElements = closure.enclosedElements;
 
     var enclosedLabels = [];
 
@@ -84,7 +75,6 @@ export default function LabelSupport(injector, eventBus, modeling) {
     // move closure yet and add them
     forEach(enclosedElements, function(element) {
       forEach(element.labels, function(label) {
-
         if (!enclosedElements[label.id]) {
           enclosedLabels.push(label);
         }
@@ -94,26 +84,19 @@ export default function LabelSupport(injector, eventBus, modeling) {
     closure.addAll(enclosedLabels);
   });
 
-
-  this.preExecute([
-    'connection.delete',
-    'shape.delete'
-  ], function(e) {
-
+  this.preExecute(["connection.delete", "shape.delete"], function(e) {
     var context = e.context,
-        element = context.connection || context.shape;
+      element = context.connection || context.shape;
 
     saveClear(element.labels, function(label) {
       modeling.removeShape(label, { nested: true });
     });
   });
 
-
-  this.execute('shape.delete', function(e) {
-
+  this.execute("shape.delete", function(e) {
     var context = e.context,
-        shape = context.shape,
-        labelTarget = shape.labelTarget;
+      shape = context.shape,
+      labelTarget = shape.labelTarget;
 
     // unset labelTarget
     if (labelTarget) {
@@ -124,12 +107,11 @@ export default function LabelSupport(injector, eventBus, modeling) {
     }
   });
 
-  this.revert('shape.delete', function(e) {
-
+  this.revert("shape.delete", function(e) {
     var context = e.context,
-        shape = context.shape,
-        labelTarget = context.labelTarget,
-        labelTargetIndex = context.labelTargetIndex;
+      shape = context.shape,
+      labelTarget = context.labelTarget,
+      labelTargetIndex = context.labelTargetIndex;
 
     // restore labelTarget
     if (labelTarget) {
@@ -138,17 +120,11 @@ export default function LabelSupport(injector, eventBus, modeling) {
       shape.labelTarget = labelTarget;
     }
   });
-
 }
 
 inherits(LabelSupport, CommandInterceptor);
 
-LabelSupport.$inject = [
-  'injector',
-  'eventBus',
-  'modeling'
-];
-
+LabelSupport.$inject = ["injector", "eventBus", "modeling"];
 
 /**
  * Return a filtered list of elements that do not
@@ -160,9 +136,7 @@ LabelSupport.$inject = [
  * @return {Array<djs.model.Base>} filtered
  */
 function removeLabels(elements) {
-
   return filter(elements, function(element) {
-
     // filter out labels that are move together
     // with their label targets
     return elements.indexOf(element.labelTarget) === -1;

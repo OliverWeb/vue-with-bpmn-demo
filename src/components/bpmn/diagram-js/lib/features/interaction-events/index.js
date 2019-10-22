@@ -1,6 +1,6 @@
-import InteractionEvents from './InteractionEvents';
+import InteractionEvents from "./InteractionEvents";
 
 export default {
-  __init__: [ 'interactionEvents' ],
-  interactionEvents: [ 'type', InteractionEvents ]
+  __init__: ["interactionEvents"],
+  interactionEvents: ["type", InteractionEvents]
 };

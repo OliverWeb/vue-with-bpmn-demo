@@ -1,10 +1,10 @@
-import inherits from 'inherits';
+import inherits from "inherits";
 
-import Viewer from './Viewer';
+import Viewer from "./Viewer";
 
-import KeyboardMoveModule from './../../diagram-js/lib/navigation/keyboard-move';
-import MoveCanvasModule from './../../diagram-js/lib/navigation/movecanvas';
-import ZoomScrollModule from './../../diagram-js/lib/navigation/zoomscroll';
+import KeyboardMoveModule from "./../../diagram-js/lib/navigation/keyboard-move";
+import MoveCanvasModule from "./../../diagram-js/lib/navigation/movecanvas";
+import ZoomScrollModule from "./../../diagram-js/lib/navigation/zoomscroll";
 
 /**
  * A viewer that includes mouse navigation facilities
@@ -25,4 +25,5 @@ NavigatedViewer.prototype._navigationModules = [
 
 NavigatedViewer.prototype._modules = [].concat(
   NavigatedViewer.prototype._modules,
-  NavigatedViewer.prototype._navigationModules);
+  NavigatedViewer.prototype._navigationModules
+);

@@ -1,6 +1,6 @@
-import Outline from './Outline';
+import Outline from "./Outline";
 
 export default {
-  __init__: [ 'outline' ],
-  outline: [ 'type', Outline ]
+  __init__: ["outline"],
+  outline: ["type", Outline]
 };

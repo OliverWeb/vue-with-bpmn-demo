@@ -1,22 +1,21 @@
-import RuleProvider from '../rules/RuleProvider';
+import RuleProvider from "../rules/RuleProvider";
 
-import inherits from 'inherits';
+import inherits from "inherits";
 
 /**
  * This is a base rule provider for the element.autoResize rule.
  */
 export default function AutoResizeProvider(eventBus) {
-
   RuleProvider.call(this, eventBus);
 
   var self = this;
 
-  this.addRule('element.autoResize', function(context) {
+  this.addRule("element.autoResize", function(context) {
     return self.canResize(context.elements, context.target);
   });
 }
 
-AutoResizeProvider.$inject = [ 'eventBus' ];
+AutoResizeProvider.$inject = ["eventBus"];
 
 inherits(AutoResizeProvider, RuleProvider);
 

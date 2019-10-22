@@ -1,11 +1,7 @@
-import {
-  forEach,
-  isArray
-} from 'min-dash';
+import { forEach, isArray } from "min-dash";
 
-var NOT_REGISTERED_ERROR = 'is not a registered action',
-    IS_REGISTERED_ERROR = 'is already registered';
-
+var NOT_REGISTERED_ERROR = "is not a registered action",
+  IS_REGISTERED_ERROR = "is already registered";
 
 /**
  * An interface that provides access to modeling actions by decoupling
@@ -28,31 +24,25 @@ var NOT_REGISTERED_ERROR = 'is not a registered action',
  * @param {Injector} injector
  */
 export default function EditorActions(eventBus, injector) {
-
   // initialize actions
   this._actions = {};
 
   var self = this;
 
-  eventBus.on('diagram.init', function() {
-
+  eventBus.on("diagram.init", function() {
     // all diagram modules got loaded; check which ones
     // are available and register the respective default actions
     self._registerDefaultActions(injector);
 
     // ask interested parties to register available editor
     // actions on diagram initialization
-    eventBus.fire('editorActions.init', {
+    eventBus.fire("editorActions.init", {
       editorActions: self
     });
   });
-
 }
 
-EditorActions.$inject = [
-  'eventBus',
-  'injector'
-];
+EditorActions.$inject = ["eventBus", "injector"];
 
 /**
  * Register default actions.
@@ -60,34 +50,33 @@ EditorActions.$inject = [
  * @param {Injector} injector
  */
 EditorActions.prototype._registerDefaultActions = function(injector) {
-
   // (1) retrieve optional components to integrate with
 
-  var commandStack = injector.get('commandStack', false);
-  var modeling = injector.get('modeling', false);
-  var selection = injector.get('selection', false);
-  var zoomScroll = injector.get('zoomScroll', false);
-  var copyPaste = injector.get('copyPaste', false);
-  var canvas = injector.get('canvas', false);
-  var rules = injector.get('rules', false);
-  var mouseTracking = injector.get('mouseTracking', false);
-  var keyboardMove = injector.get('keyboardMove', false);
-  var keyboardMoveSelection = injector.get('keyboardMoveSelection', false);
+  var commandStack = injector.get("commandStack", false);
+  var modeling = injector.get("modeling", false);
+  var selection = injector.get("selection", false);
+  var zoomScroll = injector.get("zoomScroll", false);
+  var copyPaste = injector.get("copyPaste", false);
+  var canvas = injector.get("canvas", false);
+  var rules = injector.get("rules", false);
+  var mouseTracking = injector.get("mouseTracking", false);
+  var keyboardMove = injector.get("keyboardMove", false);
+  var keyboardMoveSelection = injector.get("keyboardMoveSelection", false);
 
   // (2) check components and register actions
 
   if (commandStack) {
-    this.register('undo', function() {
+    this.register("undo", function() {
       commandStack.undo();
     });
 
-    this.register('redo', function() {
+    this.register("redo", function() {
       commandStack.redo();
     });
   }
 
   if (copyPaste && selection) {
-    this.register('copy', function() {
+    this.register("copy", function() {
       var selectedElements = selection.get();
 
       copyPaste.copy(selectedElements);
@@ -95,7 +84,7 @@ EditorActions.prototype._registerDefaultActions = function(injector) {
   }
 
   if (mouseTracking && copyPaste) {
-    this.register('paste', function() {
+    this.register("paste", function() {
       var context = mouseTracking.getHoverContext();
 
       copyPaste.paste(context);
@@ -103,36 +92,35 @@ EditorActions.prototype._registerDefaultActions = function(injector) {
   }
 
   if (zoomScroll) {
-    this.register('stepZoom', function(opts) {
+    this.register("stepZoom", function(opts) {
       zoomScroll.stepZoom(opts.value);
     });
   }
 
   if (canvas) {
-    this.register('zoom', function(opts) {
+    this.register("zoom", function(opts) {
       canvas.zoom(opts.value);
     });
   }
 
   if (modeling && selection && rules) {
-    this.register('removeSelection', function() {
-
+    this.register("removeSelection", function() {
       var selectedElements = selection.get();
 
       if (!selectedElements.length) {
         return;
       }
 
-      var allowed = rules.allowed('elements.delete', { elements: selectedElements }),
-          removableElements;
+      var allowed = rules.allowed("elements.delete", {
+          elements: selectedElements
+        }),
+        removableElements;
 
       if (allowed === false) {
         return;
-      }
-      else if (isArray(allowed)) {
+      } else if (isArray(allowed)) {
         removableElements = allowed;
-      }
-      else {
+      } else {
         removableElements = selectedElements;
       }
 
@@ -143,19 +131,17 @@ EditorActions.prototype._registerDefaultActions = function(injector) {
   }
 
   if (keyboardMove) {
-    this.register('moveCanvas', function(opts) {
+    this.register("moveCanvas", function(opts) {
       keyboardMove.moveCanvas(opts);
     });
   }
 
   if (keyboardMoveSelection) {
-    this.register('moveSelection', function(opts) {
+    this.register("moveSelection", function(opts) {
       keyboardMoveSelection.moveSelection(opts.direction, opts.accelerated);
     });
   }
-
 };
-
 
 /**
  * Triggers a registered action
@@ -172,7 +158,6 @@ EditorActions.prototype.trigger = function(action, opts) {
 
   return this._actions[action](opts);
 };
-
 
 /**
  * Registers a collections of actions.
@@ -199,7 +184,7 @@ EditorActions.prototype.trigger = function(action, opts) {
 EditorActions.prototype.register = function(actions, listener) {
   var self = this;
 
-  if (typeof actions === 'string') {
+  if (typeof actions === "string") {
     return this._registerAction(actions, listener);
   }
 
@@ -255,7 +240,6 @@ EditorActions.prototype.isRegistered = function(action) {
   return !!this._actions[action];
 };
 
-
 function error(action, message) {
-  return new Error(action + ' ' + message);
+  return new Error(action + " " + message);
 }

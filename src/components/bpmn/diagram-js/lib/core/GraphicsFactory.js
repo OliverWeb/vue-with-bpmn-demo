@@ -1,16 +1,10 @@
-import {
-  forEach,
-  reduce
-} from 'min-dash';
+import { forEach, reduce } from "min-dash";
 
-import {
-  getChildren,
-  getVisual
-} from '../util/GraphicsUtil';
+import { getChildren, getVisual } from "../util/GraphicsUtil";
 
-import { translate } from '../util/SvgTransformUtil';
+import { translate } from "../util/SvgTransformUtil";
 
-import { clear as domClear } from 'min-dom';
+import { clear as domClear } from "min-dom";
 
 import {
   append as svgAppend,
@@ -18,11 +12,9 @@ import {
   classes as svgClasses,
   create as svgCreate,
   remove as svgRemove
-} from 'tiny-svg';
+} from "tiny-svg";
 
-import {
-  isFrameElement
-} from '../util/Elements';
+import { isFrameElement } from "../util/Elements";
 
 /**
  * A factory that creates graphical elements
@@ -35,11 +27,9 @@ export default function GraphicsFactory(eventBus, elementRegistry) {
   this._elementRegistry = elementRegistry;
 }
 
-GraphicsFactory.$inject = [ 'eventBus' , 'elementRegistry' ];
-
+GraphicsFactory.$inject = ["eventBus", "elementRegistry"];
 
 GraphicsFactory.prototype._getChildren = function(element) {
-
   var gfx = this._elementRegistry.getGraphics(element);
 
   var childrenGfx;
@@ -50,8 +40,8 @@ GraphicsFactory.prototype._getChildren = function(element) {
   } else {
     childrenGfx = getChildren(gfx);
     if (!childrenGfx) {
-      childrenGfx = svgCreate('g');
-      svgClasses(childrenGfx).add('djs-children');
+      childrenGfx = svgCreate("g");
+      svgClasses(childrenGfx).add("djs-children");
 
       svgAppend(gfx.parentNode, childrenGfx);
     }
@@ -100,31 +90,34 @@ GraphicsFactory.prototype._clear = function(gfx) {
  * @return {SVGElement}
  */
 GraphicsFactory.prototype._createContainer = function(
-    type, childrenGfx, parentIndex, isFrame
+  type,
+  childrenGfx,
+  parentIndex,
+  isFrame
 ) {
-  var outerGfx = svgCreate('g');
-  svgClasses(outerGfx).add('djs-group');
+  var outerGfx = svgCreate("g");
+  svgClasses(outerGfx).add("djs-group");
 
   // insert node at position
-  if (typeof parentIndex !== 'undefined') {
+  if (typeof parentIndex !== "undefined") {
     prependTo(outerGfx, childrenGfx, childrenGfx.childNodes[parentIndex]);
   } else {
     svgAppend(childrenGfx, outerGfx);
   }
 
-  var gfx = svgCreate('g');
-  svgClasses(gfx).add('djs-element');
-  svgClasses(gfx).add('djs-' + type);
+  var gfx = svgCreate("g");
+  svgClasses(gfx).add("djs-element");
+  svgClasses(gfx).add("djs-" + type);
 
   if (isFrame) {
-    svgClasses(gfx).add('djs-frame');
+    svgClasses(gfx).add("djs-frame");
   }
 
   svgAppend(outerGfx, gfx);
 
   // create visual
-  var visual = svgCreate('g');
-  svgClasses(visual).add('djs-visual');
+  var visual = svgCreate("g");
+  svgClasses(visual).add("djs-visual");
 
   svgAppend(gfx, visual);
 
@@ -133,28 +126,34 @@ GraphicsFactory.prototype._createContainer = function(
 
 GraphicsFactory.prototype.create = function(type, element, parentIndex) {
   var childrenGfx = this._getChildren(element.parent);
-  return this._createContainer(type, childrenGfx, parentIndex, isFrameElement(element));
+  return this._createContainer(
+    type,
+    childrenGfx,
+    parentIndex,
+    isFrameElement(element)
+  );
 };
 
 GraphicsFactory.prototype.updateContainments = function(elements) {
-
   var self = this,
-      elementRegistry = this._elementRegistry,
-      parents;
+    elementRegistry = this._elementRegistry,
+    parents;
 
-  parents = reduce(elements, function(map, e) {
+  parents = reduce(
+    elements,
+    function(map, e) {
+      if (e.parent) {
+        map[e.parent.id] = e.parent;
+      }
 
-    if (e.parent) {
-      map[e.parent.id] = e.parent;
-    }
-
-    return map;
-  }, {});
+      return map;
+    },
+    {}
+  );
 
   // update all parents of changed and reorganized their children
   // in the correct order (as indicated in our model)
   forEach(parents, function(parent) {
-
     var children = parent.children;
 
     if (!children) {
@@ -174,29 +173,28 @@ GraphicsFactory.prototype.updateContainments = function(elements) {
 GraphicsFactory.prototype.drawShape = function(visual, element) {
   var eventBus = this._eventBus;
 
-  return eventBus.fire('render.shape', { gfx: visual, element: element });
+  return eventBus.fire("render.shape", { gfx: visual, element: element });
 };
 
 GraphicsFactory.prototype.getShapePath = function(element) {
   var eventBus = this._eventBus;
 
-  return eventBus.fire('render.getShapePath', element);
+  return eventBus.fire("render.getShapePath", element);
 };
 
 GraphicsFactory.prototype.drawConnection = function(visual, element) {
   var eventBus = this._eventBus;
 
-  return eventBus.fire('render.connection', { gfx: visual, element: element });
+  return eventBus.fire("render.connection", { gfx: visual, element: element });
 };
 
 GraphicsFactory.prototype.getConnectionPath = function(waypoints) {
   var eventBus = this._eventBus;
 
-  return eventBus.fire('render.getConnectionPath', waypoints);
+  return eventBus.fire("render.getConnectionPath", waypoints);
 };
 
 GraphicsFactory.prototype.update = function(type, element, gfx) {
-
   // do NOT update root element
   if (!element.parent) {
     return;
@@ -205,22 +203,21 @@ GraphicsFactory.prototype.update = function(type, element, gfx) {
   var visual = this._clear(gfx);
 
   // redraw
-  if (type === 'shape') {
+  if (type === "shape") {
     this.drawShape(visual, element);
 
     // update positioning
     translate(gfx, element.x, element.y);
-  } else
-  if (type === 'connection') {
+  } else if (type === "connection") {
     this.drawConnection(visual, element);
   } else {
-    throw new Error('unknown type: ' + type);
+    throw new Error("unknown type: " + type);
   }
 
   if (element.hidden) {
-    svgAttr(gfx, 'display', 'none');
+    svgAttr(gfx, "display", "none");
   } else {
-    svgAttr(gfx, 'display', 'block');
+    svgAttr(gfx, "display", "block");
   }
 };
 
@@ -230,7 +227,6 @@ GraphicsFactory.prototype.remove = function(element) {
   // remove
   svgRemove(gfx.parentNode);
 };
-
 
 // helpers //////////
 

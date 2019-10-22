@@ -1,11 +1,8 @@
-import inherits from 'inherits';
+import inherits from "inherits";
 
-import { getBBox as getBoundingBox } from '../../util/Elements';
+import { getBBox as getBoundingBox } from "../../util/Elements";
 
-import {
-  asTRBL,
-  asBounds
-} from '../../layout/LayoutUtil';
+import { asTRBL, asBounds } from "../../layout/LayoutUtil";
 
 import {
   assign,
@@ -15,10 +12,9 @@ import {
   isArray,
   pick,
   values
-} from 'min-dash';
+} from "min-dash";
 
-import CommandInterceptor from '../../command/CommandInterceptor';
-
+import CommandInterceptor from "../../command/CommandInterceptor";
 
 /**
  * An auto resize component that takes care of expanding a parent element
@@ -30,7 +26,6 @@ import CommandInterceptor from '../../command/CommandInterceptor';
  * @param {Rules} rules
  */
 export default function AutoResize(eventBus, elementRegistry, modeling, rules) {
-
   CommandInterceptor.call(this, eventBus);
 
   this._elementRegistry = elementRegistry;
@@ -39,23 +34,23 @@ export default function AutoResize(eventBus, elementRegistry, modeling, rules) {
 
   var self = this;
 
-  this.postExecuted([ 'shape.create' ], function(event) {
+  this.postExecuted(["shape.create"], function(event) {
     var context = event.context,
-        hints = context.hints,
-        shape = context.shape,
-        parent = context.parent || context.newParent;
+      hints = context.hints,
+      shape = context.shape,
+      parent = context.parent || context.newParent;
 
     if (hints && (hints.root === false || hints.autoResize === false)) {
       return;
     }
 
-    self._expand([ shape ], parent);
+    self._expand([shape], parent);
   });
 
-  this.postExecuted([ 'elements.move' ], function(event) {
+  this.postExecuted(["elements.move"], function(event) {
     var context = event.context,
-        elements = flatten(values(context.closure.topLevel)),
-        hints = context.hints;
+      elements = flatten(values(context.closure.topLevel)),
+      hints = context.hints;
 
     var autoResize = hints ? hints.autoResize : true;
 
@@ -68,7 +63,6 @@ export default function AutoResize(eventBus, elementRegistry, modeling, rules) {
     });
 
     forEach(expandings, function(elements, parentId) {
-
       // optionally filter elements to be considered when resizing
       if (isArray(autoResize)) {
         elements = elements.filter(function(element) {
@@ -80,10 +74,10 @@ export default function AutoResize(eventBus, elementRegistry, modeling, rules) {
     });
   });
 
-  this.postExecuted([ 'shape.toggleCollapse' ], function(event) {
+  this.postExecuted(["shape.toggleCollapse"], function(event) {
     var context = event.context,
-        hints = context.hints,
-        shape = context.shape;
+      hints = context.hints,
+      shape = context.shape;
 
     if (hints && (hints.root === false || hints.autoResize === false)) {
       return;
@@ -96,32 +90,25 @@ export default function AutoResize(eventBus, elementRegistry, modeling, rules) {
     self._expand(shape.children || [], shape);
   });
 
-  this.postExecuted([ 'shape.resize' ], function(event) {
+  this.postExecuted(["shape.resize"], function(event) {
     var context = event.context,
-        hints = context.hints,
-        shape = context.shape,
-        parent = shape.parent;
+      hints = context.hints,
+      shape = context.shape,
+      parent = shape.parent;
 
     if (hints && (hints.root === false || hints.autoResize === false)) {
       return;
     }
 
     if (parent) {
-      self._expand([ shape ], parent);
+      self._expand([shape], parent);
     }
   });
-
 }
 
-AutoResize.$inject = [
-  'eventBus',
-  'elementRegistry',
-  'modeling',
-  'rules'
-];
+AutoResize.$inject = ["eventBus", "elementRegistry", "modeling", "rules"];
 
 inherits(AutoResize, CommandInterceptor);
-
 
 /**
  * Calculate the new bounds of the target shape, given
@@ -134,12 +121,11 @@ inherits(AutoResize, CommandInterceptor);
  * @param {djs.model.Shape} target
  */
 AutoResize.prototype._getOptimalBounds = function(elements, target) {
-
   var offset = this.getOffset(target),
-      padding = this.getPadding(target);
+    padding = this.getPadding(target);
 
   var elementsTrbl = asTRBL(getBoundingBox(elements)),
-      targetTrbl = asTRBL(target);
+    targetTrbl = asTRBL(target);
 
   var newTrbl = {};
 
@@ -162,7 +148,6 @@ AutoResize.prototype._getOptimalBounds = function(elements, target) {
   return asBounds(assign({}, targetTrbl, newTrbl));
 };
 
-
 /**
  * Expand the target shape respecting rules, offset and padding
  *
@@ -170,12 +155,11 @@ AutoResize.prototype._getOptimalBounds = function(elements, target) {
  * @param {djs.model.Shape|String} target|targetId
  */
 AutoResize.prototype._expand = function(elements, target) {
-
-  if (typeof target === 'string') {
+  if (typeof target === "string") {
     target = this._elementRegistry.get(target);
   }
 
-  var allowed = this._rules.allowed('element.autoResize', {
+  var allowed = this._rules.allowed("element.autoResize", {
     elements: elements,
     target: target
   });
@@ -191,7 +175,10 @@ AutoResize.prototype._expand = function(elements, target) {
     return;
   }
 
-  var resizeDirections = getResizeDirections(pick(target, [ 'x', 'y', 'width', 'height' ]), newBounds);
+  var resizeDirections = getResizeDirections(
+    pick(target, ["x", "y", "width", "height"]),
+    newBounds
+  );
 
   // resize the parent shape
   this.resize(target, newBounds, {
@@ -202,10 +189,9 @@ AutoResize.prototype._expand = function(elements, target) {
 
   // recursively expand parent elements
   if (parent) {
-    this._expand([ target ], parent);
+    this._expand([target], parent);
   }
 };
-
 
 /**
  * Get the amount to expand the given shape in each direction.
@@ -217,7 +203,6 @@ AutoResize.prototype._expand = function(elements, target) {
 AutoResize.prototype.getOffset = function(shape) {
   return { top: 60, bottom: 60, left: 100, right: 100 };
 };
-
 
 /**
  * Get the activation threshold for each side for which
@@ -231,7 +216,6 @@ AutoResize.prototype.getPadding = function(shape) {
   return { top: 2, bottom: 2, left: 15, right: 15 };
 };
 
-
 /**
  * Perform the actual resize operation.
  *
@@ -243,7 +227,6 @@ AutoResize.prototype.getPadding = function(shape) {
 AutoResize.prototype.resize = function(shape, newBounds, hints) {
   this._modeling.resizeShape(shape, newBounds, null, hints);
 };
-
 
 function boundsChanged(newBounds, oldBounds) {
   return (
@@ -263,25 +246,25 @@ function boundsChanged(newBounds, oldBounds) {
  * @returns {string} Resize directions as {n|w|s|e}.
  */
 function getResizeDirections(oldBounds, newBounds) {
-  var directions = '';
+  var directions = "";
 
   oldBounds = asTRBL(oldBounds);
   newBounds = asTRBL(newBounds);
 
   if (oldBounds.top > newBounds.top) {
-    directions = directions.concat('n');
+    directions = directions.concat("n");
   }
 
   if (oldBounds.right < newBounds.right) {
-    directions = directions.concat('w');
+    directions = directions.concat("w");
   }
 
   if (oldBounds.bottom < newBounds.bottom) {
-    directions = directions.concat('s');
+    directions = directions.concat("s");
   }
 
   if (oldBounds.left > newBounds.left) {
-    directions = directions.concat('e');
+    directions = directions.concat("e");
   }
 
   return directions;

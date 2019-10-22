@@ -1,11 +1,9 @@
-import DraggingModule from '../dragging';
+import DraggingModule from "../dragging";
 
-import ToolManager from './ToolManager';
+import ToolManager from "./ToolManager";
 
 export default {
-  __depends__: [
-    DraggingModule
-  ],
-  __init__: [ 'toolManager' ],
-  toolManager: [ 'type', ToolManager ]
+  __depends__: [DraggingModule],
+  __init__: ["toolManager"],
+  toolManager: ["type", ToolManager]
 };

@@ -1,27 +1,17 @@
-import {
-  bind,
-  debounce,
-  forEach,
-  isNumber,
-  isObject
-} from 'min-dash';
+import { bind, debounce, forEach, isNumber, isObject } from "min-dash";
 
-import {
-  isSnapped,
-  setSnapped
-} from './SnapUtil';
+import { isSnapped, setSnapped } from "./SnapUtil";
 
 import {
   append as svgAppend,
   attr as svgAttr,
   classes as svgClasses,
   create as svgCreate
-} from 'tiny-svg';
+} from "tiny-svg";
 
 var SNAP_TOLERANCE = 7;
 
 export var SNAP_LINE_HIDE_DELAY = 1000;
-
 
 /**
  * Generic snapping feature.
@@ -36,7 +26,7 @@ export default function Snapping(canvas) {
   this._asyncHide = debounce(bind(this.hide, this), SNAP_LINE_HIDE_DELAY);
 }
 
-Snapping.$inject = [ 'canvas' ];
+Snapping.$inject = ["canvas"];
 
 /**
  * Snap an event to given snap points.
@@ -46,12 +36,12 @@ Snapping.$inject = [ 'canvas' ];
  */
 Snapping.prototype.snap = function(event, snapPoints) {
   var context = event.context,
-      snapContext = context.snapContext,
-      snapLocations = snapContext.getSnapLocations();
+    snapContext = context.snapContext,
+    snapLocations = snapContext.getSnapLocations();
 
   var snapping = {
-    x: isSnapped(event, 'x'),
-    y: isSnapped(event, 'y')
+    x: isSnapped(event, "x"),
+    y: isSnapped(event, "y")
   };
 
   forEach(snapLocations, function(location) {
@@ -63,11 +53,16 @@ Snapping.prototype.snap = function(event, snapPoints) {
     };
 
     // snap both axis if not snapped already
-    forEach([ 'x', 'y' ], function(axis) {
+    forEach(["x", "y"], function(axis) {
       var locationSnapping;
 
       if (!snapping[axis]) {
-        locationSnapping = snapPoints.snap(snapCurrent, location, axis, SNAP_TOLERANCE);
+        locationSnapping = snapPoints.snap(
+          snapCurrent,
+          location,
+          axis,
+          SNAP_TOLERANCE
+        );
 
         if (locationSnapping !== undefined) {
           snapping[axis] = {
@@ -85,11 +80,11 @@ Snapping.prototype.snap = function(event, snapPoints) {
   });
 
   // show snap lines
-  this.showSnapLine('vertical', snapping.x && snapping.x.value);
-  this.showSnapLine('horizontal', snapping.y && snapping.y.value);
+  this.showSnapLine("vertical", snapping.x && snapping.x.value);
+  this.showSnapLine("horizontal", snapping.y && snapping.y.value);
 
   // snap event
-  forEach([ 'x', 'y' ], function(axis) {
+  forEach(["x", "y"], function(axis) {
     var axisSnapping = snapping[axis];
 
     if (isObject(axisSnapping)) {
@@ -99,31 +94,30 @@ Snapping.prototype.snap = function(event, snapPoints) {
 };
 
 Snapping.prototype._createLine = function(orientation) {
-  var root = this._canvas.getLayer('snap');
+  var root = this._canvas.getLayer("snap");
 
-  var line = svgCreate('path');
+  var line = svgCreate("path");
 
-  svgAttr(line, { d: 'M0,0 L0,0' });
+  svgAttr(line, { d: "M0,0 L0,0" });
 
-  svgClasses(line).add('djs-snap-line');
+  svgClasses(line).add("djs-snap-line");
 
   svgAppend(root, line);
 
   return {
     update: function(position) {
-
       if (!isNumber(position)) {
-        svgAttr(line, { display: 'none' });
+        svgAttr(line, { display: "none" });
       } else {
-        if (orientation === 'horizontal') {
+        if (orientation === "horizontal") {
           svgAttr(line, {
-            d: 'M-100000,' + position + ' L+100000,' + position,
-            display: ''
+            d: "M-100000," + position + " L+100000," + position,
+            display: ""
           });
         } else {
           svgAttr(line, {
-            d: 'M ' + position + ',-100000 L ' + position + ', +100000',
-            display: ''
+            d: "M " + position + ",-100000 L " + position + ", +100000",
+            display: ""
           });
         }
       }
@@ -133,13 +127,12 @@ Snapping.prototype._createLine = function(orientation) {
 
 Snapping.prototype._createSnapLines = function() {
   this._snapLines = {
-    horizontal: this._createLine('horizontal'),
-    vertical: this._createLine('vertical')
+    horizontal: this._createLine("horizontal"),
+    vertical: this._createLine("vertical")
   };
 };
 
 Snapping.prototype.showSnapLine = function(orientation, position) {
-
   var line = this.getSnapLine(orientation);
 
   if (line) {

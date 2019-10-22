@@ -2,13 +2,12 @@ export default function UpdateSemanticParentHandler(bpmnUpdater) {
   this._bpmnUpdater = bpmnUpdater;
 }
 
-UpdateSemanticParentHandler.$inject = [ 'bpmnUpdater' ];
-
+UpdateSemanticParentHandler.$inject = ["bpmnUpdater"];
 
 UpdateSemanticParentHandler.prototype.execute = function(context) {
   var dataStoreBo = context.dataStoreBo,
-      newSemanticParent = context.newSemanticParent,
-      newDiParent = context.newDiParent;
+    newSemanticParent = context.newSemanticParent,
+    newDiParent = context.newDiParent;
 
   context.oldSemanticParent = dataStoreBo.$parent;
   context.oldDiParent = dataStoreBo.di.$parent;
@@ -22,8 +21,8 @@ UpdateSemanticParentHandler.prototype.execute = function(context) {
 
 UpdateSemanticParentHandler.prototype.revert = function(context) {
   var dataStoreBo = context.dataStoreBo,
-      oldSemanticParent = context.oldSemanticParent,
-      oldDiParent = context.oldDiParent;
+    oldSemanticParent = context.oldSemanticParent,
+    oldDiParent = context.oldDiParent;
 
   // update semantic parent
   this._bpmnUpdater.updateSemanticParent(dataStoreBo, oldSemanticParent);
@@ -31,4 +30,3 @@ UpdateSemanticParentHandler.prototype.revert = function(context) {
   // update DI parent
   this._bpmnUpdater.updateDiParent(dataStoreBo.di, oldDiParent);
 };
-

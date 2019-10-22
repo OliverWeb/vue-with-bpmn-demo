@@ -1,8 +1,4 @@
-import {
-  filter,
-  forEach,
-  sortBy
-} from 'min-dash';
+import { filter, forEach, sortBy } from "min-dash";
 
 function last(arr) {
   return arr && arr[arr.length - 1];
@@ -36,13 +32,11 @@ var ALIGNMENT_SORTING = {
   }
 };
 
-
 export default function AlignElements(modeling) {
   this._modeling = modeling;
 }
 
-AlignElements.$inject = [ 'modeling' ];
-
+AlignElements.$inject = ["modeling"];
 
 /**
  * Get the relevant "axis" and "dimension" related to the current type of alignment
@@ -52,13 +46,13 @@ AlignElements.$inject = [ 'modeling' ];
  * @return {Object} { axis, dimension }
  */
 AlignElements.prototype._getOrientationDetails = function(type) {
-  var vertical = [ 'top', 'bottom', 'middle' ],
-      axis = 'x',
-      dimension = 'width';
+  var vertical = ["top", "bottom", "middle"],
+    axis = "x",
+    dimension = "width";
 
   if (vertical.indexOf(type) !== -1) {
-    axis = 'y';
-    dimension = 'height';
+    axis = "y";
+    dimension = "height";
   }
 
   return {
@@ -81,29 +75,26 @@ AlignElements.prototype._isType = function(type, types) {
  */
 AlignElements.prototype._alignmentPosition = function(type, sortedElements) {
   var orientation = this._getOrientationDetails(type),
-      axis = orientation.axis,
-      dimension = orientation.dimension,
-      alignment = {},
-      centers = {},
-      hasSharedCenters = false,
-      centeredElements,
-      firstElement,
-      lastElement;
+    axis = orientation.axis,
+    dimension = orientation.dimension,
+    alignment = {},
+    centers = {},
+    hasSharedCenters = false,
+    centeredElements,
+    firstElement,
+    lastElement;
 
   function getMiddleOrTop(first, last) {
     return Math.round((first[axis] + last[axis] + last[dimension]) / 2);
   }
 
-  if (this._isType(type, [ 'left', 'top' ])) {
+  if (this._isType(type, ["left", "top"])) {
     alignment[type] = sortedElements[0][axis];
-
-  } else if (this._isType(type, [ 'right', 'bottom' ])) {
+  } else if (this._isType(type, ["right", "bottom"])) {
     lastElement = last(sortedElements);
 
     alignment[type] = lastElement[axis] + lastElement[dimension];
-
-  } else if (this._isType(type, [ 'center', 'middle' ])) {
-
+  } else if (this._isType(type, ["center", "middle"])) {
     // check if there is a center shared by more than one shape
     // if not, just take the middle of the range
     forEach(sortedElements, function(element) {
@@ -113,7 +104,7 @@ AlignElements.prototype._alignmentPosition = function(type, sortedElements) {
         centers[center].elements.push(element);
       } else {
         centers[center] = {
-          elements: [ element ],
+          elements: [element],
           center: center
         };
       }

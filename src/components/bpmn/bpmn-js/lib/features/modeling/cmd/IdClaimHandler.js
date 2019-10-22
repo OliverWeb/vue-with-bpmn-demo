@@ -2,14 +2,13 @@ export default function IdClaimHandler(moddle) {
   this._moddle = moddle;
 }
 
-IdClaimHandler.$inject = [ 'moddle' ];
-
+IdClaimHandler.$inject = ["moddle"];
 
 IdClaimHandler.prototype.execute = function(context) {
   var ids = this._moddle.ids,
-      id = context.id,
-      element = context.element,
-      claiming = context.claiming;
+    id = context.id,
+    element = context.element,
+    claiming = context.claiming;
 
   if (claiming) {
     ids.claim(id, element);
@@ -23,9 +22,9 @@ IdClaimHandler.prototype.execute = function(context) {
  */
 IdClaimHandler.prototype.revert = function(context) {
   var ids = this._moddle.ids,
-      id = context.id,
-      element = context.element,
-      claiming = context.claiming;
+    id = context.id,
+    element = context.element,
+    claiming = context.claiming;
 
   if (claiming) {
     ids.unclaim(id);
@@ -33,4 +32,3 @@ IdClaimHandler.prototype.revert = function(context) {
     ids.claim(id, element);
   }
 };
-

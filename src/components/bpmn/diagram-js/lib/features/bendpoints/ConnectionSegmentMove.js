@@ -1,30 +1,15 @@
-import {
-  pointsAligned,
-  pointsOnLine
-} from '../../util/Geometry';
+import { pointsAligned, pointsOnLine } from "../../util/Geometry";
 
-import {
-  addSegmentDragger,
-  getConnectionIntersection
-} from './BendpointUtil';
+import { addSegmentDragger, getConnectionIntersection } from "./BendpointUtil";
 
-import {
-  getMid,
-  getOrientation
-} from '../../layout/LayoutUtil';
+import { getMid, getOrientation } from "../../layout/LayoutUtil";
 
-var MARKER_CONNECT_HOVER = 'connect-hover',
-    MARKER_CONNECT_UPDATING = 'djs-updating';
+var MARKER_CONNECT_HOVER = "connect-hover",
+  MARKER_CONNECT_UPDATING = "djs-updating";
 
-import {
-  classes as svgClasses,
-  remove as svgRemove
-} from 'tiny-svg';
+import { classes as svgClasses, remove as svgRemove } from "tiny-svg";
 
-import {
-  translate
-} from '../../util/SvgTransformUtil';
-
+import { translate } from "../../util/SvgTransformUtil";
 
 function axisAdd(point, axis, delta) {
   return axisSet(point, axis, point[axis] + delta);
@@ -32,25 +17,27 @@ function axisAdd(point, axis, delta) {
 
 function axisSet(point, axis, value) {
   return {
-    x: (axis === 'x' ? value : point.x),
-    y: (axis === 'y' ? value : point.y)
+    x: axis === "x" ? value : point.x,
+    y: axis === "y" ? value : point.y
   };
 }
 
 function axisFenced(position, segmentStart, segmentEnd, axis) {
-
   var maxValue = Math.max(segmentStart[axis], segmentEnd[axis]),
-      minValue = Math.min(segmentStart[axis], segmentEnd[axis]);
+    minValue = Math.min(segmentStart[axis], segmentEnd[axis]);
 
   var padding = 20;
 
-  var fencedValue = Math.min(Math.max(minValue + padding, position[axis]), maxValue - padding);
+  var fencedValue = Math.min(
+    Math.max(minValue + padding, position[axis]),
+    maxValue - padding
+  );
 
   return axisSet(segmentStart, axis, fencedValue);
 }
 
 function flipAxis(axis) {
-  return axis === 'x' ? 'y' : 'x';
+  return axis === "x" ? "y" : "x";
 }
 
 /**
@@ -65,9 +52,7 @@ function flipAxis(axis) {
  * @return {Point}
  */
 function getDocking(point, referenceElement, moveAxis) {
-
-  var referenceMid,
-      inverseAxis;
+  var referenceMid, inverseAxis;
 
   if (point.original) {
     return point.original;
@@ -83,26 +68,30 @@ function getDocking(point, referenceElement, moveAxis) {
  * A component that implements moving of bendpoints
  */
 export default function ConnectionSegmentMove(
-    injector, eventBus, canvas,
-    dragging, graphicsFactory, modeling) {
-
+  injector,
+  eventBus,
+  canvas,
+  dragging,
+  graphicsFactory,
+  modeling
+) {
   // optional connection docking integration
-  var connectionDocking = injector.get('connectionDocking', false);
-
+  var connectionDocking = injector.get("connectionDocking", false);
 
   // API
 
   this.start = function(event, connection, idx) {
-
     var context,
-        gfx = canvas.getGraphics(connection),
-        segmentStartIndex = idx - 1,
-        segmentEndIndex = idx,
-        waypoints = connection.waypoints,
-        segmentStart = waypoints[segmentStartIndex],
-        segmentEnd = waypoints[segmentEndIndex],
-        intersection = getConnectionIntersection(canvas, waypoints, event),
-        direction, axis, dragPosition;
+      gfx = canvas.getGraphics(connection),
+      segmentStartIndex = idx - 1,
+      segmentEndIndex = idx,
+      waypoints = connection.waypoints,
+      segmentStart = waypoints[segmentStartIndex],
+      segmentEnd = waypoints[segmentEndIndex],
+      intersection = getConnectionIntersection(canvas, waypoints, event),
+      direction,
+      axis,
+      dragPosition;
 
     direction = pointsAligned(segmentStart, segmentEnd);
 
@@ -112,7 +101,7 @@ export default function ConnectionSegmentMove(
     }
 
     // the axis where we are going to move things
-    axis = direction === 'v' ? 'x' : 'y';
+    axis = direction === "v" ? "x" : "y";
 
     if (segmentStartIndex === 0) {
       segmentStart = getDocking(segmentStart, connection.source, axis);
@@ -142,8 +131,8 @@ export default function ConnectionSegmentMove(
       dragPosition: dragPosition
     };
 
-    dragging.init(event, dragPosition, 'connectionSegment.move', {
-      cursor: axis === 'x' ? 'resize-ew' : 'resize-ns',
+    dragging.init(event, dragPosition, "connectionSegment.move", {
+      cursor: axis === "x" ? "resize-ew" : "resize-ns",
       data: {
         connection: connection,
         connectionGfx: gfx,
@@ -161,14 +150,13 @@ export default function ConnectionSegmentMove(
    * @return {Array<Point>} cropped connection waypoints
    */
   function cropConnection(connection, newWaypoints) {
-
     // crop connection, if docking service is provided only
     if (!connectionDocking) {
       return newWaypoints;
     }
 
     var oldWaypoints = connection.waypoints,
-        croppedWaypoints;
+      croppedWaypoints;
 
     // temporary set new waypoints
     connection.waypoints = newWaypoints;
@@ -184,17 +172,16 @@ export default function ConnectionSegmentMove(
   // DRAGGING IMPLEMENTATION
 
   function redrawConnection(data) {
-    graphicsFactory.update('connection', data.connection, data.connectionGfx);
+    graphicsFactory.update("connection", data.connection, data.connectionGfx);
   }
 
   function updateDragger(context, segmentOffset, event) {
-
     var newWaypoints = context.newWaypoints,
-        segmentStartIndex = context.segmentStartIndex + segmentOffset,
-        segmentStart = newWaypoints[segmentStartIndex],
-        segmentEndIndex = context.segmentEndIndex + segmentOffset,
-        segmentEnd = newWaypoints[segmentEndIndex],
-        axis = flipAxis(context.axis);
+      segmentStartIndex = context.segmentStartIndex + segmentOffset,
+      segmentStart = newWaypoints[segmentStartIndex],
+      segmentEndIndex = context.segmentEndIndex + segmentOffset,
+      segmentEnd = newWaypoints[segmentEndIndex],
+      axis = flipAxis(context.axis);
 
     // make sure the dragger does not move
     // outside the connection
@@ -214,14 +201,13 @@ export default function ConnectionSegmentMove(
    * @return {Object} { filteredWaypoints, segmentOffset }
    */
   function filterRedundantWaypoints(waypoints, segmentStartIndex) {
-
     var segmentOffset = 0;
 
     var filteredWaypoints = waypoints.filter(function(r, idx) {
       if (pointsOnLine(waypoints[idx - 1], waypoints[idx + 1], r)) {
-
         // remove point and increment offset
-        segmentOffset = idx <= segmentStartIndex ? segmentOffset - 1 : segmentOffset;
+        segmentOffset =
+          idx <= segmentStartIndex ? segmentOffset - 1 : segmentOffset;
         return false;
       }
 
@@ -235,56 +221,59 @@ export default function ConnectionSegmentMove(
     };
   }
 
-  eventBus.on('connectionSegment.move.start', function(e) {
-
+  eventBus.on("connectionSegment.move.start", function(e) {
     var context = e.context,
-        connection = e.connection,
-        layer = canvas.getLayer('overlays');
+      connection = e.connection,
+      layer = canvas.getLayer("overlays");
 
     context.originalWaypoints = connection.waypoints.slice();
 
     // add dragger gfx
-    context.draggerGfx = addSegmentDragger(layer, context.segmentStart, context.segmentEnd);
-    svgClasses(context.draggerGfx).add('djs-dragging');
+    context.draggerGfx = addSegmentDragger(
+      layer,
+      context.segmentStart,
+      context.segmentEnd
+    );
+    svgClasses(context.draggerGfx).add("djs-dragging");
 
     canvas.addMarker(connection, MARKER_CONNECT_UPDATING);
   });
 
-  eventBus.on('connectionSegment.move.move', function(e) {
-
+  eventBus.on("connectionSegment.move.move", function(e) {
     var context = e.context,
-        connection = context.connection,
-        segmentStartIndex = context.segmentStartIndex,
-        segmentEndIndex = context.segmentEndIndex,
-        segmentStart = context.segmentStart,
-        segmentEnd = context.segmentEnd,
-        axis = context.axis;
+      connection = context.connection,
+      segmentStartIndex = context.segmentStartIndex,
+      segmentEndIndex = context.segmentEndIndex,
+      segmentStart = context.segmentStart,
+      segmentEnd = context.segmentEnd,
+      axis = context.axis;
 
     var newWaypoints = context.originalWaypoints.slice(),
-        newSegmentStart = axisAdd(segmentStart, axis, e['d' + axis]),
-        newSegmentEnd = axisAdd(segmentEnd, axis, e['d' + axis]);
+      newSegmentStart = axisAdd(segmentStart, axis, e["d" + axis]),
+      newSegmentEnd = axisAdd(segmentEnd, axis, e["d" + axis]);
 
     // original waypoint count and added / removed
     // from start waypoint delta. We use the later
     // to retrieve the updated segmentStartIndex / segmentEndIndex
     var waypointCount = newWaypoints.length,
-        segmentOffset = 0;
+      segmentOffset = 0;
 
     // move segment start / end by axis delta
     newWaypoints[segmentStartIndex] = newSegmentStart;
     newWaypoints[segmentEndIndex] = newSegmentEnd;
 
-    var sourceToSegmentOrientation,
-        targetToSegmentOrientation;
+    var sourceToSegmentOrientation, targetToSegmentOrientation;
 
     // handle first segment
     if (segmentStartIndex < 2) {
-      sourceToSegmentOrientation = getOrientation(connection.source, newSegmentStart);
+      sourceToSegmentOrientation = getOrientation(
+        connection.source,
+        newSegmentStart
+      );
 
       // first bendpoint, remove first segment if intersecting
       if (segmentStartIndex === 1) {
-
-        if (sourceToSegmentOrientation === 'intersect') {
+        if (sourceToSegmentOrientation === "intersect") {
           newWaypoints.shift();
           newWaypoints[0] = newSegmentStart;
           segmentOffset--;
@@ -293,7 +282,7 @@ export default function ConnectionSegmentMove(
 
       // docking point, add segment if not intersecting anymore
       else {
-        if (sourceToSegmentOrientation !== 'intersect') {
+        if (sourceToSegmentOrientation !== "intersect") {
           newWaypoints.unshift(segmentStart);
           segmentOffset++;
         }
@@ -302,12 +291,14 @@ export default function ConnectionSegmentMove(
 
     // handle last segment
     if (segmentEndIndex > waypointCount - 3) {
-      targetToSegmentOrientation = getOrientation(connection.target, newSegmentEnd);
+      targetToSegmentOrientation = getOrientation(
+        connection.target,
+        newSegmentEnd
+      );
 
       // last bendpoint, remove last segment if intersecting
       if (segmentEndIndex === waypointCount - 2) {
-
-        if (targetToSegmentOrientation === 'intersect') {
+        if (targetToSegmentOrientation === "intersect") {
           newWaypoints.pop();
           newWaypoints[newWaypoints.length - 1] = newSegmentEnd;
         }
@@ -315,14 +306,17 @@ export default function ConnectionSegmentMove(
 
       // last bendpoint, remove last segment if intersecting
       else {
-        if (targetToSegmentOrientation !== 'intersect') {
+        if (targetToSegmentOrientation !== "intersect") {
           newWaypoints.push(segmentEnd);
         }
       }
     }
 
     // update connection waypoints
-    context.newWaypoints = connection.waypoints = cropConnection(connection, newWaypoints);
+    context.newWaypoints = connection.waypoints = cropConnection(
+      connection,
+      newWaypoints
+    );
 
     // update dragger position
     updateDragger(context, segmentOffset, e);
@@ -334,30 +328,27 @@ export default function ConnectionSegmentMove(
     redrawConnection(e);
   });
 
-  eventBus.on('connectionSegment.move.hover', function(e) {
-
+  eventBus.on("connectionSegment.move.hover", function(e) {
     e.context.hover = e.hover;
     canvas.addMarker(e.hover, MARKER_CONNECT_HOVER);
   });
 
-  eventBus.on([
-    'connectionSegment.move.out',
-    'connectionSegment.move.cleanup'
-  ], function(e) {
+  eventBus.on(
+    ["connectionSegment.move.out", "connectionSegment.move.cleanup"],
+    function(e) {
+      // remove connect marker
+      // if it was added
+      var hover = e.context.hover;
 
-    // remove connect marker
-    // if it was added
-    var hover = e.context.hover;
-
-    if (hover) {
-      canvas.removeMarker(hover, MARKER_CONNECT_HOVER);
+      if (hover) {
+        canvas.removeMarker(hover, MARKER_CONNECT_HOVER);
+      }
     }
-  });
+  );
 
-  eventBus.on('connectionSegment.move.cleanup', function(e) {
-
+  eventBus.on("connectionSegment.move.cleanup", function(e) {
     var context = e.context,
-        connection = context.connection;
+      connection = context.connection;
 
     // remove dragger gfx
     if (context.draggerGfx) {
@@ -367,24 +358,23 @@ export default function ConnectionSegmentMove(
     canvas.removeMarker(connection, MARKER_CONNECT_UPDATING);
   });
 
-  eventBus.on([
-    'connectionSegment.move.cancel',
-    'connectionSegment.move.end'
-  ], function(e) {
-    var context = e.context,
+  eventBus.on(
+    ["connectionSegment.move.cancel", "connectionSegment.move.end"],
+    function(e) {
+      var context = e.context,
         connection = context.connection;
 
-    connection.waypoints = context.originalWaypoints;
+      connection.waypoints = context.originalWaypoints;
 
-    redrawConnection(e);
-  });
+      redrawConnection(e);
+    }
+  );
 
-  eventBus.on('connectionSegment.move.end', function(e) {
-
+  eventBus.on("connectionSegment.move.end", function(e) {
     var context = e.context,
-        connection = context.connection,
-        newWaypoints = context.newWaypoints,
-        newSegmentStartIndex = context.newSegmentStartIndex;
+      connection = context.connection,
+      newWaypoints = context.newWaypoints,
+      newSegmentStartIndex = context.newSegmentStartIndex;
 
     // ensure we have actual pixel values bendpoint
     // coordinates (important when zoom level was > 1 during move)
@@ -401,8 +391,8 @@ export default function ConnectionSegmentMove(
 
     // get filtered waypoints
     var filteredWaypoints = filtered.waypoints,
-        croppedWaypoints = cropConnection(connection, filteredWaypoints),
-        segmentOffset = filtered.segmentOffset;
+      croppedWaypoints = cropConnection(connection, filteredWaypoints),
+      segmentOffset = filtered.segmentOffset;
 
     var hints = {
       segmentMove: {
@@ -416,10 +406,10 @@ export default function ConnectionSegmentMove(
 }
 
 ConnectionSegmentMove.$inject = [
-  'injector',
-  'eventBus',
-  'canvas',
-  'dragging',
-  'graphicsFactory',
-  'modeling'
+  "injector",
+  "eventBus",
+  "canvas",
+  "dragging",
+  "graphicsFactory",
+  "modeling"
 ];

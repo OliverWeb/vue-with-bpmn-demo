@@ -4,10 +4,9 @@ var HIGH_PRIORITY = 2000;
  * Integrates space tool with grid snapping.
  */
 export default function SpaceToolBehavior(eventBus, gridSnapping) {
-  eventBus.on([
-    'spaceTool.move',
-    'spaceTool.end'
-  ], HIGH_PRIORITY, function(event) {
+  eventBus.on(["spaceTool.move", "spaceTool.end"], HIGH_PRIORITY, function(
+    event
+  ) {
     var context = event.context;
 
     if (!context.initialized) {
@@ -16,19 +15,14 @@ export default function SpaceToolBehavior(eventBus, gridSnapping) {
 
     var axis = context.axis;
 
-    if (axis === 'x') {
-
+    if (axis === "x") {
       // snap delta x to multiple of 10
       event.dx = gridSnapping.snapValue(event.dx);
     } else {
-
       // snap delta y to multiple of 10
       event.dy = gridSnapping.snapValue(event.dy);
     }
   });
 }
 
-SpaceToolBehavior.$inject = [
-  'eventBus',
-  'gridSnapping'
-];
+SpaceToolBehavior.$inject = ["eventBus", "gridSnapping"];

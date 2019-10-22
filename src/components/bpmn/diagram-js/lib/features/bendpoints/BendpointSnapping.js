@@ -1,27 +1,21 @@
-import {
-  assign,
-  forEach,
-  isArray
-} from 'min-dash';
+import { assign, forEach, isArray } from "min-dash";
 
-import { setSnapped } from '../snapping/SnapUtil';
+import { setSnapped } from "../snapping/SnapUtil";
 
-var abs= Math.abs,
-    round = Math.round;
+var abs = Math.abs,
+  round = Math.round;
 
 var TOLERANCE = 10;
 
-
 export default function BendpointSnapping(eventBus) {
-
   function snapTo(values, value) {
-
     if (isArray(values)) {
       var i = values.length;
 
-      while (i--) if (abs(values[i] - value) <= TOLERANCE) {
-        return values[i];
-      }
+      while (i--)
+        if (abs(values[i] - value) <= TOLERANCE) {
+          return values[i];
+        }
     } else {
       values = +values;
       var rem = value % values;
@@ -50,15 +44,14 @@ export default function BendpointSnapping(eventBus) {
   // connection segment snapping //////////////////////
 
   function getConnectionSegmentSnaps(context) {
-
     var snapPoints = context.snapPoints,
-        connection = context.connection,
-        waypoints = connection.waypoints,
-        segmentStart = context.segmentStart,
-        segmentStartIndex = context.segmentStartIndex,
-        segmentEnd = context.segmentEnd,
-        segmentEndIndex = context.segmentEndIndex,
-        axis = context.axis;
+      connection = context.connection,
+      waypoints = connection.waypoints,
+      segmentStart = context.segmentStart,
+      segmentStartIndex = context.segmentStartIndex,
+      segmentEnd = context.segmentEnd,
+      segmentEndIndex = context.segmentEndIndex,
+      axis = context.axis;
 
     if (snapPoints) {
       return snapPoints;
@@ -79,7 +72,7 @@ export default function BendpointSnapping(eventBus) {
       referenceWaypoints.unshift(mid(connection.target));
     }
 
-    context.snapPoints = snapPoints = { horizontal: [] , vertical: [] };
+    context.snapPoints = snapPoints = { horizontal: [], vertical: [] };
 
     forEach(referenceWaypoints, function(p) {
       // we snap on existing bendpoints only,
@@ -87,11 +80,11 @@ export default function BendpointSnapping(eventBus) {
       if (p) {
         p = p.original || p;
 
-        if (axis === 'y') {
+        if (axis === "y") {
           snapPoints.horizontal.push(p.y);
         }
 
-        if (axis === 'x') {
+        if (axis === "x") {
           snapPoints.vertical.push(p.x);
         }
       }
@@ -100,12 +93,13 @@ export default function BendpointSnapping(eventBus) {
     return snapPoints;
   }
 
-  eventBus.on('connectionSegment.move.move', 1500, function(event) {
+  eventBus.on("connectionSegment.move.move", 1500, function(event) {
     var context = event.context,
-        snapPoints = getConnectionSegmentSnaps(context),
-        x = event.x,
-        y = event.y,
-        sx, sy;
+      snapPoints = getConnectionSegmentSnaps(context),
+      x = event.x,
+      y = event.y,
+      sx,
+      sy;
 
     if (!snapPoints) {
       return;
@@ -115,10 +109,9 @@ export default function BendpointSnapping(eventBus) {
     sx = snapTo(snapPoints.vertical, x);
     sy = snapTo(snapPoints.horizontal, y);
 
-
     // correction x/y
-    var cx = (x - sx),
-        cy = (y - sy);
+    var cx = x - sx,
+      cy = y - sy;
 
     // update delta
     assign(event, {
@@ -130,30 +123,31 @@ export default function BendpointSnapping(eventBus) {
 
     // only set snapped if actually snapped
     if (cx || snapPoints.vertical.indexOf(x) !== -1) {
-      setSnapped(event, 'x', sx);
+      setSnapped(event, "x", sx);
     }
 
     if (cy || snapPoints.horizontal.indexOf(y) !== -1) {
-      setSnapped(event, 'y', sy);
+      setSnapped(event, "y", sy);
     }
   });
-
 
   // bendpoint snapping //////////////////////
 
   function getBendpointSnaps(context) {
-
     var snapPoints = context.snapPoints,
-        waypoints = context.connection.waypoints,
-        bendpointIndex = context.bendpointIndex;
+      waypoints = context.connection.waypoints,
+      bendpointIndex = context.bendpointIndex;
 
     if (snapPoints) {
       return snapPoints;
     }
 
-    var referenceWaypoints = [ waypoints[bendpointIndex - 1], waypoints[bendpointIndex + 1] ];
+    var referenceWaypoints = [
+      waypoints[bendpointIndex - 1],
+      waypoints[bendpointIndex + 1]
+    ];
 
-    context.snapPoints = snapPoints = { horizontal: [] , vertical: [] };
+    context.snapPoints = snapPoints = { horizontal: [], vertical: [] };
 
     forEach(referenceWaypoints, function(p) {
       // we snap on existing bendpoints only,
@@ -169,28 +163,39 @@ export default function BendpointSnapping(eventBus) {
     return snapPoints;
   }
 
-
-  eventBus.on([ 'bendpoint.move.move', 'bendpoint.move.end' ], 1500, function(event) {
-
+  eventBus.on(["bendpoint.move.move", "bendpoint.move.end"], 1500, function(
+    event
+  ) {
     var context = event.context,
-        snapPoints = getBendpointSnaps(context),
-        target = context.target,
-        targetMid = target && mid(target),
-        x = event.x,
-        y = event.y,
-        sx, sy;
+      snapPoints = getBendpointSnaps(context),
+      target = context.target,
+      targetMid = target && mid(target),
+      x = event.x,
+      y = event.y,
+      sx,
+      sy;
 
     if (!snapPoints) {
       return;
     }
 
     // snap
-    sx = snapTo(targetMid ? snapPoints.vertical.concat([ targetMid.x ]) : snapPoints.vertical, x);
-    sy = snapTo(targetMid ? snapPoints.horizontal.concat([ targetMid.y ]) : snapPoints.horizontal, y);
+    sx = snapTo(
+      targetMid
+        ? snapPoints.vertical.concat([targetMid.x])
+        : snapPoints.vertical,
+      x
+    );
+    sy = snapTo(
+      targetMid
+        ? snapPoints.horizontal.concat([targetMid.y])
+        : snapPoints.horizontal,
+      y
+    );
 
     // correction x/y
-    var cx = (x - sx),
-        cy = (y - sy);
+    var cx = x - sx,
+      cy = y - sy;
 
     // update delta
     assign(event, {
@@ -202,14 +207,13 @@ export default function BendpointSnapping(eventBus) {
 
     // only set snapped if actually snapped
     if (cx || snapPoints.vertical.indexOf(x) !== -1) {
-      setSnapped(event, 'x', sx);
+      setSnapped(event, "x", sx);
     }
 
     if (cy || snapPoints.horizontal.indexOf(y) !== -1) {
-      setSnapped(event, 'y', sy);
+      setSnapped(event, "y", sy);
     }
   });
 }
 
-
-BendpointSnapping.$inject = [ 'eventBus' ];
+BendpointSnapping.$inject = ["eventBus"];

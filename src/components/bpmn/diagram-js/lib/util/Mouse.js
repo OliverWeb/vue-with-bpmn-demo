@@ -1,15 +1,8 @@
-import {
-  getOriginal as getOriginalEvent
-} from './Event';
+import { getOriginal as getOriginalEvent } from "./Event";
 
-import {
-  isMac
-} from './Platform';
+import { isMac } from "./Platform";
 
-export {
-  isMac
-} from './Platform';
-
+export { isMac } from "./Platform";
 
 export function isPrimaryButton(event) {
   // button === 0 -> left áka primary mouse button
@@ -30,7 +23,6 @@ export function hasPrimaryModifier(event) {
     return originalEvent.ctrlKey;
   }
 }
-
 
 export function hasSecondaryModifier(event) {
   var originalEvent = getOriginalEvent(event) || event;

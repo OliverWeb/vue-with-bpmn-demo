@@ -1,8 +1,6 @@
-import {
-  create
-} from '../model';
+import { create } from "../model";
 
-import { assign } from 'min-dash';
+import { assign } from "min-dash";
 
 /**
  * A factory for diagram-js shapes
@@ -11,21 +9,20 @@ export default function ElementFactory() {
   this._uid = 12;
 }
 
-
 ElementFactory.prototype.createRoot = function(attrs) {
-  return this.create('root', attrs);
+  return this.create("root", attrs);
 };
 
 ElementFactory.prototype.createLabel = function(attrs) {
-  return this.create('label', attrs);
+  return this.create("label", attrs);
 };
 
 ElementFactory.prototype.createShape = function(attrs) {
-  return this.create('shape', attrs);
+  return this.create("shape", attrs);
 };
 
 ElementFactory.prototype.createConnection = function(attrs) {
-  return this.create('connection', attrs);
+  return this.create("connection", attrs);
 };
 
 /**
@@ -37,11 +34,10 @@ ElementFactory.prototype.createConnection = function(attrs) {
  * @return {djs.model.Base} the newly created model instance
  */
 ElementFactory.prototype.create = function(type, attrs) {
-
   attrs = assign({}, attrs || {});
 
   if (!attrs.id) {
-    attrs.id = type + '_' + (this._uid++);
+    attrs.id = type + "_" + this._uid++;
   }
 
   return create(type, attrs);

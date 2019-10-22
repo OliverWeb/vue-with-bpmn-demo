@@ -1,18 +1,12 @@
-import { is } from '../../../../util/ModelUtil';
+import { is } from "../../../../util/ModelUtil";
 
-import {
-  asTRBL
-} from './../../../../../../diagram-js/lib/layout/LayoutUtil';
+import { asTRBL } from "./../../../../../../diagram-js/lib/layout/LayoutUtil";
 
-import {
-  collectLanes,
-  getLanesRoot
-} from '../../../modeling/util/LaneUtil';
+import { collectLanes, getLanesRoot } from "../../../modeling/util/LaneUtil";
 
 var abs = Math.abs,
-    min = Math.min,
-    max = Math.max;
-
+  min = Math.min,
+  max = Math.max;
 
 function addToTrbl(trbl, attr, value, choice) {
   var current = trbl[attr];
@@ -32,96 +26,98 @@ function addMax(trbl, attr, value) {
 }
 
 var LANE_MIN_HEIGHT = 60,
-    LANE_MIN_WIDTH = 300,
-    LANE_RIGHT_PADDING = 20,
-    LANE_LEFT_PADDING = 50,
-    LANE_TOP_PADDING = 20,
-    LANE_BOTTOM_PADDING = 20;
+  LANE_MIN_WIDTH = 300,
+  LANE_RIGHT_PADDING = 20,
+  LANE_LEFT_PADDING = 50,
+  LANE_TOP_PADDING = 20,
+  LANE_BOTTOM_PADDING = 20;
 
-
-export function getParticipantResizeConstraints(laneShape, resizeDirection, balanced) {
+export function getParticipantResizeConstraints(
+  laneShape,
+  resizeDirection,
+  balanced
+) {
   var lanesRoot = getLanesRoot(laneShape);
 
   var isFirst = true,
-      isLast = true;
+    isLast = true;
 
   // max top/bottom size for lanes
-  var allLanes = collectLanes(lanesRoot, [ lanesRoot ]);
+  var allLanes = collectLanes(lanesRoot, [lanesRoot]);
 
   var laneTrbl = asTRBL(laneShape);
 
   var maxTrbl = {},
-      minTrbl = {};
+    minTrbl = {};
 
   if (/e/.test(resizeDirection)) {
     minTrbl.right = laneTrbl.left + LANE_MIN_WIDTH;
-  } else
-  if (/w/.test(resizeDirection)) {
+  } else if (/w/.test(resizeDirection)) {
     minTrbl.left = laneTrbl.right - LANE_MIN_WIDTH;
   }
 
   allLanes.forEach(function(other) {
-
     var otherTrbl = asTRBL(other);
 
     if (/n/.test(resizeDirection)) {
-
-      if (otherTrbl.top < (laneTrbl.top - 10)) {
+      if (otherTrbl.top < laneTrbl.top - 10) {
         isFirst = false;
       }
 
       // max top size (based on next element)
       if (balanced && abs(laneTrbl.top - otherTrbl.bottom) < 10) {
-        addMax(maxTrbl, 'top', otherTrbl.top + LANE_MIN_HEIGHT);
+        addMax(maxTrbl, "top", otherTrbl.top + LANE_MIN_HEIGHT);
       }
 
       // min top size (based on self or nested element)
       if (abs(laneTrbl.top - otherTrbl.top) < 5) {
-        addMin(minTrbl, 'top', otherTrbl.bottom - LANE_MIN_HEIGHT);
+        addMin(minTrbl, "top", otherTrbl.bottom - LANE_MIN_HEIGHT);
       }
     }
 
     if (/s/.test(resizeDirection)) {
-
-      if (otherTrbl.bottom > (laneTrbl.bottom + 10)) {
+      if (otherTrbl.bottom > laneTrbl.bottom + 10) {
         isLast = false;
       }
 
       // max bottom size (based on previous element)
       if (balanced && abs(laneTrbl.bottom - otherTrbl.top) < 10) {
-        addMin(maxTrbl, 'bottom', otherTrbl.bottom - LANE_MIN_HEIGHT);
+        addMin(maxTrbl, "bottom", otherTrbl.bottom - LANE_MIN_HEIGHT);
       }
 
       // min bottom size (based on self or nested element)
       if (abs(laneTrbl.bottom - otherTrbl.bottom) < 5) {
-        addMax(minTrbl, 'bottom', otherTrbl.top + LANE_MIN_HEIGHT);
+        addMax(minTrbl, "bottom", otherTrbl.top + LANE_MIN_HEIGHT);
       }
     }
   });
 
   // max top/bottom/left/right size based on flow nodes
   var flowElements = lanesRoot.children.filter(function(s) {
-    return !s.hidden && !s.waypoints && (is(s, 'bpmn:FlowElement') || is(s, 'bpmn:Artifact'));
+    return (
+      !s.hidden &&
+      !s.waypoints &&
+      (is(s, "bpmn:FlowElement") || is(s, "bpmn:Artifact"))
+    );
   });
 
   flowElements.forEach(function(flowElement) {
-
     var flowElementTrbl = asTRBL(flowElement);
 
     if (isFirst && /n/.test(resizeDirection)) {
-      addMin(minTrbl, 'top', flowElementTrbl.top - LANE_TOP_PADDING);
+      addMin(minTrbl, "top", flowElementTrbl.top - LANE_TOP_PADDING);
     }
 
     if (/e/.test(resizeDirection)) {
-      addMax(minTrbl, 'right', flowElementTrbl.right + LANE_RIGHT_PADDING);
+      addMax(minTrbl, "right", flowElementTrbl.right + LANE_RIGHT_PADDING);
     }
 
     if (isLast && /s/.test(resizeDirection)) {
-      addMax(minTrbl, 'bottom', flowElementTrbl.bottom + LANE_BOTTOM_PADDING);
+      addMax(minTrbl, "bottom", flowElementTrbl.bottom + LANE_BOTTOM_PADDING);
     }
 
     if (/w/.test(resizeDirection)) {
-      addMin(minTrbl, 'left', flowElementTrbl.left - LANE_LEFT_PADDING);
+      addMin(minTrbl, "left", flowElementTrbl.left - LANE_LEFT_PADDING);
     }
   });
 

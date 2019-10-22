@@ -1,9 +1,9 @@
-import inherits from 'inherits';
+import inherits from "inherits";
 
-import CommandInterceptor from './../../../../../diagram-js/lib/command/CommandInterceptor';
+import CommandInterceptor from "./../../../../../diagram-js/lib/command/CommandInterceptor";
 
-import { is } from '../../../util/ModelUtil';
-import { isExpanded } from '../../../util/DiUtil.js';
+import { is } from "../../../util/ModelUtil";
+import { isExpanded } from "../../../util/DiUtil.js";
 
 /**
  * Add start event child by default when creating an expanded subprocess
@@ -12,17 +12,18 @@ import { isExpanded } from '../../../util/DiUtil.js';
 export default function SubProcessStartEventBehavior(eventBus, modeling) {
   CommandInterceptor.call(this, eventBus);
 
-  eventBus.on('create.start', function(event) {
+  eventBus.on("create.start", function(event) {
     var shape = event.context.shape,
-        hints = event.context.hints;
+      hints = event.context.hints;
 
-    hints.shouldAddStartEvent = is(shape, 'bpmn:SubProcess') && isExpanded(shape);
+    hints.shouldAddStartEvent =
+      is(shape, "bpmn:SubProcess") && isExpanded(shape);
   });
 
-  this.postExecuted('shape.create', function(event) {
+  this.postExecuted("shape.create", function(event) {
     var shape = event.context.shape,
-        hints = event.context.hints,
-        position;
+      hints = event.context.hints,
+      position;
 
     if (!hints.shouldAddStartEvent) {
       return;
@@ -30,17 +31,17 @@ export default function SubProcessStartEventBehavior(eventBus, modeling) {
 
     position = calculatePositionRelativeToShape(shape);
 
-    modeling.createShape({ type: 'bpmn:StartEvent' }, position, shape);
+    modeling.createShape({ type: "bpmn:StartEvent" }, position, shape);
   });
 
-  this.postExecuted('shape.replace', function(event) {
+  this.postExecuted("shape.replace", function(event) {
     var oldShape = event.context.oldShape,
-        newShape = event.context.newShape,
-        position;
+      newShape = event.context.newShape,
+      position;
 
     if (
-      !is(newShape, 'bpmn:SubProcess') ||
-      !is(oldShape, 'bpmn:Task') ||
+      !is(newShape, "bpmn:SubProcess") ||
+      !is(oldShape, "bpmn:Task") ||
       !isExpanded(newShape)
     ) {
       return;
@@ -48,14 +49,11 @@ export default function SubProcessStartEventBehavior(eventBus, modeling) {
 
     position = calculatePositionRelativeToShape(newShape);
 
-    modeling.createShape({ type: 'bpmn:StartEvent' }, position, newShape);
+    modeling.createShape({ type: "bpmn:StartEvent" }, position, newShape);
   });
 }
 
-SubProcessStartEventBehavior.$inject = [
-  'eventBus',
-  'modeling'
-];
+SubProcessStartEventBehavior.$inject = ["eventBus", "modeling"];
 
 inherits(SubProcessStartEventBehavior, CommandInterceptor);
 

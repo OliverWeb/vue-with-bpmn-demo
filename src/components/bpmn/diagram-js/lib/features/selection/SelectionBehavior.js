@@ -1,18 +1,14 @@
-import {
-  hasPrimaryModifier
-} from '../../util/Mouse';
+import { hasPrimaryModifier } from "../../util/Mouse";
 
-import {
-  find
-} from 'min-dash';
-
+import { find } from "min-dash";
 
 export default function SelectionBehavior(
-    eventBus, selection, canvas,
-    elementRegistry) {
-
-  eventBus.on('create.end', 500, function(e) {
-
+  eventBus,
+  selection,
+  canvas,
+  elementRegistry
+) {
+  eventBus.on("create.end", 500, function(e) {
     // select the created shape after a
     // successful create operation
     if (e.context.canExecute) {
@@ -20,8 +16,7 @@ export default function SelectionBehavior(
     }
   });
 
-  eventBus.on('connect.end', 500, function(e) {
-
+  eventBus.on("connect.end", 500, function(e) {
     // select the connect end target
     // after a connect operation
     if (e.context.canExecute && e.context.target) {
@@ -29,7 +24,7 @@ export default function SelectionBehavior(
     }
   });
 
-  eventBus.on('shape.move.end', 500, function(e) {
+  eventBus.on("shape.move.end", 500, function(e) {
     var previousSelection = e.previousSelection || [];
 
     var shape = elementRegistry.get(e.context.shape.id);
@@ -46,8 +41,7 @@ export default function SelectionBehavior(
   });
 
   // Shift + click selection
-  eventBus.on('element.click', function(event) {
-
+  eventBus.on("element.click", function(event) {
     var element = event.element;
 
     // do not select the root element
@@ -57,7 +51,7 @@ export default function SelectionBehavior(
     }
 
     var isSelected = selection.isSelected(element),
-        isMultiSelect = selection.get().length > 1;
+      isMultiSelect = selection.get().length > 1;
 
     // mouse-event: SELECTION_KEY
     var add = hasPrimaryModifier(event);
@@ -69,8 +63,7 @@ export default function SelectionBehavior(
       } else {
         return selection.select(element);
       }
-    } else
-    if (!isSelected) {
+    } else if (!isSelected) {
       selection.select(element, add);
     } else {
       selection.deselect(element);
@@ -79,8 +72,8 @@ export default function SelectionBehavior(
 }
 
 SelectionBehavior.$inject = [
-  'eventBus',
-  'selection',
-  'canvas',
-  'elementRegistry'
+  "eventBus",
+  "selection",
+  "canvas",
+  "elementRegistry"
 ];

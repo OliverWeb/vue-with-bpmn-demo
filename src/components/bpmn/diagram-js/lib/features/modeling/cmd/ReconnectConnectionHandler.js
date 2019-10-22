@@ -1,5 +1,4 @@
-import { isArray } from 'min-dash';
-
+import { isArray } from "min-dash";
 
 /**
  * Reconnect connection handler
@@ -8,21 +7,20 @@ export default function ReconnectConnectionHandler(modeling) {
   this._modeling = modeling;
 }
 
-ReconnectConnectionHandler.$inject = [ 'modeling' ];
+ReconnectConnectionHandler.$inject = ["modeling"];
 
 ReconnectConnectionHandler.prototype.execute = function(context) {
-
   var newSource = context.newSource,
-      newTarget = context.newTarget,
-      connection = context.connection,
-      dockingOrPoints = context.dockingOrPoints;
+    newTarget = context.newTarget,
+    connection = context.connection,
+    dockingOrPoints = context.dockingOrPoints;
 
   if (!newSource && !newTarget) {
-    throw new Error('newSource or newTarget are required');
+    throw new Error("newSource or newTarget are required");
   }
 
   if (newSource && newTarget) {
-    throw new Error('must specify either newSource or newTarget');
+    throw new Error("must specify either newSource or newTarget");
   }
 
   if (isArray(dockingOrPoints)) {
@@ -45,19 +43,21 @@ ReconnectConnectionHandler.prototype.execute = function(context) {
 
 ReconnectConnectionHandler.prototype.postExecute = function(context) {
   var connection = context.connection,
-      dockingOrPoints = context.dockingOrPoints,
-      newSource = context.newSource,
-      movedEnd = newSource ? 'connectionStart' : 'connectionEnd',
-      newWaypoint,
-      hints = context.hints,
-      layoutHints = {};
+    dockingOrPoints = context.dockingOrPoints,
+    newSource = context.newSource,
+    movedEnd = newSource ? "connectionStart" : "connectionEnd",
+    newWaypoint,
+    hints = context.hints,
+    layoutHints = {};
 
   if (hints.layoutConnection === false) {
     return;
   }
 
   if (isArray(dockingOrPoints)) {
-    newWaypoint = newSource ? dockingOrPoints[0] : dockingOrPoints[dockingOrPoints.length - 1];
+    newWaypoint = newSource
+      ? dockingOrPoints[0]
+      : dockingOrPoints[dockingOrPoints.length - 1];
   } else {
     newWaypoint = dockingOrPoints;
   }
@@ -68,11 +68,10 @@ ReconnectConnectionHandler.prototype.postExecute = function(context) {
 };
 
 ReconnectConnectionHandler.prototype.revert = function(context) {
-
   var oldSource = context.oldSource,
-      oldTarget = context.oldTarget,
-      oldWaypoints = context.oldWaypoints,
-      connection = context.connection;
+    oldTarget = context.oldTarget,
+    oldWaypoints = context.oldWaypoints,
+    connection = context.connection;
 
   if (oldSource) {
     connection.source = oldSource;
@@ -88,8 +87,6 @@ ReconnectConnectionHandler.prototype.revert = function(context) {
 
   return connection;
 };
-
-
 
 // helper ///////////////
 

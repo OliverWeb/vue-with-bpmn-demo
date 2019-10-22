@@ -1,15 +1,10 @@
-import {
-  assign,
-  filter,
-  groupBy,
-  isObject
-} from 'min-dash';
+import { assign, filter, groupBy, isObject } from "min-dash";
 
 var LOW_PRIORITY = 500,
-    MEDIUM_PRIORITY = 1250,
-    HIGH_PRIORITY = 1500;
+  MEDIUM_PRIORITY = 1250,
+  HIGH_PRIORITY = 1500;
 
-import { getOriginal as getOriginalEvent } from '../../util/Event';
+import { getOriginal as getOriginalEvent } from "../../util/Event";
 
 var round = Math.round;
 
@@ -30,21 +25,22 @@ function mid(element) {
  * @param {Rules} rules
  */
 export default function MoveEvents(
-    eventBus, dragging, modeling,
-    selection, rules) {
-
+  eventBus,
+  dragging,
+  modeling,
+  selection,
+  rules
+) {
   // rules
 
   function canMove(shapes, delta, position, target) {
-
-    return rules.allowed('elements.move', {
+    return rules.allowed("elements.move", {
       shapes: shapes,
       delta: delta,
       position: position,
       target: target
     });
   }
-
 
   // move events
 
@@ -59,16 +55,15 @@ export default function MoveEvents(
   // * validatedShapes: a list of shapes that are being checked
   //                    against the rules before and during move
   //
-  eventBus.on('shape.move.start', HIGH_PRIORITY, function(event) {
-
+  eventBus.on("shape.move.start", HIGH_PRIORITY, function(event) {
     var context = event.context,
-        shape = event.shape,
-        shapes = selection.get().slice();
+      shape = event.shape,
+      shapes = selection.get().slice();
 
     // move only single shape if the dragged element
     // is not part of the current selection
     if (shapes.indexOf(shape) === -1) {
-      shapes = [ shape ];
+      shapes = [shape];
     }
 
     // ensure we remove nested elements in the collection
@@ -83,16 +78,14 @@ export default function MoveEvents(
     });
   });
 
-
   // assign a high priority to this handler to setup the environment
   // others may hook up later, e.g. at default priority and modify
   // the move environment
   //
-  eventBus.on('shape.move.start', MEDIUM_PRIORITY, function(event) {
-
+  eventBus.on("shape.move.start", MEDIUM_PRIORITY, function(event) {
     var context = event.context,
-        validatedShapes = context.validatedShapes,
-        canExecute;
+      validatedShapes = context.validatedShapes,
+      canExecute;
 
     canExecute = context.canExecute = canMove(validatedShapes);
 
@@ -106,14 +99,13 @@ export default function MoveEvents(
   // to let others modify the move event before we update
   // the context
   //
-  eventBus.on('shape.move.move', LOW_PRIORITY, function(event) {
-
+  eventBus.on("shape.move.move", LOW_PRIORITY, function(event) {
     var context = event.context,
-        validatedShapes = context.validatedShapes,
-        hover = event.hover,
-        delta = { x: event.dx, y: event.dy },
-        position = { x: event.x, y: event.y },
-        canExecute;
+      validatedShapes = context.validatedShapes,
+      hover = event.hover,
+      delta = { x: event.dx, y: event.dy },
+      position = { x: event.x, y: event.y },
+      canExecute;
 
     // check if we can move the elements
     canExecute = canMove(validatedShapes, delta, position, hover);
@@ -131,14 +123,13 @@ export default function MoveEvents(
     context.target = hover;
   });
 
-  eventBus.on('shape.move.end', function(event) {
-
+  eventBus.on("shape.move.end", function(event) {
     var context = event.context;
 
     var delta = context.delta,
-        canExecute = context.canExecute,
-        isAttach = canExecute === 'attach',
-        shapes = context.shapes;
+      canExecute = context.canExecute,
+      isAttach = canExecute === "attach",
+      shapes = context.shapes;
 
     if (canExecute === false) {
       return false;
@@ -150,7 +141,6 @@ export default function MoveEvents(
     delta.y = round(delta.y);
 
     if (delta.x === 0 && delta.y === 0) {
-
       // didn't move
       return;
     }
@@ -161,15 +151,13 @@ export default function MoveEvents(
     });
   });
 
-
   // move activation
 
-  eventBus.on('element.mousedown', function(event) {
-
+  eventBus.on("element.mousedown", function(event) {
     var originalEvent = getOriginalEvent(event);
 
     if (!originalEvent) {
-      throw new Error('must supply DOM mousedown event');
+      throw new Error("must supply DOM mousedown event");
     }
 
     return start(originalEvent, event.element);
@@ -196,8 +184,8 @@ export default function MoveEvents(
 
     var referencePoint = mid(element);
 
-    dragging.init(event, referencePoint, 'shape.move', {
-      cursor: 'grabbing',
+    dragging.init(event, referencePoint, "shape.move", {
+      cursor: "grabbing",
       autoActivate: activate,
       data: {
         shape: element,
@@ -214,14 +202,7 @@ export default function MoveEvents(
   this.start = start;
 }
 
-MoveEvents.$inject = [
-  'eventBus',
-  'dragging',
-  'modeling',
-  'selection',
-  'rules'
-];
-
+MoveEvents.$inject = ["eventBus", "dragging", "modeling", "selection", "rules"];
 
 /**
  * Return a filtered list of elements that do not contain
@@ -232,12 +213,10 @@ MoveEvents.$inject = [
  * @return {Array<djs.model.Base>} filtered
  */
 function removeNested(elements) {
-
-  var ids = groupBy(elements, 'id');
+  var ids = groupBy(elements, "id");
 
   return filter(elements, function(element) {
     while ((element = element.parent)) {
-
       // parent in selection
       if (ids[element.id]) {
         return false;

@@ -8,7 +8,6 @@ export function vectorLength(v) {
   return Math.sqrt(Math.pow(v.x, 2) + Math.pow(v.y, 2));
 }
 
-
 /**
  * Calculates the angle between a line a the yAxis
  *
@@ -21,7 +20,6 @@ export function getAngle(line) {
   return Math.atan((line[1].y - line[0].y) / (line[1].x - line[0].x));
 }
 
-
 /**
  * Rotates a vector by a given angle
  *
@@ -30,12 +28,13 @@ export function getAngle(line) {
  * @return {Vector}
  */
 export function rotateVector(vector, angle) {
-  return (!angle) ? vector : {
-    x: Math.cos(angle) * vector.x - Math.sin(angle) * vector.y,
-    y: Math.sin(angle) * vector.x + Math.cos(angle) * vector.y
-  };
+  return !angle
+    ? vector
+    : {
+        x: Math.cos(angle) * vector.x - Math.sin(angle) * vector.y,
+        y: Math.sin(angle) * vector.x + Math.cos(angle) * vector.y
+      };
 }
-
 
 /**
  * Solves a 2D equation system
@@ -47,7 +46,6 @@ export function rotateVector(vector, angle) {
  * @return {Float}
  */
 function solveLambaSystem(a, b, c) {
-
   // the 2d system
   var system = [
     { n: a[0] - c[0], lambda: b[0] },
@@ -56,11 +54,10 @@ function solveLambaSystem(a, b, c) {
 
   // solve
   var n = system[0].n * b[0] + system[1].n * b[1],
-      l = system[0].lambda * b[0] + system[1].lambda * b[1];
+    l = system[0].lambda * b[0] + system[1].lambda * b[1];
 
-  return -n/l;
+  return -n / l;
 }
-
 
 /**
  * Position of perpendicular foot
@@ -70,18 +67,17 @@ function solveLambaSystem(a, b, c) {
  * @return {Point} the perpendicular foot position
  */
 export function perpendicularFoot(point, line) {
-
-  var a = line[0], b = line[1];
+  var a = line[0],
+    b = line[1];
 
   // relative position of b from a
   var bd = { x: b.x - a.x, y: b.y - a.y };
 
   // solve equation system to the parametrized vectors param real value
-  var r = solveLambaSystem([ a.x, a.y ], [ bd.x, bd.y ], [ point.x, point.y ]);
+  var r = solveLambaSystem([a.x, a.y], [bd.x, bd.y], [point.x, point.y]);
 
-  return { x: a.x + r*bd.x, y: a.y + r*bd.y };
+  return { x: a.x + r * bd.x, y: a.y + r * bd.y };
 }
-
 
 /**
  * Calculates the distance between a point and a line
@@ -91,7 +87,6 @@ export function perpendicularFoot(point, line) {
  * @return {Float} distance
  */
 export function getDistancePointLine(point, line) {
-
   var pfPoint = perpendicularFoot(point, line);
 
   // distance vector
@@ -103,7 +98,6 @@ export function getDistancePointLine(point, line) {
   return vectorLength(connectionVector);
 }
 
-
 /**
  * Calculates the distance between two points
  *
@@ -112,7 +106,6 @@ export function getDistancePointLine(point, line) {
  * @return {Float} distance
  */
 export function getDistancePointPoint(point1, point2) {
-
   return vectorLength({
     x: point1.x - point2.x,
     y: point1.y - point2.y

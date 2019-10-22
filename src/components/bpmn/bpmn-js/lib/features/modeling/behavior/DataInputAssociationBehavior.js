@@ -1,22 +1,17 @@
-import inherits from 'inherits';
+import inherits from "inherits";
 
-import CommandInterceptor from './../../../../../diagram-js/lib/command/CommandInterceptor';
+import CommandInterceptor from "./../../../../../diagram-js/lib/command/CommandInterceptor";
 
 import {
   add as collectionAdd,
   remove as collectionRemove
-} from './../../../../../diagram-js/lib/util/Collections';
+} from "./../../../../../diagram-js/lib/util/Collections";
 
-import {
-  find
-} from 'min-dash';
+import { find } from "min-dash";
 
-import {
-  is
-} from '../../../util/ModelUtil';
+import { is } from "../../../util/ModelUtil";
 
-var TARGET_REF_PLACEHOLDER_NAME = '__targetRef_placeholder';
-
+var TARGET_REF_PLACEHOLDER_NAME = "__targetRef_placeholder";
 
 /**
  * This behavior makes sure we always set a fake
@@ -31,45 +26,47 @@ var TARGET_REF_PLACEHOLDER_NAME = '__targetRef_placeholder';
  * @param {BpmnFactory} bpmnFactory
  */
 export default function DataInputAssociationBehavior(eventBus, bpmnFactory) {
-
   CommandInterceptor.call(this, eventBus);
 
+  this.executed(
+    [
+      "connection.create",
+      "connection.delete",
+      "connection.move",
+      "connection.reconnectEnd"
+    ],
+    ifDataInputAssociation(fixTargetRef)
+  );
 
-  this.executed([
-    'connection.create',
-    'connection.delete',
-    'connection.move',
-    'connection.reconnectEnd'
-  ], ifDataInputAssociation(fixTargetRef));
-
-  this.reverted([
-    'connection.create',
-    'connection.delete',
-    'connection.move',
-    'connection.reconnectEnd'
-  ], ifDataInputAssociation(fixTargetRef));
-
+  this.reverted(
+    [
+      "connection.create",
+      "connection.delete",
+      "connection.move",
+      "connection.reconnectEnd"
+    ],
+    ifDataInputAssociation(fixTargetRef)
+  );
 
   function usesTargetRef(element, targetRef, removedConnection) {
-
-    var inputAssociations = element.get('dataInputAssociations');
+    var inputAssociations = element.get("dataInputAssociations");
 
     return find(inputAssociations, function(association) {
-      return association !== removedConnection &&
-             association.targetRef === targetRef;
+      return (
+        association !== removedConnection && association.targetRef === targetRef
+      );
     });
   }
 
   function getTargetRef(element, create) {
-
-    var properties = element.get('properties');
+    var properties = element.get("properties");
 
     var targetRefProp = find(properties, function(p) {
       return p.name === TARGET_REF_PLACEHOLDER_NAME;
     });
 
     if (!targetRefProp && create) {
-      targetRefProp = bpmnFactory.create('bpmn:Property', {
+      targetRefProp = bpmnFactory.create("bpmn:Property", {
         name: TARGET_REF_PLACEHOLDER_NAME
       });
 
@@ -80,7 +77,6 @@ export default function DataInputAssociationBehavior(eventBus, bpmnFactory) {
   }
 
   function cleanupTargetRef(element, connection) {
-
     var targetRefProp = getTargetRef(element);
 
     if (!targetRefProp) {
@@ -88,7 +84,7 @@ export default function DataInputAssociationBehavior(eventBus, bpmnFactory) {
     }
 
     if (!usesTargetRef(element, targetRefProp, connection)) {
-      collectionRemove(element.get('properties'), targetRefProp);
+      collectionRemove(element.get("properties"), targetRefProp);
     }
   }
 
@@ -99,19 +95,18 @@ export default function DataInputAssociationBehavior(eventBus, bpmnFactory) {
    * @param {Event} event
    */
   function fixTargetRef(event) {
-
     var context = event.context,
-        connection = context.connection,
-        connectionBo = connection.businessObject,
-        target = connection.target,
-        targetBo = target && target.businessObject,
-        newTarget = context.newTarget,
-        newTargetBo = newTarget && newTarget.businessObject,
-        oldTarget = context.oldTarget || context.target,
-        oldTargetBo = oldTarget && oldTarget.businessObject;
+      connection = context.connection,
+      connectionBo = connection.businessObject,
+      target = connection.target,
+      targetBo = target && target.businessObject,
+      newTarget = context.newTarget,
+      newTargetBo = newTarget && newTarget.businessObject,
+      oldTarget = context.oldTarget || context.target,
+      oldTargetBo = oldTarget && oldTarget.businessObject;
 
     var dataAssociation = connection.businessObject,
-        targetRefProp;
+      targetRefProp;
 
     if (oldTargetBo && oldTargetBo !== targetBo) {
       cleanupTargetRef(oldTargetBo, connectionBo);
@@ -130,13 +125,9 @@ export default function DataInputAssociationBehavior(eventBus, bpmnFactory) {
   }
 }
 
-DataInputAssociationBehavior.$inject = [
-  'eventBus',
-  'bpmnFactory'
-];
+DataInputAssociationBehavior.$inject = ["eventBus", "bpmnFactory"];
 
 inherits(DataInputAssociationBehavior, CommandInterceptor);
-
 
 /**
  * Only call the given function when the event
@@ -146,12 +137,11 @@ inherits(DataInputAssociationBehavior, CommandInterceptor);
  * @return {Function}
  */
 function ifDataInputAssociation(fn) {
-
   return function(event) {
     var context = event.context,
-        connection = context.connection;
+      connection = context.connection;
 
-    if (is(connection, 'bpmn:DataInputAssociation')) {
+    if (is(connection, "bpmn:DataInputAssociation")) {
       return fn(event);
     }
   };

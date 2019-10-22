@@ -1,13 +1,9 @@
-import {
-  assign,
-  forEach
-} from 'min-dash';
+import { assign, forEach } from "min-dash";
 
 import {
   getResizedSourceAnchor,
   getResizedTargetAnchor
-} from './helper/AnchorsHelper';
-
+} from "./helper/AnchorsHelper";
 
 /**
  * A handler that implements reversible resizing of shapes.
@@ -18,7 +14,7 @@ export default function ResizeShapeHandler(modeling) {
   this._modeling = modeling;
 }
 
-ResizeShapeHandler.$inject = [ 'modeling' ];
+ResizeShapeHandler.$inject = ["modeling"];
 
 /**
  * {
@@ -34,45 +30,51 @@ ResizeShapeHandler.$inject = [ 'modeling' ];
  */
 ResizeShapeHandler.prototype.execute = function(context) {
   var shape = context.shape,
-      newBounds = context.newBounds,
-      minBounds = context.minBounds;
+    newBounds = context.newBounds,
+    minBounds = context.minBounds;
 
-  if (newBounds.x === undefined || newBounds.y === undefined ||
-      newBounds.width === undefined || newBounds.height === undefined) {
-    throw new Error('newBounds must have {x, y, width, height} properties');
+  if (
+    newBounds.x === undefined ||
+    newBounds.y === undefined ||
+    newBounds.width === undefined ||
+    newBounds.height === undefined
+  ) {
+    throw new Error("newBounds must have {x, y, width, height} properties");
   }
 
-  if (minBounds && (newBounds.width < minBounds.width
-    || newBounds.height < minBounds.height)) {
-    throw new Error('width and height cannot be less than minimum height and width');
-  } else if (!minBounds
-    && newBounds.width < 10 || newBounds.height < 10) {
-    throw new Error('width and height cannot be less than 10px');
+  if (
+    minBounds &&
+    (newBounds.width < minBounds.width || newBounds.height < minBounds.height)
+  ) {
+    throw new Error(
+      "width and height cannot be less than minimum height and width"
+    );
+  } else if ((!minBounds && newBounds.width < 10) || newBounds.height < 10) {
+    throw new Error("width and height cannot be less than 10px");
   }
 
   // save old bbox in context
   context.oldBounds = {
-    width:  shape.width,
+    width: shape.width,
     height: shape.height,
-    x:      shape.x,
-    y:      shape.y
+    x: shape.x,
+    y: shape.y
   };
 
   // update shape
   assign(shape, {
-    width:  newBounds.width,
+    width: newBounds.width,
     height: newBounds.height,
-    x:      newBounds.x,
-    y:      newBounds.y
+    x: newBounds.x,
+    y: newBounds.y
   });
 
   return shape;
 };
 
 ResizeShapeHandler.prototype.postExecute = function(context) {
-
   var shape = context.shape,
-      oldBounds = context.oldBounds;
+    oldBounds = context.oldBounds;
 
   var modeling = this._modeling;
 
@@ -87,20 +89,18 @@ ResizeShapeHandler.prototype.postExecute = function(context) {
       connectionStart: getResizedSourceAnchor(c, shape, oldBounds)
     });
   });
-
 };
 
 ResizeShapeHandler.prototype.revert = function(context) {
-
   var shape = context.shape,
-      oldBounds = context.oldBounds;
+    oldBounds = context.oldBounds;
 
   // restore previous bbox
   assign(shape, {
-    width:  oldBounds.width,
+    width: oldBounds.width,
     height: oldBounds.height,
-    x:      oldBounds.x,
-    y:      oldBounds.y
+    x: oldBounds.x,
+    y: oldBounds.y
   });
 
   return shape;

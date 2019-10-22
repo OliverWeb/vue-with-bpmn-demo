@@ -1,16 +1,10 @@
-import inherits from 'inherits';
+import inherits from "inherits";
 
-import OrderingProvider from './../../../../diagram-js/lib/features/ordering/OrderingProvider';
+import OrderingProvider from "./../../../../diagram-js/lib/features/ordering/OrderingProvider";
 
-import {
-  isAny
-} from '../modeling/util/ModelingUtil';
+import { isAny } from "../modeling/util/ModelingUtil";
 
-import {
-  findIndex,
-  find
-} from 'min-dash';
-
+import { findIndex, find } from "min-dash";
 
 /**
  * a simple ordering provider that makes sure:
@@ -19,63 +13,54 @@ import {
  * (1) elements are ordered by a {level} property
  */
 export default function BpmnOrderingProvider(eventBus, canvas, translate) {
-
   OrderingProvider.call(this, eventBus);
 
   var orders = [
-    { type: 'bpmn:SubProcess', order: { level: 6 } },
+    { type: "bpmn:SubProcess", order: { level: 6 } },
     {
-      type: 'bpmn:SequenceFlow',
+      type: "bpmn:SequenceFlow",
       order: {
         level: 3,
-        containers: [
-          'bpmn:Participant',
-          'bpmn:FlowElementsContainer'
-        ]
+        containers: ["bpmn:Participant", "bpmn:FlowElementsContainer"]
       }
     },
     // handle DataAssociation(s) like message flows and render them always on top
     {
-      type: 'bpmn:DataAssociation',
+      type: "bpmn:DataAssociation",
       order: {
         level: 9,
-        containers: [
-          'bpmn:Collaboration',
-          'bpmn:Process'
-        ]
+        containers: ["bpmn:Collaboration", "bpmn:Process"]
       }
     },
     {
-      type: 'bpmn:MessageFlow', order: {
+      type: "bpmn:MessageFlow",
+      order: {
         level: 9,
-        containers: [ 'bpmn:Collaboration' ]
+        containers: ["bpmn:Collaboration"]
       }
     },
     {
-      type: 'bpmn:Association',
+      type: "bpmn:Association",
       order: {
         level: 6,
         containers: [
-          'bpmn:Participant',
-          'bpmn:FlowElementsContainer',
-          'bpmn:Collaboration'
+          "bpmn:Participant",
+          "bpmn:FlowElementsContainer",
+          "bpmn:Collaboration"
         ]
       }
     },
-    { type: 'bpmn:BoundaryEvent', order: { level: 8 } },
+    { type: "bpmn:BoundaryEvent", order: { level: 8 } },
     {
-      type: 'bpmn:Group',
+      type: "bpmn:Group",
       order: {
         level: 10,
-        containers: [
-          'bpmn:Collaboration',
-          'bpmn:Process'
-        ]
+        containers: ["bpmn:Collaboration", "bpmn:Process"]
       }
     },
-    { type: 'bpmn:FlowElement', order: { level: 5 } },
-    { type: 'bpmn:Participant', order: { level: -2 } },
-    { type: 'bpmn:Lane', order: { level: -1 } }
+    { type: "bpmn:FlowElement", order: { level: 5 } },
+    { type: "bpmn:Participant", order: { level: -2 } },
+    { type: "bpmn:Lane", order: { level: -1 } }
   ];
 
   function computeOrder(element) {
@@ -84,14 +69,13 @@ export default function BpmnOrderingProvider(eventBus, canvas, translate) {
     }
 
     var entry = find(orders, function(o) {
-      return isAny(element, [ o.type ]);
+      return isAny(element, [o.type]);
     });
 
-    return entry && entry.order || { level: 1 };
+    return (entry && entry.order) || { level: 1 };
   }
 
   function getOrder(element) {
-
     var order = element.order;
 
     if (!order) {
@@ -102,11 +86,9 @@ export default function BpmnOrderingProvider(eventBus, canvas, translate) {
   }
 
   function findActualParent(element, newParent, containers) {
-
     var actualParent = newParent;
 
     while (actualParent) {
-
       if (isAny(actualParent, containers)) {
         break;
       }
@@ -115,17 +97,18 @@ export default function BpmnOrderingProvider(eventBus, canvas, translate) {
     }
 
     if (!actualParent) {
-      throw new Error(translate('no parent for {element} in {parent}', {
-        element: element.id,
-        parent: newParent.id
-      }));
+      throw new Error(
+        translate("no parent for {element} in {parent}", {
+          element: element.id,
+          parent: newParent.id
+        })
+      );
     }
 
     return actualParent;
   }
 
   this.getOrdering = function(element, newParent) {
-
     // render labels always on top
     if (element.labelTarget) {
       return {
@@ -136,16 +119,13 @@ export default function BpmnOrderingProvider(eventBus, canvas, translate) {
 
     var elementOrder = getOrder(element);
 
-
     if (elementOrder.containers) {
       newParent = findActualParent(element, newParent, elementOrder.containers);
     }
 
-
     var currentIndex = newParent.children.indexOf(element);
 
     var insertIndex = findIndex(newParent.children, function(child) {
-
       // do not compare with labels, they are created
       // in the wrong order (right after elements) during import and
       // mess up the positioning.
@@ -155,7 +135,6 @@ export default function BpmnOrderingProvider(eventBus, canvas, translate) {
 
       return elementOrder.level < getOrder(child).level;
     });
-
 
     // if the element is already in the child list at
     // a smaller index, we need to adjust the insert index.
@@ -174,6 +153,6 @@ export default function BpmnOrderingProvider(eventBus, canvas, translate) {
   };
 }
 
-BpmnOrderingProvider.$inject = [ 'eventBus', 'canvas', 'translate' ];
+BpmnOrderingProvider.$inject = ["eventBus", "canvas", "translate"];
 
 inherits(BpmnOrderingProvider, OrderingProvider);

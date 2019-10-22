@@ -1,15 +1,10 @@
-import { is } from '../../../util/ModelUtil';
+import { is } from "../../../util/ModelUtil";
 
-import {
-  roundBounds
-} from './../../../../../diagram-js/lib/layout/LayoutUtil';
+import { roundBounds } from "./../../../../../diagram-js/lib/layout/LayoutUtil";
 
-import {
-  hasPrimaryModifier
-} from './../../../../../diagram-js/lib/util/Mouse';
+import { hasPrimaryModifier } from "./../../../../../diagram-js/lib/util/Mouse";
 
 var SLIGHTLY_HIGHER_PRIORITY = 1001;
-
 
 /**
  * Invoke {@link Modeling#resizeLane} instead of
@@ -17,13 +12,11 @@ var SLIGHTLY_HIGHER_PRIORITY = 1001;
  * or Participant shape.
  */
 export default function ResizeLaneBehavior(eventBus, modeling) {
-
-  eventBus.on('resize.start', SLIGHTLY_HIGHER_PRIORITY + 500, function(event) {
+  eventBus.on("resize.start", SLIGHTLY_HIGHER_PRIORITY + 500, function(event) {
     var context = event.context,
-        shape = context.shape;
+      shape = context.shape;
 
-    if (is(shape, 'bpmn:Lane') || is(shape, 'bpmn:Participant')) {
-
+    if (is(shape, "bpmn:Lane") || is(shape, "bpmn:Participant")) {
       // should we resize the opposite lane(s) in
       // order to compensate for the resize operation?
       context.balanced = !hasPrimaryModifier(event);
@@ -33,14 +26,13 @@ export default function ResizeLaneBehavior(eventBus, modeling) {
   /**
    * Intercept resize end and call resize lane function instead.
    */
-  eventBus.on('resize.end', SLIGHTLY_HIGHER_PRIORITY, function(event) {
+  eventBus.on("resize.end", SLIGHTLY_HIGHER_PRIORITY, function(event) {
     var context = event.context,
-        shape = context.shape,
-        canExecute = context.canExecute,
-        newBounds = context.newBounds;
+      shape = context.shape,
+      canExecute = context.canExecute,
+      newBounds = context.newBounds;
 
-    if (is(shape, 'bpmn:Lane') || is(shape, 'bpmn:Participant')) {
-
+    if (is(shape, "bpmn:Lane") || is(shape, "bpmn:Participant")) {
       if (canExecute) {
         // ensure we have actual pixel values for new bounds
         // (important when zoom level was > 1 during move)
@@ -56,7 +48,4 @@ export default function ResizeLaneBehavior(eventBus, modeling) {
   });
 }
 
-ResizeLaneBehavior.$inject = [
-  'eventBus',
-  'modeling'
-];
+ResizeLaneBehavior.$inject = ["eventBus", "modeling"];

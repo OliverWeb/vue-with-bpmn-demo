@@ -1,8 +1,7 @@
 import {
   add as collectionAdd,
   indexOf as collectionIdx
-} from '../../../util/Collections';
-
+} from "../../../util/Collections";
 
 /**
  * A handler that implements reversible deletion of Connections.
@@ -12,16 +11,11 @@ export default function DeleteConnectionHandler(canvas, modeling) {
   this._modeling = modeling;
 }
 
-DeleteConnectionHandler.$inject = [
-  'canvas',
-  'modeling'
-];
-
+DeleteConnectionHandler.$inject = ["canvas", "modeling"];
 
 DeleteConnectionHandler.prototype.execute = function(context) {
-
   var connection = context.connection,
-      parent = connection.parent;
+    parent = connection.parent;
 
   context.parent = parent;
 
@@ -43,10 +37,9 @@ DeleteConnectionHandler.prototype.execute = function(context) {
  * Command revert implementation.
  */
 DeleteConnectionHandler.prototype.revert = function(context) {
-
   var connection = context.connection,
-      parent = context.parent,
-      parentIndex = context.parentIndex;
+    parent = context.parent,
+    parentIndex = context.parentIndex;
 
   connection.source = context.source;
   connection.target = context.target;

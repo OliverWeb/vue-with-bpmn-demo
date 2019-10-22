@@ -1,24 +1,12 @@
-import {
-  find,
-  some,
-  every,
-  forEach
-} from 'min-dash';
+import { find, some, every, forEach } from "min-dash";
 
-import inherits from 'inherits';
+import inherits from "inherits";
 
-import {
-  is,
-  getBusinessObject
-} from '../../util/ModelUtil';
+import { is, getBusinessObject } from "../../util/ModelUtil";
 
-import {
-  isAny
-} from '../modeling/util/ModelingUtil';
+import { isAny } from "../modeling/util/ModelingUtil";
 
-import {
-  isLabel
-} from '../../util/LabelUtil';
+import { isLabel } from "../../util/LabelUtil";
 
 import {
   isExpanded,
@@ -27,14 +15,11 @@ import {
   hasErrorEventDefinition,
   hasEscalationEventDefinition,
   hasCompensateEventDefinition
-} from '../../util/DiUtil';
+} from "../../util/DiUtil";
 
-import RuleProvider from './../../../../diagram-js/lib/features/rules/RuleProvider';
+import RuleProvider from "./../../../../diagram-js/lib/features/rules/RuleProvider";
 
-import {
-  getBoundaryAttachment as isBoundaryAttachment
-} from '../snapping/BpmnSnappingUtil';
-
+import { getBoundaryAttachment as isBoundaryAttachment } from "../snapping/BpmnSnappingUtil";
 
 /**
  * BPMN specific modeling rule
@@ -45,22 +30,21 @@ export default function BpmnRules(eventBus) {
 
 inherits(BpmnRules, RuleProvider);
 
-BpmnRules.$inject = [ 'eventBus' ];
+BpmnRules.$inject = ["eventBus"];
 
 BpmnRules.prototype.init = function() {
-
-  this.addRule('connection.start', function(context) {
+  this.addRule("connection.start", function(context) {
     var source = context.source;
 
     return canStartConnection(source);
   });
 
-  this.addRule('connection.create', function(context) {
+  this.addRule("connection.create", function(context) {
     var source = context.source,
-        target = context.target,
-        hints = context.hints || {},
-        targetParent = hints.targetParent,
-        targetAttach = hints.targetAttach;
+      target = context.target,
+      hints = context.hints || {},
+      targetParent = hints.targetParent,
+      targetAttach = hints.targetAttach;
 
     // don't allow incoming connections on
     // newly created boundary events
@@ -85,51 +69,49 @@ BpmnRules.prototype.init = function() {
     }
   });
 
-  this.addRule('connection.reconnectStart', function(context) {
-
+  this.addRule("connection.reconnectStart", function(context) {
     var connection = context.connection,
-        source = context.hover || context.source,
-        target = connection.target;
+      source = context.hover || context.source,
+      target = connection.target;
 
     return canConnect(source, target, connection);
   });
 
-  this.addRule('connection.reconnectEnd', function(context) {
-
+  this.addRule("connection.reconnectEnd", function(context) {
     var connection = context.connection,
-        source = connection.source,
-        target = context.hover || context.target;
+      source = connection.source,
+      target = context.hover || context.target;
 
     return canConnect(source, target, connection);
   });
 
-  this.addRule('connection.updateWaypoints', function(context) {
+  this.addRule("connection.updateWaypoints", function(context) {
     return {
       type: context.connection.type
     };
   });
 
-  this.addRule('shape.resize', function(context) {
-
+  this.addRule("shape.resize", function(context) {
     var shape = context.shape,
-        newBounds = context.newBounds;
+      newBounds = context.newBounds;
 
     return canResize(shape, newBounds);
   });
 
-  this.addRule('elements.move', function(context) {
-
+  this.addRule("elements.move", function(context) {
     var target = context.target,
-        shapes = context.shapes,
-        position = context.position;
+      shapes = context.shapes,
+      position = context.position;
 
-    return canAttach(shapes, target, null, position) ||
-           canReplace(shapes, target, position) ||
-           canMove(shapes, target, position) ||
-           canInsert(shapes, target, position);
+    return (
+      canAttach(shapes, target, null, position) ||
+      canReplace(shapes, target, position) ||
+      canMove(shapes, target, position) ||
+      canInsert(shapes, target, position)
+    );
   });
 
-  this.addRule('shape.create', function(context) {
+  this.addRule("shape.create", function(context) {
     return canCreate(
       context.shape,
       context.target,
@@ -138,40 +120,37 @@ BpmnRules.prototype.init = function() {
     );
   });
 
-  this.addRule('shape.attach', function(context) {
-
-    return canAttach(
-      context.shape,
-      context.target,
-      null,
-      context.position
-    );
+  this.addRule("shape.attach", function(context) {
+    return canAttach(context.shape, context.target, null, context.position);
   });
 
-  this.addRule('element.copy', function(context) {
+  this.addRule("element.copy", function(context) {
     var collection = context.collection,
-        element = context.element;
+      element = context.element;
 
     return canCopy(collection, element);
   });
 
-  this.addRule('element.paste', function(context) {
+  this.addRule("element.paste", function(context) {
     var parent = context.parent,
-        element = context.element,
-        position = context.position,
-        source = context.source,
-        target = context.target;
+      element = context.element,
+      position = context.position,
+      source = context.source,
+      target = context.target;
 
     if (source || target) {
       return canConnect(source, target);
     }
 
-    return canAttach([ element ], parent, null, position) || canCreate(element, parent, null, position);
+    return (
+      canAttach([element], parent, null, position) ||
+      canCreate(element, parent, null, position)
+    );
   });
 
-  this.addRule('elements.paste', function(context) {
+  this.addRule("elements.paste", function(context) {
     var tree = context.tree,
-        target = context.target;
+      target = context.target;
 
     return canPaste(tree, target);
   });
@@ -219,10 +198,10 @@ function canStartConnection(element) {
   }
 
   return isAny(element, [
-    'bpmn:FlowNode',
-    'bpmn:InteractionNode',
-    'bpmn:DataObjectReference',
-    'bpmn:DataStoreReference'
+    "bpmn:FlowNode",
+    "bpmn:InteractionNode",
+    "bpmn:DataObjectReference",
+    "bpmn:DataStoreReference"
   ]);
 }
 
@@ -235,33 +214,32 @@ function isSame(a, b) {
 }
 
 function getOrganizationalParent(element) {
-
   do {
-    if (is(element, 'bpmn:Process')) {
+    if (is(element, "bpmn:Process")) {
       return getBusinessObject(element);
     }
 
-    if (is(element, 'bpmn:Participant')) {
+    if (is(element, "bpmn:Participant")) {
       return (
-        getBusinessObject(element).processRef ||
-        getBusinessObject(element)
+        getBusinessObject(element).processRef || getBusinessObject(element)
       );
     }
   } while ((element = element.parent));
-
 }
 
 function isTextAnnotation(element) {
-  return is(element, 'bpmn:TextAnnotation');
+  return is(element, "bpmn:TextAnnotation");
 }
 
 function isGroup(element) {
-  return is(element, 'bpmn:Group') && !element.labelTarget;
+  return is(element, "bpmn:Group") && !element.labelTarget;
 }
 
 function isCompensationBoundary(element) {
-  return is(element, 'bpmn:BoundaryEvent') &&
-         hasEventDefinition(element, 'bpmn:CompensateEventDefinition');
+  return (
+    is(element, "bpmn:BoundaryEvent") &&
+    hasEventDefinition(element, "bpmn:CompensateEventDefinition")
+  );
 }
 
 function isForCompensation(e) {
@@ -270,45 +248,39 @@ function isForCompensation(e) {
 
 function isSameOrganization(a, b) {
   var parentA = getOrganizationalParent(a),
-      parentB = getOrganizationalParent(b);
+    parentB = getOrganizationalParent(b);
 
   return parentA === parentB;
 }
 
 function isMessageFlowSource(element) {
   return (
-    is(element, 'bpmn:InteractionNode') && (
-      !is(element, 'bpmn:Event') || (
-        is(element, 'bpmn:ThrowEvent') &&
-        hasEventDefinitionOrNone(element, 'bpmn:MessageEventDefinition')
-      )
-    )
+    is(element, "bpmn:InteractionNode") &&
+    (!is(element, "bpmn:Event") ||
+      (is(element, "bpmn:ThrowEvent") &&
+        hasEventDefinitionOrNone(element, "bpmn:MessageEventDefinition")))
   );
 }
 
 function isMessageFlowTarget(element) {
   return (
-    is(element, 'bpmn:InteractionNode') &&
-    !isForCompensation(element) && (
-      !is(element, 'bpmn:Event') || (
-        is(element, 'bpmn:CatchEvent') &&
-        hasEventDefinitionOrNone(element, 'bpmn:MessageEventDefinition')
-      )
-    )
+    is(element, "bpmn:InteractionNode") &&
+    !isForCompensation(element) &&
+    (!is(element, "bpmn:Event") ||
+      (is(element, "bpmn:CatchEvent") &&
+        hasEventDefinitionOrNone(element, "bpmn:MessageEventDefinition")))
   );
 }
 
 function getScopeParent(element) {
-
   var parent = element;
 
   while ((parent = parent.parent)) {
-
-    if (is(parent, 'bpmn:FlowElementsContainer')) {
+    if (is(parent, "bpmn:FlowElementsContainer")) {
       return getBusinessObject(parent);
     }
 
-    if (is(parent, 'bpmn:Participant')) {
+    if (is(parent, "bpmn:Participant")) {
       return getBusinessObject(parent).processRef;
     }
   }
@@ -318,9 +290,9 @@ function getScopeParent(element) {
 
 function isSameScope(a, b) {
   var scopeParentA = getScopeParent(a),
-      scopeParentB = getScopeParent(b);
+    scopeParentB = getScopeParent(b);
 
-  return scopeParentA && (scopeParentA === scopeParentB);
+  return scopeParentA && scopeParentA === scopeParentB;
 }
 
 function hasEventDefinition(element, eventDefinition) {
@@ -341,11 +313,12 @@ function hasEventDefinitionOrNone(element, eventDefinition) {
 
 function isSequenceFlowSource(element) {
   return (
-    is(element, 'bpmn:FlowNode') &&
-    !is(element, 'bpmn:EndEvent') &&
+    is(element, "bpmn:FlowNode") &&
+    !is(element, "bpmn:EndEvent") &&
     !isEventSubProcess(element) &&
-    !(is(element, 'bpmn:IntermediateThrowEvent') &&
-      hasEventDefinition(element, 'bpmn:LinkEventDefinition')
+    !(
+      is(element, "bpmn:IntermediateThrowEvent") &&
+      hasEventDefinition(element, "bpmn:LinkEventDefinition")
     ) &&
     !isCompensationBoundary(element) &&
     !isForCompensation(element)
@@ -354,12 +327,13 @@ function isSequenceFlowSource(element) {
 
 function isSequenceFlowTarget(element) {
   return (
-    is(element, 'bpmn:FlowNode') &&
-    !is(element, 'bpmn:StartEvent') &&
-    !is(element, 'bpmn:BoundaryEvent') &&
+    is(element, "bpmn:FlowNode") &&
+    !is(element, "bpmn:StartEvent") &&
+    !is(element, "bpmn:BoundaryEvent") &&
     !isEventSubProcess(element) &&
-    !(is(element, 'bpmn:IntermediateCatchEvent') &&
-      hasEventDefinition(element, 'bpmn:LinkEventDefinition')
+    !(
+      is(element, "bpmn:IntermediateCatchEvent") &&
+      hasEventDefinition(element, "bpmn:LinkEventDefinition")
     ) &&
     !isForCompensation(element)
   );
@@ -367,14 +341,12 @@ function isSequenceFlowTarget(element) {
 
 function isEventBasedTarget(element) {
   return (
-    is(element, 'bpmn:ReceiveTask') || (
-      is(element, 'bpmn:IntermediateCatchEvent') && (
-        hasEventDefinition(element, 'bpmn:MessageEventDefinition') ||
-        hasEventDefinition(element, 'bpmn:TimerEventDefinition') ||
-        hasEventDefinition(element, 'bpmn:ConditionalEventDefinition') ||
-        hasEventDefinition(element, 'bpmn:SignalEventDefinition')
-      )
-    )
+    is(element, "bpmn:ReceiveTask") ||
+    (is(element, "bpmn:IntermediateCatchEvent") &&
+      (hasEventDefinition(element, "bpmn:MessageEventDefinition") ||
+        hasEventDefinition(element, "bpmn:TimerEventDefinition") ||
+        hasEventDefinition(element, "bpmn:ConditionalEventDefinition") ||
+        hasEventDefinition(element, "bpmn:SignalEventDefinition")))
   );
 }
 
@@ -383,7 +355,6 @@ function isConnection(element) {
 }
 
 function getParents(element) {
-
   var parents = [];
 
   while (element) {
@@ -403,19 +374,17 @@ function isParent(possibleParent, element) {
 }
 
 function canConnect(source, target, connection) {
-
   if (nonExistingOrLabel(source) || nonExistingOrLabel(target)) {
     return null;
   }
 
-  if (!is(connection, 'bpmn:DataAssociation')) {
-
+  if (!is(connection, "bpmn:DataAssociation")) {
     if (canConnectMessageFlow(source, target)) {
-      return { type: 'bpmn:MessageFlow' };
+      return { type: "bpmn:MessageFlow" };
     }
 
     if (canConnectSequenceFlow(source, target)) {
-      return { type: 'bpmn:SequenceFlow' };
+      return { type: "bpmn:SequenceFlow" };
     }
   }
 
@@ -427,15 +396,14 @@ function canConnect(source, target, connection) {
 
   if (isCompensationBoundary(source) && isForCompensation(target)) {
     return {
-      type: 'bpmn:Association',
-      associationDirection: 'One'
+      type: "bpmn:Association",
+      associationDirection: "One"
     };
   }
 
   if (canConnectAssociation(source, target)) {
-
     return {
-      type: 'bpmn:Association'
+      type: "bpmn:Association"
     };
   }
 
@@ -448,121 +416,133 @@ function canConnect(source, target, connection) {
  * @return {Boolean}
  */
 function canDrop(element, target, position) {
-
   // can move labels and groups everywhere
   if (isLabel(element) || isGroup(element)) {
     return true;
   }
 
-
   // disallow to create elements on collapsed pools
-  if (is(target, 'bpmn:Participant') && !isExpanded(target)) {
+  if (is(target, "bpmn:Participant") && !isExpanded(target)) {
     return false;
   }
 
   // allow to create new participants on
   // existing collaboration and process diagrams
-  if (is(element, 'bpmn:Participant')) {
-    return is(target, 'bpmn:Process') || is(target, 'bpmn:Collaboration');
+  if (is(element, "bpmn:Participant")) {
+    return is(target, "bpmn:Process") || is(target, "bpmn:Collaboration");
   }
 
   // allow moving DataInput / DataOutput within its original container only
-  if (isAny(element, [ 'bpmn:DataInput', 'bpmn:DataOutput' ])) {
-
+  if (isAny(element, ["bpmn:DataInput", "bpmn:DataOutput"])) {
     if (element.parent) {
       return target === element.parent;
     }
   }
 
   // allow creating lanes on participants and other lanes only
-  if (is(element, 'bpmn:Lane')) {
-    return is(target, 'bpmn:Participant') || is(target, 'bpmn:Lane');
+  if (is(element, "bpmn:Lane")) {
+    return is(target, "bpmn:Participant") || is(target, "bpmn:Lane");
   }
 
   // disallow dropping boundary events which cannot replace with intermediate event
-  if (is(element, 'bpmn:BoundaryEvent') && !isDroppableBoundaryEvent(element)) {
+  if (is(element, "bpmn:BoundaryEvent") && !isDroppableBoundaryEvent(element)) {
     return false;
   }
 
   // drop flow elements onto flow element containers
   // and participants
-  if (is(element, 'bpmn:FlowElement') && !is(element, 'bpmn:DataStoreReference')) {
-    if (is(target, 'bpmn:FlowElementsContainer')) {
+  if (
+    is(element, "bpmn:FlowElement") &&
+    !is(element, "bpmn:DataStoreReference")
+  ) {
+    if (is(target, "bpmn:FlowElementsContainer")) {
       return isExpanded(target);
     }
 
-    return isAny(target, [ 'bpmn:Participant', 'bpmn:Lane' ]);
+    return isAny(target, ["bpmn:Participant", "bpmn:Lane"]);
   }
 
   // account for the fact that data associations are always
   // rendered and moved to top (Process or Collaboration level)
   //
   // artifacts may be placed wherever, too
-  if (isAny(element, [ 'bpmn:Artifact', 'bpmn:DataAssociation', 'bpmn:DataStoreReference' ])) {
+  if (
+    isAny(element, [
+      "bpmn:Artifact",
+      "bpmn:DataAssociation",
+      "bpmn:DataStoreReference"
+    ])
+  ) {
     return isAny(target, [
-      'bpmn:Collaboration',
-      'bpmn:Lane',
-      'bpmn:Participant',
-      'bpmn:Process',
-      'bpmn:SubProcess' ]);
+      "bpmn:Collaboration",
+      "bpmn:Lane",
+      "bpmn:Participant",
+      "bpmn:Process",
+      "bpmn:SubProcess"
+    ]);
   }
 
-  if (is(element, 'bpmn:MessageFlow')) {
-    return is(target, 'bpmn:Collaboration')
-      || element.source.parent == target
-      || element.target.parent == target;
+  if (is(element, "bpmn:MessageFlow")) {
+    return (
+      is(target, "bpmn:Collaboration") ||
+      element.source.parent == target ||
+      element.target.parent == target
+    );
   }
 
   return false;
 }
 
 function isDroppableBoundaryEvent(event) {
-  return getBusinessObject(event).cancelActivity && (
-    hasNoEventDefinition(event) || hasCommonBoundaryIntermediateEventDefinition(event)
+  return (
+    getBusinessObject(event).cancelActivity &&
+    (hasNoEventDefinition(event) ||
+      hasCommonBoundaryIntermediateEventDefinition(event))
   );
 }
 
 function canPaste(tree, target) {
   var topLevel = tree[0],
-      participants;
+    participants;
 
-  if (is(target, 'bpmn:Collaboration')) {
+  if (is(target, "bpmn:Collaboration")) {
     return every(topLevel, function(e) {
-      return e.type === 'bpmn:Participant';
+      return e.type === "bpmn:Participant";
     });
   }
 
-  if (is(target, 'bpmn:Process')) {
+  if (is(target, "bpmn:Process")) {
     participants = some(topLevel, function(e) {
-      return e.type === 'bpmn:Participant';
+      return e.type === "bpmn:Participant";
     });
 
     return !(participants && target.children.length > 0);
   }
 
   // disallow to create elements on collapsed pools
-  if (is(target, 'bpmn:Participant') && !isExpanded(target)) {
+  if (is(target, "bpmn:Participant") && !isExpanded(target)) {
     return false;
   }
 
-  if (is(target, 'bpmn:FlowElementsContainer')) {
+  if (is(target, "bpmn:FlowElementsContainer")) {
     return isExpanded(target);
   }
 
   return isAny(target, [
-    'bpmn:Collaboration',
-    'bpmn:Lane',
-    'bpmn:Participant',
-    'bpmn:Process',
-    'bpmn:SubProcess' ]);
+    "bpmn:Collaboration",
+    "bpmn:Lane",
+    "bpmn:Participant",
+    "bpmn:Process",
+    "bpmn:SubProcess"
+  ]);
 }
 
 function isBoundaryEvent(element) {
-  return !isLabel(element) && is(element, 'bpmn:BoundaryEvent');
+  return !isLabel(element) && is(element, "bpmn:BoundaryEvent");
 }
 
 function isLane(element) {
-  return is(element, 'bpmn:Lane');
+  return is(element, "bpmn:Lane");
 }
 
 /**
@@ -574,12 +554,15 @@ function isBoundaryCandidate(element) {
     return true;
   }
 
-  if (is(element, 'bpmn:IntermediateThrowEvent') && hasNoEventDefinition(element)) {
+  if (
+    is(element, "bpmn:IntermediateThrowEvent") &&
+    hasNoEventDefinition(element)
+  ) {
     return true;
   }
 
   return (
-    is(element, 'bpmn:IntermediateCatchEvent') &&
+    is(element, "bpmn:IntermediateCatchEvent") &&
     hasCommonBoundaryIntermediateEventDefinition(element)
   );
 }
@@ -592,10 +575,10 @@ function hasNoEventDefinition(element) {
 
 function hasCommonBoundaryIntermediateEventDefinition(element) {
   return hasOneOfEventDefinitions(element, [
-    'bpmn:MessageEventDefinition',
-    'bpmn:TimerEventDefinition',
-    'bpmn:SignalEventDefinition',
-    'bpmn:ConditionalEventDefinition'
+    "bpmn:MessageEventDefinition",
+    "bpmn:TimerEventDefinition",
+    "bpmn:SignalEventDefinition",
+    "bpmn:ConditionalEventDefinition"
   ]);
 }
 
@@ -607,18 +590,16 @@ function hasOneOfEventDefinitions(element, eventDefinitions) {
 
 function isReceiveTaskAfterEventBasedGateway(element) {
   return (
-    is(element, 'bpmn:ReceiveTask') &&
+    is(element, "bpmn:ReceiveTask") &&
     find(element.incoming, function(incoming) {
-      return is(incoming.source, 'bpmn:EventBasedGateway');
+      return is(incoming.source, "bpmn:EventBasedGateway");
     })
   );
 }
 
-
 function canAttach(elements, target, source, position) {
-
   if (!Array.isArray(elements)) {
-    elements = [ elements ];
+    elements = [elements];
   }
 
   // only (re-)attach one element at a time
@@ -644,7 +625,7 @@ function canAttach(elements, target, source, position) {
   }
 
   // only allow drop on non compensation activities
-  if (!is(target, 'bpmn:Activity') || isForCompensation(target)) {
+  if (!is(target, "bpmn:Activity") || isForCompensation(target)) {
     return false;
   }
 
@@ -658,9 +639,8 @@ function canAttach(elements, target, source, position) {
     return false;
   }
 
-  return 'attach';
+  return "attach";
 }
-
 
 /**
  * Defines how to replace elements for a given target.
@@ -682,7 +662,6 @@ function canAttach(elements, target, source, position) {
  * @return {Object} an object containing all elements which have to be replaced
  */
 function canReplace(elements, target, position) {
-
   if (!target) {
     return false;
   }
@@ -692,50 +671,55 @@ function canReplace(elements, target, position) {
   };
 
   forEach(elements, function(element) {
-
     if (!isEventSubProcess(target)) {
-
-      if (is(element, 'bpmn:StartEvent') &&
-          element.type !== 'label' &&
-          canDrop(element, target)) {
-
+      if (
+        is(element, "bpmn:StartEvent") &&
+        element.type !== "label" &&
+        canDrop(element, target)
+      ) {
         // replace a non-interrupting start event by a blank interrupting start event
         // when the target is not an event sub process
         if (!isInterrupting(element)) {
           canExecute.replacements.push({
             oldElementId: element.id,
-            newElementType: 'bpmn:StartEvent'
+            newElementType: "bpmn:StartEvent"
           });
         }
 
         // replace an error/escalation/compansate start event by a blank interrupting start event
         // when the target is not an event sub process
-        if (hasErrorEventDefinition(element) ||
-            hasEscalationEventDefinition(element) ||
-            hasCompensateEventDefinition(element)) {
+        if (
+          hasErrorEventDefinition(element) ||
+          hasEscalationEventDefinition(element) ||
+          hasCompensateEventDefinition(element)
+        ) {
           canExecute.replacements.push({
             oldElementId: element.id,
-            newElementType: 'bpmn:StartEvent'
+            newElementType: "bpmn:StartEvent"
           });
         }
       }
     }
 
-    if (!is(target, 'bpmn:Transaction')) {
-      if (hasEventDefinition(element, 'bpmn:CancelEventDefinition') &&
-          element.type !== 'label') {
-
-        if (is(element, 'bpmn:EndEvent') && canDrop(element, target)) {
+    if (!is(target, "bpmn:Transaction")) {
+      if (
+        hasEventDefinition(element, "bpmn:CancelEventDefinition") &&
+        element.type !== "label"
+      ) {
+        if (is(element, "bpmn:EndEvent") && canDrop(element, target)) {
           canExecute.replacements.push({
             oldElementId: element.id,
-            newElementType: 'bpmn:EndEvent'
+            newElementType: "bpmn:EndEvent"
           });
         }
 
-        if (is(element, 'bpmn:BoundaryEvent') && canAttach(element, target, null, position)) {
+        if (
+          is(element, "bpmn:BoundaryEvent") &&
+          canAttach(element, target, null, position)
+        ) {
           canExecute.replacements.push({
             oldElementId: element.id,
-            newElementType: 'bpmn:BoundaryEvent'
+            newElementType: "bpmn:BoundaryEvent"
           });
         }
       }
@@ -746,7 +730,6 @@ function canReplace(elements, target, position) {
 }
 
 function canMove(elements, target) {
-
   // do not move selection containing lanes
   if (some(elements, isLane)) {
     return false;
@@ -763,7 +746,6 @@ function canMove(elements, target) {
 }
 
 function canCreate(shape, target, source, position) {
-
   if (!target) {
     return false;
   }
@@ -786,19 +768,18 @@ function canCreate(shape, target, source, position) {
 }
 
 function canResize(shape, newBounds) {
-  if (is(shape, 'bpmn:SubProcess')) {
+  if (is(shape, "bpmn:SubProcess")) {
     return (
-      isExpanded(shape) && (
-        !newBounds || (newBounds.width >= 100 && newBounds.height >= 80)
-      )
+      isExpanded(shape) &&
+      (!newBounds || (newBounds.width >= 100 && newBounds.height >= 80))
     );
   }
 
-  if (is(shape, 'bpmn:Lane')) {
+  if (is(shape, "bpmn:Lane")) {
     return !newBounds || (newBounds.width >= 130 && newBounds.height >= 60);
   }
 
-  if (is(shape, 'bpmn:Participant')) {
+  if (is(shape, "bpmn:Participant")) {
     return !newBounds || (newBounds.width >= 250 && newBounds.height >= 50);
   }
 
@@ -818,19 +799,16 @@ function canResize(shape, newBounds) {
  * is a text annotation.
  */
 function isOneTextAnnotation(source, target) {
-
   var sourceTextAnnotation = isTextAnnotation(source),
-      targetTextAnnotation = isTextAnnotation(target);
+    targetTextAnnotation = isTextAnnotation(target);
 
   return (
     (sourceTextAnnotation || targetTextAnnotation) &&
-    (sourceTextAnnotation !== targetTextAnnotation)
+    sourceTextAnnotation !== targetTextAnnotation
   );
 }
 
-
 function canConnectAssociation(source, target) {
-
   // do not connect connections
   if (isConnection(source) || isConnection(target)) {
     return false;
@@ -851,7 +829,6 @@ function canConnectAssociation(source, target) {
 }
 
 function canConnectMessageFlow(source, target) {
-
   // handle the case where target does not have a parent,
   // because it is not dropped within the diagram (bpmn-io/bpmn-js#1033)
   if (!target.parent) {
@@ -866,40 +843,42 @@ function canConnectMessageFlow(source, target) {
 }
 
 function canConnectSequenceFlow(source, target) {
-
   if (
     isEventBasedTarget(target) &&
     target.incoming.length > 0 &&
     areOutgoingEventBasedGatewayConnections(target.incoming) &&
-    !is(source, 'bpmn:EventBasedGateway')
+    !is(source, "bpmn:EventBasedGateway")
   ) {
     return false;
   }
 
-  return isSequenceFlowSource(source) &&
-         isSequenceFlowTarget(target) &&
-         isSameScope(source, target) &&
-         !(is(source, 'bpmn:EventBasedGateway') && !isEventBasedTarget(target));
+  return (
+    isSequenceFlowSource(source) &&
+    isSequenceFlowTarget(target) &&
+    isSameScope(source, target) &&
+    !(is(source, "bpmn:EventBasedGateway") && !isEventBasedTarget(target))
+  );
 }
 
-
 function canConnectDataAssociation(source, target) {
-
-  if (isAny(source, [ 'bpmn:DataObjectReference', 'bpmn:DataStoreReference' ]) &&
-      isAny(target, [ 'bpmn:Activity', 'bpmn:ThrowEvent' ])) {
-    return { type: 'bpmn:DataInputAssociation' };
+  if (
+    isAny(source, ["bpmn:DataObjectReference", "bpmn:DataStoreReference"]) &&
+    isAny(target, ["bpmn:Activity", "bpmn:ThrowEvent"])
+  ) {
+    return { type: "bpmn:DataInputAssociation" };
   }
 
-  if (isAny(target, [ 'bpmn:DataObjectReference', 'bpmn:DataStoreReference' ]) &&
-      isAny(source, [ 'bpmn:Activity', 'bpmn:CatchEvent' ])) {
-    return { type: 'bpmn:DataOutputAssociation' };
+  if (
+    isAny(target, ["bpmn:DataObjectReference", "bpmn:DataStoreReference"]) &&
+    isAny(source, ["bpmn:Activity", "bpmn:CatchEvent"])
+  ) {
+    return { type: "bpmn:DataOutputAssociation" };
   }
 
   return false;
 }
 
 function canInsert(shape, flow, position) {
-
   if (!flow) {
     return false;
   }
@@ -912,8 +891,7 @@ function canInsert(shape, flow, position) {
     shape = shape[0];
   }
 
-  if (flow.source === shape ||
-      flow.target === shape) {
+  if (flow.source === shape || flow.target === shape) {
     return false;
   }
 
@@ -924,23 +902,27 @@ function canInsert(shape, flow, position) {
   // about connection rules (yet)
 
   return (
-    isAny(flow, [ 'bpmn:SequenceFlow', 'bpmn:MessageFlow' ]) &&
+    isAny(flow, ["bpmn:SequenceFlow", "bpmn:MessageFlow"]) &&
     !isLabel(flow) &&
-    is(shape, 'bpmn:FlowNode') &&
-    !is(shape, 'bpmn:BoundaryEvent') &&
-    canDrop(shape, flow.parent, position));
+    is(shape, "bpmn:FlowNode") &&
+    !is(shape, "bpmn:BoundaryEvent") &&
+    canDrop(shape, flow.parent, position)
+  );
 }
 
 function contains(collection, element) {
-  return (collection && element) && collection.indexOf(element) !== -1;
+  return collection && element && collection.indexOf(element) !== -1;
 }
 
 function canCopy(collection, element) {
-  if (is(element, 'bpmn:Lane') && !contains(collection, element.parent)) {
+  if (is(element, "bpmn:Lane") && !contains(collection, element.parent)) {
     return false;
   }
 
-  if (is(element, 'bpmn:BoundaryEvent') && !contains(collection, element.host)) {
+  if (
+    is(element, "bpmn:BoundaryEvent") &&
+    !contains(collection, element.host)
+  ) {
     return false;
   }
 
@@ -948,14 +930,12 @@ function canCopy(collection, element) {
 }
 
 function isOutgoingEventBasedGatewayConnection(connection) {
-
   if (connection && connection.source) {
-    return is(connection.source, 'bpmn:EventBasedGateway');
+    return is(connection.source, "bpmn:EventBasedGateway");
   }
 }
 
 function areOutgoingEventBasedGatewayConnections(connections) {
-
   connections = connections || [];
 
   return connections.some(isOutgoingEventBasedGatewayConnection);

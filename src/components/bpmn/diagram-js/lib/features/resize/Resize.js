@@ -1,22 +1,15 @@
-import {
-  pick,
-  assign
-} from 'min-dash';
+import { pick, assign } from "min-dash";
 
 import {
   resizeBounds,
   ensureConstraints,
   computeChildrenBBox,
   getMinResizeBounds
-} from './ResizeUtil';
+} from "./ResizeUtil";
 
-import {
-  asTRBL,
-  roundBounds
-} from '../../layout/LayoutUtil';
+import { asTRBL, roundBounds } from "../../layout/LayoutUtil";
 
 var DEFAULT_MIN_WIDTH = 10;
-
 
 /**
  * A component that provides resizing of shapes on the canvas.
@@ -56,12 +49,10 @@ var DEFAULT_MIN_WIDTH = 10;
  * ```
  */
 export default function Resize(eventBus, rules, modeling, dragging) {
-
   this._dragging = dragging;
   this._rules = rules;
 
   var self = this;
-
 
   /**
    * Handle resize move by specified delta.
@@ -70,11 +61,10 @@ export default function Resize(eventBus, rules, modeling, dragging) {
    * @param {Point} delta
    */
   function handleMove(context, delta) {
-
     var shape = context.shape,
-        direction = context.direction,
-        resizeConstraints = context.resizeConstraints,
-        newBounds;
+      direction = context.direction,
+      resizeConstraints = context.resizeConstraints,
+      newBounds;
 
     context.delta = delta;
 
@@ -93,10 +83,9 @@ export default function Resize(eventBus, rules, modeling, dragging) {
    * @param  {Object} context
    */
   function handleStart(context) {
-
     var resizeConstraints = context.resizeConstraints,
-        // evaluate minBounds for backwards compatibility
-        minBounds = context.minBounds;
+      // evaluate minBounds for backwards compatibility
+      minBounds = context.minBounds;
 
     if (resizeConstraints !== undefined) {
       return;
@@ -118,17 +107,15 @@ export default function Resize(eventBus, rules, modeling, dragging) {
    */
   function handleEnd(context) {
     var shape = context.shape,
-        canExecute = context.canExecute,
-        newBounds = context.newBounds;
+      canExecute = context.canExecute,
+      newBounds = context.newBounds;
 
     if (canExecute) {
-
       // ensure we have actual pixel values for new bounds
       // (important when zoom level was > 1 during move)
       newBounds = roundBounds(newBounds);
 
       if (!boundsChanged(shape, newBounds)) {
-
         // no resize necessary
         return;
       }
@@ -138,12 +125,11 @@ export default function Resize(eventBus, rules, modeling, dragging) {
     }
   }
 
-
-  eventBus.on('resize.start', function(event) {
+  eventBus.on("resize.start", function(event) {
     handleStart(event.context);
   });
 
-  eventBus.on('resize.move', function(event) {
+  eventBus.on("resize.move", function(event) {
     var delta = {
       x: event.dx,
       y: event.dy
@@ -152,19 +138,17 @@ export default function Resize(eventBus, rules, modeling, dragging) {
     handleMove(event.context, delta);
   });
 
-  eventBus.on('resize.end', function(event) {
+  eventBus.on("resize.end", function(event) {
     handleEnd(event.context);
   });
-
 }
-
 
 Resize.prototype.canResize = function(context) {
   var rules = this._rules;
 
-  var ctx = pick(context, [ 'newBounds', 'shape', 'delta', 'direction' ]);
+  var ctx = pick(context, ["newBounds", "shape", "delta", "direction"]);
 
-  return rules.allowed('shape.resize', ctx);
+  return rules.allowed("shape.resize", ctx);
 };
 
 /**
@@ -179,10 +163,10 @@ Resize.prototype.canResize = function(context) {
  */
 Resize.prototype.activate = function(event, shape, contextOrDirection) {
   var dragging = this._dragging,
-      context,
-      direction;
+    context,
+    direction;
 
-  if (typeof contextOrDirection === 'string') {
+  if (typeof contextOrDirection === "string") {
     contextOrDirection = {
       direction: contextOrDirection
     };
@@ -193,7 +177,7 @@ Resize.prototype.activate = function(event, shape, contextOrDirection) {
   direction = context.direction;
 
   if (!direction) {
-    throw new Error('must provide a direction (nw|se|ne|sw)');
+    throw new Error("must provide a direction (nw|se|ne|sw)");
   }
 
   var referencePoint = {
@@ -201,9 +185,9 @@ Resize.prototype.activate = function(event, shape, contextOrDirection) {
     y: /n/.test(direction) ? shape.y : shape.y + shape.height
   };
 
-  dragging.init(event, referencePoint, 'resize', {
+  dragging.init(event, referencePoint, "resize", {
     autoActivate: true,
-    cursor: 'resize-' + (/nw|se/.test(direction) ? 'nwse' : 'nesw'),
+    cursor: "resize-" + (/nw|se/.test(direction) ? "nwse" : "nesw"),
     data: {
       shape: shape,
       context: context
@@ -213,9 +197,9 @@ Resize.prototype.activate = function(event, shape, contextOrDirection) {
 
 Resize.prototype.computeMinResizeBox = function(context) {
   var shape = context.shape,
-      direction = context.direction,
-      minDimensions,
-      childrenBounds;
+    direction = context.direction,
+    minDimensions,
+    childrenBounds;
 
   minDimensions = context.minDimensions || {
     width: DEFAULT_MIN_WIDTH,
@@ -230,19 +214,15 @@ Resize.prototype.computeMinResizeBox = function(context) {
   return getMinResizeBounds(direction, shape, minDimensions, childrenBounds);
 };
 
-
-Resize.$inject = [
-  'eventBus',
-  'rules',
-  'modeling',
-  'dragging'
-];
+Resize.$inject = ["eventBus", "rules", "modeling", "dragging"];
 
 // helpers //////////
 
 function boundsChanged(shape, newBounds) {
-  return shape.x !== newBounds.x ||
+  return (
+    shape.x !== newBounds.x ||
     shape.y !== newBounds.y ||
     shape.width !== newBounds.width ||
-    shape.height !== newBounds.height;
+    shape.height !== newBounds.height
+  );
 }

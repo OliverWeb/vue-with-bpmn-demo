@@ -2,33 +2,19 @@
 
 var round = Math.round;
 
-import { assign } from 'min-dash';
+import { assign } from "min-dash";
 
-import {
-  event as domEvent
-} from 'min-dom';
+import { event as domEvent } from "min-dom";
 
-import {
-  getOriginal,
-  toPoint,
-  stopPropagation
-} from '../../util/Event';
+import { getOriginal, toPoint, stopPropagation } from "../../util/Event";
 
-import {
-  set as cursorSet,
-  unset as cursorUnset
-} from '../../util/Cursor';
+import { set as cursorSet, unset as cursorUnset } from "../../util/Cursor";
 
-import {
-  install as installClickTrap
-} from '../../util/ClickTrap';
+import { install as installClickTrap } from "../../util/ClickTrap";
 
-import {
-  delta as deltaPos
-} from '../../util/PositionUtil';
+import { delta as deltaPos } from "../../util/PositionUtil";
 
-var DRAG_ACTIVE_CLS = 'djs-drag-active';
-
+var DRAG_ACTIVE_CLS = "djs-drag-active";
 
 function preventDefault(event) {
   event.preventDefault();
@@ -37,7 +23,7 @@ function preventDefault(event) {
 function isTouchEvent(event) {
   // check for TouchEvent being available first
   // (i.e. not available on desktop Firefox)
-  return typeof TouchEvent !== 'undefined' && event instanceof TouchEvent;
+  return typeof TouchEvent !== "undefined" && event instanceof TouchEvent;
 }
 
 function getLength(point) {
@@ -123,7 +109,6 @@ function getLength(point) {
  * }
  */
 export default function Dragging(eventBus, canvas, selection) {
-
   var defaultOptions = {
     threshold: 5,
     trapClick: true
@@ -137,7 +122,6 @@ export default function Dragging(eventBus, canvas, selection) {
 
   /* convert a global event into local coordinates */
   function toLocalPoint(globalPosition) {
-
     var viewbox = canvas.viewbox();
 
     var clientRect = canvas._container.getBoundingClientRect();
@@ -154,51 +138,53 @@ export default function Dragging(eventBus, canvas, selection) {
     dragContext = dragContext || context;
 
     var event = eventBus.createEvent(
-      assign(
-        {},
-        dragContext.payload,
-        dragContext.data,
-        { isTouch: dragContext.isTouch }
-      )
+      assign({}, dragContext.payload, dragContext.data, {
+        isTouch: dragContext.isTouch
+      })
     );
 
     // default integration
-    if (eventBus.fire('drag.' + type, event) === false) {
+    if (eventBus.fire("drag." + type, event) === false) {
       return false;
     }
 
-    return eventBus.fire(dragContext.prefix + '.' + type, event);
+    return eventBus.fire(dragContext.prefix + "." + type, event);
   }
 
   // event listeners
 
   function move(event, activate) {
     var payload = context.payload,
-        displacement = context.displacement;
+      displacement = context.displacement;
 
     var globalStart = context.globalStart,
-        globalCurrent = toPoint(event),
-        globalDelta = deltaPos(globalCurrent, globalStart);
+      globalCurrent = toPoint(event),
+      globalDelta = deltaPos(globalCurrent, globalStart);
 
     var localStart = context.localStart,
-        localCurrent = toLocalPoint(globalCurrent),
-        localDelta = deltaPos(localCurrent, localStart);
-
+      localCurrent = toLocalPoint(globalCurrent),
+      localDelta = deltaPos(localCurrent, localStart);
 
     // activate context explicitly or once threshold is reached
-    if (!context.active && (activate || getLength(globalDelta) > context.threshold)) {
-
+    if (
+      !context.active &&
+      (activate || getLength(globalDelta) > context.threshold)
+    ) {
       // fire start event with original
       // starting coordinates
 
-      assign(payload, {
-        x: round(localStart.x + displacement.x),
-        y: round(localStart.y + displacement.y),
-        dx: 0,
-        dy: 0
-      }, { originalEvent: event });
+      assign(
+        payload,
+        {
+          x: round(localStart.x + displacement.x),
+          y: round(localStart.y + displacement.y),
+          dx: 0,
+          dy: 0
+        },
+        { originalEvent: event }
+      );
 
-      if (false === fire('start')) {
+      if (false === fire("start")) {
         return cancel();
       }
 
@@ -224,26 +210,28 @@ export default function Dragging(eventBus, canvas, selection) {
     stopPropagation(event);
 
     if (context.active) {
-
       // update payload with actual coordinates
-      assign(payload, {
-        x: round(localCurrent.x + displacement.x),
-        y: round(localCurrent.y + displacement.y),
-        dx: round(localDelta.x),
-        dy: round(localDelta.y)
-      }, { originalEvent: event });
+      assign(
+        payload,
+        {
+          x: round(localCurrent.x + displacement.x),
+          y: round(localCurrent.y + displacement.y),
+          dx: round(localDelta.x),
+          dy: round(localDelta.y)
+        },
+        { originalEvent: event }
+      );
 
       // emit move event
-      fire('move');
+      fire("move");
     }
   }
 
   function end(event) {
     var previousContext,
-        returnValue = true;
+      returnValue = true;
 
     if (context.active) {
-
       if (event) {
         context.payload.originalEvent = event;
 
@@ -255,26 +243,24 @@ export default function Dragging(eventBus, canvas, selection) {
       // implementations may stop restoring the
       // original state (selections, ...) by preventing the
       // end events default action
-      returnValue = fire('end');
+      returnValue = fire("end");
     }
 
     if (returnValue === false) {
-      fire('rejected');
+      fire("rejected");
     }
 
     previousContext = cleanup(returnValue !== true);
 
     // last event to be fired when all drag operations are done
     // at this point in time no drag operation is in progress anymore
-    fire('ended', previousContext);
+    fire("ended", previousContext);
   }
-
 
   // cancel active drag operation if the user presses
   // the ESC key on the keyboard
 
   function checkCancel(event) {
-
     if (event.which === 27) {
       preventDefault(event);
 
@@ -282,19 +268,16 @@ export default function Dragging(eventBus, canvas, selection) {
     }
   }
 
-
   // prevent ghost click that might occur after a finished
   // drag and drop session
 
   function trapClickAndEnd(event) {
-
     var untrap;
 
     // trap the click in case we are part of an active
     // drag operation. This will effectively prevent
     // the ghost click that cannot be canceled otherwise.
     if (context.active) {
-
       untrap = installClickTrap(eventBus);
 
       // remove trap after minimal delay
@@ -321,18 +304,17 @@ export default function Dragging(eventBus, canvas, selection) {
     payload.hoverGfx = event.gfx;
     payload.hover = event.element;
 
-    fire('hover');
+    fire("hover");
   }
 
   function out(event) {
-    fire('out');
+    fire("out");
 
     var payload = context.payload;
 
     payload.hoverGfx = null;
     payload.hover = null;
   }
-
 
   // life-cycle methods
 
@@ -346,7 +328,7 @@ export default function Dragging(eventBus, canvas, selection) {
     var wasActive = context.active;
 
     if (wasActive) {
-      fire('cancel');
+      fire("cancel");
     }
 
     previousContext = cleanup(restore);
@@ -354,15 +336,14 @@ export default function Dragging(eventBus, canvas, selection) {
     if (wasActive) {
       // last event to be fired when all drag operations are done
       // at this point in time no drag operation is in progress anymore
-      fire('canceled', previousContext);
+      fire("canceled", previousContext);
     }
   }
 
   function cleanup(restore) {
-    var previousContext,
-        endDrag;
+    var previousContext, endDrag;
 
-    fire('cleanup');
+    fire("cleanup");
 
     // reset cursor
     cursorUnset();
@@ -374,23 +355,23 @@ export default function Dragging(eventBus, canvas, selection) {
     }
 
     // reset dom listeners
-    domEvent.unbind(document, 'mousemove', move);
+    domEvent.unbind(document, "mousemove", move);
 
-    domEvent.unbind(document, 'dragstart', preventDefault);
-    domEvent.unbind(document, 'selectstart', preventDefault);
+    domEvent.unbind(document, "dragstart", preventDefault);
+    domEvent.unbind(document, "selectstart", preventDefault);
 
-    domEvent.unbind(document, 'mousedown', endDrag, true);
-    domEvent.unbind(document, 'mouseup', endDrag, true);
+    domEvent.unbind(document, "mousedown", endDrag, true);
+    domEvent.unbind(document, "mouseup", endDrag, true);
 
-    domEvent.unbind(document, 'keyup', checkCancel);
+    domEvent.unbind(document, "keyup", checkCancel);
 
-    domEvent.unbind(document, 'touchstart', trapTouch, true);
-    domEvent.unbind(document, 'touchcancel', cancel, true);
-    domEvent.unbind(document, 'touchmove', move, true);
-    domEvent.unbind(document, 'touchend', end, true);
+    domEvent.unbind(document, "touchstart", trapTouch, true);
+    domEvent.unbind(document, "touchcancel", cancel, true);
+    domEvent.unbind(document, "touchmove", move, true);
+    domEvent.unbind(document, "touchend", end, true);
 
-    eventBus.off('element.hover', hover);
-    eventBus.off('element.out', out);
+    eventBus.off("element.hover", hover);
+    eventBus.off("element.out", out);
 
     // remove drag marker on root element
     canvas.removeMarker(canvas.getRootElement(), DRAG_ACTIVE_CLS);
@@ -421,13 +402,12 @@ export default function Dragging(eventBus, canvas, selection) {
    * @param {Object} [options]
    */
   function init(event, relativeTo, prefix, options) {
-
     // only one drag operation may be active, at a time
     if (context) {
       cancel(false);
     }
 
-    if (typeof relativeTo === 'string') {
+    if (typeof relativeTo === "string") {
       options = prefix;
       prefix = relativeTo;
       relativeTo = null;
@@ -436,11 +416,11 @@ export default function Dragging(eventBus, canvas, selection) {
     options = assign({}, defaultOptions, options || {});
 
     var data = options.data || {},
-        originalEvent,
-        globalStart,
-        localStart,
-        endDrag,
-        isTouch;
+      originalEvent,
+      globalStart,
+      localStart,
+      endDrag,
+      isTouch;
 
     if (options.trapClick) {
       endDrag = trapClickAndEnd;
@@ -455,7 +435,7 @@ export default function Dragging(eventBus, canvas, selection) {
       stopPropagation(event);
 
       // prevent default browser dragging behavior
-      if (originalEvent.type === 'dragstart') {
+      if (originalEvent.type === "dragstart") {
         preventDefault(originalEvent);
       }
     } else {
@@ -471,46 +451,48 @@ export default function Dragging(eventBus, canvas, selection) {
 
     isTouch = isTouchEvent(originalEvent);
 
-    context = assign({
-      prefix: prefix,
-      data: data,
-      payload: {},
-      globalStart: globalStart,
-      displacement: deltaPos(relativeTo, localStart),
-      localStart: localStart,
-      isTouch: isTouch
-    }, options);
+    context = assign(
+      {
+        prefix: prefix,
+        data: data,
+        payload: {},
+        globalStart: globalStart,
+        displacement: deltaPos(relativeTo, localStart),
+        localStart: localStart,
+        isTouch: isTouch
+      },
+      options
+    );
 
     // skip dom registration if trigger
     // is set to manual (during testing)
     if (!options.manual) {
-
       // add dom listeners
 
       if (isTouch) {
-        domEvent.bind(document, 'touchstart', trapTouch, true);
-        domEvent.bind(document, 'touchcancel', cancel, true);
-        domEvent.bind(document, 'touchmove', move, true);
-        domEvent.bind(document, 'touchend', end, true);
+        domEvent.bind(document, "touchstart", trapTouch, true);
+        domEvent.bind(document, "touchcancel", cancel, true);
+        domEvent.bind(document, "touchmove", move, true);
+        domEvent.bind(document, "touchend", end, true);
       } else {
         // assume we use the mouse to interact per default
-        domEvent.bind(document, 'mousemove', move);
+        domEvent.bind(document, "mousemove", move);
 
         // prevent default browser drag and text selection behavior
-        domEvent.bind(document, 'dragstart', preventDefault);
-        domEvent.bind(document, 'selectstart', preventDefault);
+        domEvent.bind(document, "dragstart", preventDefault);
+        domEvent.bind(document, "selectstart", preventDefault);
 
-        domEvent.bind(document, 'mousedown', endDrag, true);
-        domEvent.bind(document, 'mouseup', endDrag, true);
+        domEvent.bind(document, "mousedown", endDrag, true);
+        domEvent.bind(document, "mouseup", endDrag, true);
       }
 
-      domEvent.bind(document, 'keyup', checkCancel);
+      domEvent.bind(document, "keyup", checkCancel);
 
-      eventBus.on('element.hover', hover);
-      eventBus.on('element.out', out);
+      eventBus.on("element.hover", hover);
+      eventBus.on("element.out", out);
     }
 
-    fire('init');
+    fire("init");
 
     if (options.autoActivate) {
       move(event, true);
@@ -518,8 +500,7 @@ export default function Dragging(eventBus, canvas, selection) {
   }
 
   // cancel on diagram destruction
-  eventBus.on('diagram.destroy', cancel);
-
+  eventBus.on("diagram.destroy", cancel);
 
   // API
 
@@ -542,8 +523,4 @@ export default function Dragging(eventBus, canvas, selection) {
   };
 }
 
-Dragging.$inject = [
-  'eventBus',
-  'canvas',
-  'selection'
-];
+Dragging.$inject = ["eventBus", "canvas", "selection"];

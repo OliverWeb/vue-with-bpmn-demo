@@ -1,8 +1,4 @@
-import {
-  isArray,
-  forEach
-} from 'min-dash';
-
+import { isArray, forEach } from "min-dash";
 
 /**
  * A service that offers the current selection in a diagram.
@@ -13,25 +9,23 @@ import {
  * @param {EventBus} eventBus the event bus
  */
 export default function Selection(eventBus) {
-
   this._eventBus = eventBus;
 
   this._selectedElements = [];
 
   var self = this;
 
-  eventBus.on([ 'shape.remove', 'connection.remove' ], function(e) {
+  eventBus.on(["shape.remove", "connection.remove"], function(e) {
     var element = e.element;
     self.deselect(element);
   });
 
-  eventBus.on([ 'diagram.clear' ], function(e) {
+  eventBus.on(["diagram.clear"], function(e) {
     self.select(null);
   });
 }
 
-Selection.$inject = [ 'eventBus' ];
-
+Selection.$inject = ["eventBus"];
 
 Selection.prototype.deselect = function(element) {
   var selectedElements = this._selectedElements;
@@ -43,10 +37,12 @@ Selection.prototype.deselect = function(element) {
 
     selectedElements.splice(idx, 1);
 
-    this._eventBus.fire('selection.changed', { oldSelection: oldSelection, newSelection: selectedElements });
+    this._eventBus.fire("selection.changed", {
+      oldSelection: oldSelection,
+      newSelection: selectedElements
+    });
   }
 };
-
 
 Selection.prototype.get = function() {
   return this._selectedElements;
@@ -55,7 +51,6 @@ Selection.prototype.get = function() {
 Selection.prototype.isSelected = function(element) {
   return this._selectedElements.indexOf(element) !== -1;
 };
-
 
 /**
  * This method selects one or more elements on the diagram.
@@ -70,10 +65,10 @@ Selection.prototype.isSelected = function(element) {
  */
 Selection.prototype.select = function(elements, add) {
   var selectedElements = this._selectedElements,
-      oldSelection = selectedElements.slice();
+    oldSelection = selectedElements.slice();
 
   if (!isArray(elements)) {
-    elements = elements ? [ elements ] : [];
+    elements = elements ? [elements] : [];
   }
 
   // selection may be cleared by passing an empty array or null
@@ -91,5 +86,8 @@ Selection.prototype.select = function(elements, add) {
     this._selectedElements = selectedElements = elements.slice();
   }
 
-  this._eventBus.fire('selection.changed', { oldSelection: oldSelection, newSelection: selectedElements });
+  this._eventBus.fire("selection.changed", {
+    oldSelection: oldSelection,
+    newSelection: selectedElements
+  });
 };

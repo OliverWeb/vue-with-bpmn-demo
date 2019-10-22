@@ -1,7 +1,4 @@
-import {
-  assign
-} from 'min-dash';
-
+import { assign } from "min-dash";
 
 var DEFAULT_CONFIG = {
   moveSpeed: 1,
@@ -10,10 +7,10 @@ var DEFAULT_CONFIG = {
 
 var HIGHER_PRIORITY = 1500;
 
-var LEFT = 'left';
-var UP = 'up';
-var RIGHT = 'right';
-var DOWN = 'down';
+var LEFT = "left";
+var UP = "up";
+var RIGHT = "right";
+var DOWN = "down";
 
 var KEY_TO_DIRECTION = {
   ArrowLeft: LEFT,
@@ -53,7 +50,6 @@ var DIRECTIONS_DELTA = {
   }
 };
 
-
 /**
  * Enables to move selection with keyboard arrows.
  * Use with Shift for modified speed (default=1, with Shift=10).
@@ -67,16 +63,16 @@ var DIRECTIONS_DELTA = {
  * @param {Selection} selection
  */
 export default function KeyboardMoveSelection(
-    config, keyboard,
-    modeling, selection
+  config,
+  keyboard,
+  modeling,
+  selection
 ) {
-
   var self = this;
 
   this._config = assign({}, DEFAULT_CONFIG, config || {});
 
   keyboard.addListener(HIGHER_PRIORITY, function(event) {
-
     var keyEvent = event.keyEvent;
 
     var direction = KEY_TO_DIRECTION[keyEvent.key];
@@ -96,7 +92,6 @@ export default function KeyboardMoveSelection(
     return true;
   });
 
-
   /**
    * Move selected elements in the given direction,
    * optionally specifying accelerated movement.
@@ -105,7 +100,6 @@ export default function KeyboardMoveSelection(
    * @param {Boolean} [accelerated=false]
    */
   this.moveSelection = function(direction, accelerated) {
-
     var selectedElements = selection.get();
 
     if (!selectedElements.length) {
@@ -113,21 +107,18 @@ export default function KeyboardMoveSelection(
     }
 
     var speed = this._config[
-      accelerated ?
-        'moveSpeedAccelerated' :
-        'moveSpeed'
+      accelerated ? "moveSpeedAccelerated" : "moveSpeed"
     ];
 
     var delta = DIRECTIONS_DELTA[direction](speed);
 
     modeling.moveElements(selectedElements, delta);
   };
-
 }
 
 KeyboardMoveSelection.$inject = [
-  'config.keyboardMoveSelection',
-  'keyboard',
-  'modeling',
-  'selection'
+  "config.keyboardMoveSelection",
+  "keyboard",
+  "modeling",
+  "selection"
 ];

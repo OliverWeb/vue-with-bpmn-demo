@@ -1,34 +1,38 @@
-import inherits from 'inherits';
+import inherits from "inherits";
 
-import CommandInterceptor from './../../../../../diagram-js/lib/command/CommandInterceptor';
+import CommandInterceptor from "./../../../../../diagram-js/lib/command/CommandInterceptor";
 
-import { is } from '../../../util/ModelUtil';
+import { is } from "../../../util/ModelUtil";
 
-import { isAny } from '../util/ModelingUtil';
+import { isAny } from "../util/ModelingUtil";
 
-import UpdateSemanticParentHandler from '../cmd/UpdateSemanticParentHandler';
-
+import UpdateSemanticParentHandler from "../cmd/UpdateSemanticParentHandler";
 
 /**
  * BPMN specific data store behavior
  */
 export default function DataStoreBehavior(
-    canvas, commandStack, elementRegistry,
-    eventBus) {
-
+  canvas,
+  commandStack,
+  elementRegistry,
+  eventBus
+) {
   CommandInterceptor.call(this, eventBus);
 
-  commandStack.registerHandler('dataStore.updateContainment', UpdateSemanticParentHandler);
+  commandStack.registerHandler(
+    "dataStore.updateContainment",
+    UpdateSemanticParentHandler
+  );
 
   function getFirstParticipant() {
     return elementRegistry.filter(function(element) {
-      return is(element, 'bpmn:Participant');
+      return is(element, "bpmn:Participant");
     })[0];
   }
 
   function getDataStores(element) {
     return element.children.filter(function(child) {
-      return is(child, 'bpmn:DataStoreReference') && !child.labelTarget;
+      return is(child, "bpmn:DataStoreReference") && !child.labelTarget;
     });
   }
 
@@ -38,26 +42,24 @@ export default function DataStoreBehavior(
     newDataStoreParent = newDataStoreParent || getFirstParticipant();
 
     if (newDataStoreParent) {
-      var newDataStoreParentBo = newDataStoreParent.businessObject || newDataStoreParent;
+      var newDataStoreParentBo =
+        newDataStoreParent.businessObject || newDataStoreParent;
 
-      commandStack.execute('dataStore.updateContainment', {
+      commandStack.execute("dataStore.updateContainment", {
         dataStoreBo: dataStoreBo,
-        newSemanticParent: newDataStoreParentBo.processRef || newDataStoreParentBo,
+        newSemanticParent:
+          newDataStoreParentBo.processRef || newDataStoreParentBo,
         newDiParent: newDataStoreParentBo.di
       });
     }
   }
 
-
   // disable auto-resize for data stores
-  this.preExecute('shape.create', function(event) {
-
+  this.preExecute("shape.create", function(event) {
     var context = event.context,
-        shape = context.shape;
+      shape = context.shape;
 
-    if (is(shape, 'bpmn:DataStoreReference') &&
-        shape.type !== 'label') {
-
+    if (is(shape, "bpmn:DataStoreReference") && shape.type !== "label") {
       if (!context.hints) {
         context.hints = {};
       }
@@ -67,14 +69,13 @@ export default function DataStoreBehavior(
     }
   });
 
-
   // disable auto-resize for data stores
-  this.preExecute('elements.move', function(event) {
+  this.preExecute("elements.move", function(event) {
     var context = event.context,
-        shapes = context.shapes;
+      shapes = context.shapes;
 
     var dataStoreReferences = shapes.filter(function(shape) {
-      return is(shape, 'bpmn:DataStoreReference');
+      return is(shape, "bpmn:DataStoreReference");
     });
 
     if (dataStoreReferences.length) {
@@ -84,62 +85,61 @@ export default function DataStoreBehavior(
 
       // prevent auto resizing for data store references
       context.hints.autoResize = shapes.filter(function(shape) {
-        return !is(shape, 'bpmn:DataStoreReference');
+        return !is(shape, "bpmn:DataStoreReference");
       });
     }
   });
 
-
   // update parent on data store created
-  this.postExecute('shape.create', function(event) {
+  this.postExecute("shape.create", function(event) {
     var context = event.context,
-        shape = context.shape,
-        parent = shape.parent;
+      shape = context.shape,
+      parent = shape.parent;
 
-
-    if (is(shape, 'bpmn:DataStoreReference') &&
-        shape.type !== 'label' &&
-        is(parent, 'bpmn:Collaboration')) {
-
+    if (
+      is(shape, "bpmn:DataStoreReference") &&
+      shape.type !== "label" &&
+      is(parent, "bpmn:Collaboration")
+    ) {
       updateDataStoreParent(shape);
     }
   });
 
-
   // update parent on data store moved
-  this.postExecute('shape.move', function(event) {
+  this.postExecute("shape.move", function(event) {
     var context = event.context,
-        shape = context.shape,
-        oldParent = context.oldParent,
-        parent = shape.parent;
+      shape = context.shape,
+      oldParent = context.oldParent,
+      parent = shape.parent;
 
-    if (is(oldParent, 'bpmn:Collaboration')) {
-
+    if (is(oldParent, "bpmn:Collaboration")) {
       // do nothing if not necessary
       return;
     }
 
-    if (is(shape, 'bpmn:DataStoreReference') &&
-        shape.type !== 'label' &&
-        is(parent, 'bpmn:Collaboration')) {
-
-      var participant = is(oldParent, 'bpmn:Participant') ?
-        oldParent :
-        getAncestor(oldParent, 'bpmn:Participant');
+    if (
+      is(shape, "bpmn:DataStoreReference") &&
+      shape.type !== "label" &&
+      is(parent, "bpmn:Collaboration")
+    ) {
+      var participant = is(oldParent, "bpmn:Participant")
+        ? oldParent
+        : getAncestor(oldParent, "bpmn:Participant");
 
       updateDataStoreParent(shape, participant);
     }
   });
 
-
   // update data store parents on participant or subprocess deleted
-  this.postExecute('shape.delete', function(event) {
+  this.postExecute("shape.delete", function(event) {
     var context = event.context,
-        shape = context.shape,
-        rootElement = canvas.getRootElement();
+      shape = context.shape,
+      rootElement = canvas.getRootElement();
 
-    if (isAny(shape, [ 'bpmn:Participant', 'bpmn:SubProcess' ])
-        && is(rootElement, 'bpmn:Collaboration')) {
+    if (
+      isAny(shape, ["bpmn:Participant", "bpmn:SubProcess"]) &&
+      is(rootElement, "bpmn:Collaboration")
+    ) {
       getDataStores(rootElement)
         .filter(function(dataStore) {
           return isDescendant(dataStore, shape);
@@ -151,38 +151,35 @@ export default function DataStoreBehavior(
   });
 
   // update data store parents on collaboration -> process
-  this.postExecute('canvas.updateRoot', function(event) {
+  this.postExecute("canvas.updateRoot", function(event) {
     var context = event.context,
-        oldRoot = context.oldRoot,
-        newRoot = context.newRoot;
+      oldRoot = context.oldRoot,
+      newRoot = context.newRoot;
 
     var dataStores = getDataStores(oldRoot);
 
     dataStores.forEach(function(dataStore) {
-
-      if (is(newRoot, 'bpmn:Process')) {
+      if (is(newRoot, "bpmn:Process")) {
         updateDataStoreParent(dataStore, newRoot);
       }
-
     });
   });
 }
 
 DataStoreBehavior.$inject = [
-  'canvas',
-  'commandStack',
-  'elementRegistry',
-  'eventBus',
+  "canvas",
+  "commandStack",
+  "elementRegistry",
+  "eventBus"
 ];
 
 inherits(DataStoreBehavior, CommandInterceptor);
-
 
 // helpers //////////
 
 function isDescendant(descendant, ancestor) {
   var descendantBo = descendant.businessObject || descendant,
-      ancestorBo = ancestor.businessObject || ancestor;
+    ancestorBo = ancestor.businessObject || ancestor;
 
   while (descendantBo.$parent) {
     if (descendantBo.$parent === ancestorBo.processRef || ancestorBo) {
@@ -196,7 +193,6 @@ function isDescendant(descendant, ancestor) {
 }
 
 function getAncestor(element, type) {
-
   while (element.parent) {
     if (is(element.parent, type)) {
       return element.parent;

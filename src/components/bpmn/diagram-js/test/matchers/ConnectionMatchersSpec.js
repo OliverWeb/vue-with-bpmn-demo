@@ -1,38 +1,26 @@
-import {
-  create
-} from 'lib/model';
+import { create } from "lib/model";
 
-
-describe('matchers/ConnectionMatchers', function() {
-
+describe("matchers/ConnectionMatchers", function() {
   var connectionWaypoints = [
     { x: 100, y: 100, original: { x: 120, y: 120 } },
     { x: 80, y: 80, original: { x: 50, y: 50 } }
   ];
 
-  var connection = create('connection', {
-    id: 'someConnection',
+  var connection = create("connection", {
+    id: "someConnection",
     waypoints: connectionWaypoints
   });
 
-
-  describe('waypoints', function() {
-
-    it('should .have.waypoints() with Connection', function() {
-
+  describe("waypoints", function() {
+    it("should .have.waypoints() with Connection", function() {
       // given
-      var expectedWaypoints = [
-        { x: 100, y: 100 },
-        { x: 80, y: 80 }
-      ];
+      var expectedWaypoints = [{ x: 100, y: 100 }, { x: 80, y: 80 }];
 
       // then
       expect(connection).to.have.waypoints(expectedWaypoints);
     });
 
-
-    it('should .not.have.waypoints() with Connection', function() {
-
+    it("should .not.have.waypoints() with Connection", function() {
       // given
       var expectedWaypoints = [
         { x: 100, y: 100 },
@@ -42,14 +30,10 @@ describe('matchers/ConnectionMatchers', function() {
       // then
       expect(connection).not.to.have.waypoints(expectedWaypoints);
     });
-
   });
 
-
-  describe('startDocking', function() {
-
-    it('should .have.startDocking() with Connection', function() {
-
+  describe("startDocking", function() {
+    it("should .have.startDocking() with Connection", function() {
       // given
       var expectedStartDocking = {
         x: 120,
@@ -60,9 +44,7 @@ describe('matchers/ConnectionMatchers', function() {
       expect(connection).to.have.startDocking(expectedStartDocking);
     });
 
-
-    it('should .not.have.startDocking() with Connection', function() {
-
+    it("should .not.have.startDocking() with Connection", function() {
       // given
       var expectedStartDocking = {
         x: 70, // wrong (!)
@@ -72,14 +54,10 @@ describe('matchers/ConnectionMatchers', function() {
       // then
       expect(connection).not.to.have.startDocking(expectedStartDocking);
     });
-
   });
 
-
-  describe('endDocking', function() {
-
-    it('should .have.endDocking() with Connection', function() {
-
+  describe("endDocking", function() {
+    it("should .have.endDocking() with Connection", function() {
       // given
       var expectedEndDocking = {
         x: 50,
@@ -90,9 +68,7 @@ describe('matchers/ConnectionMatchers', function() {
       expect(connection).to.have.endDocking(expectedEndDocking);
     });
 
-
-    it('should .not.have.endDocking() with Connection', function() {
-
+    it("should .not.have.endDocking() with Connection", function() {
       // given
       var expectedEndDocking = {
         x: 50,
@@ -102,7 +78,5 @@ describe('matchers/ConnectionMatchers', function() {
       // then
       expect(connection).not.to.have.endDocking(expectedEndDocking);
     });
-
   });
-
 });

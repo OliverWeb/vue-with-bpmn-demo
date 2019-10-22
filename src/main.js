@@ -1,7 +1,7 @@
 import { baseUrl } from "@/utils";
 import axios from "axios";
 import Vue from "vue";
-import App from "@/pages/index/App";
+import App from "@/App";
 import { router } from "@/pages/index/router";
 import store from "@/store";
 
@@ -41,9 +41,8 @@ Vue.prototype.$baseUrl = baseUrl;
 Vue.prototype.$axios = axios;
 
 new Vue({
-  el: "#root",
+  el: "#app",
   router,
   store,
-  components: { App },
-  template: "<App/>"
+  render: h => h(App)
 });

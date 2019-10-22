@@ -1,7 +1,7 @@
 import {
   add as collectionAdd,
   remove as collectionRemove
-} from '../../../util/Collections';
+} from "../../../util/Collections";
 
 /**
  * A handler that implements reversible attaching/detaching of shapes.
@@ -10,13 +10,12 @@ export default function UpdateAttachmentHandler(modeling) {
   this._modeling = modeling;
 }
 
-UpdateAttachmentHandler.$inject = [ 'modeling' ];
-
+UpdateAttachmentHandler.$inject = ["modeling"];
 
 UpdateAttachmentHandler.prototype.execute = function(context) {
   var shape = context.shape,
-      newHost = context.newHost,
-      oldHost = shape.host;
+    newHost = context.newHost,
+    oldHost = shape.host;
 
   // (0) detach from old host
   context.oldHost = oldHost;
@@ -33,9 +32,9 @@ UpdateAttachmentHandler.prototype.execute = function(context) {
 
 UpdateAttachmentHandler.prototype.revert = function(context) {
   var shape = context.shape,
-      newHost = context.newHost,
-      oldHost = context.oldHost,
-      attacherIdx = context.attacherIdx;
+    newHost = context.newHost,
+    oldHost = context.oldHost,
+    attacherIdx = context.attacherIdx;
 
   // (2) update host
   shape.host = oldHost;
@@ -49,14 +48,12 @@ UpdateAttachmentHandler.prototype.revert = function(context) {
   return shape;
 };
 
-
 function removeAttacher(host, attacher) {
   // remove attacher from host
   return collectionRemove(host && host.attachers, attacher);
 }
 
 function addAttacher(host, attacher, idx) {
-
   if (!host) {
     return;
   }

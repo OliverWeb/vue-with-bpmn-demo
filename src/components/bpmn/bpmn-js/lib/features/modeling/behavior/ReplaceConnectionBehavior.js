@@ -1,27 +1,25 @@
-import {
-  forEach,
-  find,
-  matchPattern
-} from 'min-dash';
+import { forEach, find, matchPattern } from "min-dash";
 
-import inherits from 'inherits';
+import inherits from "inherits";
 
-import CommandInterceptor from './../../../../../diagram-js/lib/command/CommandInterceptor';
+import CommandInterceptor from "./../../../../../diagram-js/lib/command/CommandInterceptor";
 
-import { is } from '../../../util/ModelUtil';
+import { is } from "../../../util/ModelUtil";
 
-
-export default function ReplaceConnectionBehavior(eventBus, modeling, bpmnRules, injector) {
-
+export default function ReplaceConnectionBehavior(
+  eventBus,
+  modeling,
+  bpmnRules,
+  injector
+) {
   CommandInterceptor.call(this, eventBus);
 
-  var dragging = injector.get('dragging', false);
+  var dragging = injector.get("dragging", false);
 
   function fixConnection(connection) {
-
     var source = connection.source,
-        target = connection.target,
-        parent = connection.parent;
+      target = connection.target,
+      parent = connection.parent;
 
     // do not do anything if connection
     // is already deleted (may happen due to other
@@ -30,8 +28,7 @@ export default function ReplaceConnectionBehavior(eventBus, modeling, bpmnRules,
       return;
     }
 
-    var replacementType,
-        remove;
+    var replacementType, remove;
 
     /**
      * Check if incoming or outgoing connections
@@ -41,33 +38,34 @@ export default function ReplaceConnectionBehavior(eventBus, modeling, bpmnRules,
      * This holds true for SequenceFlow <> MessageFlow.
      */
 
-    if (is(connection, 'bpmn:SequenceFlow')) {
+    if (is(connection, "bpmn:SequenceFlow")) {
       if (!bpmnRules.canConnectSequenceFlow(source, target)) {
         remove = true;
       }
 
       if (bpmnRules.canConnectMessageFlow(source, target)) {
-        replacementType = 'bpmn:MessageFlow';
+        replacementType = "bpmn:MessageFlow";
       }
     }
 
     // transform message flows into sequence flows, if possible
 
-    if (is(connection, 'bpmn:MessageFlow')) {
-
+    if (is(connection, "bpmn:MessageFlow")) {
       if (!bpmnRules.canConnectMessageFlow(source, target)) {
         remove = true;
       }
 
       if (bpmnRules.canConnectSequenceFlow(source, target)) {
-        replacementType = 'bpmn:SequenceFlow';
+        replacementType = "bpmn:SequenceFlow";
       }
     }
 
-    if (is(connection, 'bpmn:Association') && !bpmnRules.canConnectAssociation(source, target)) {
+    if (
+      is(connection, "bpmn:Association") &&
+      !bpmnRules.canConnectAssociation(source, target)
+    ) {
       remove = true;
     }
-
 
     // remove invalid connection,
     // unless it has been removed already
@@ -86,13 +84,12 @@ export default function ReplaceConnectionBehavior(eventBus, modeling, bpmnRules,
   }
 
   function replaceReconnectedConnection(event) {
-
     var context = event.context,
-        connection = context.connection,
-        source = context.newSource || connection.source,
-        target = context.newTarget || connection.target,
-        allowed,
-        replacement;
+      connection = context.connection,
+      source = context.newSource || connection.source,
+      target = context.newTarget || connection.target,
+      allowed,
+      replacement;
 
     allowed = bpmnRules.canConnect(source, target);
 
@@ -119,8 +116,8 @@ export default function ReplaceConnectionBehavior(eventBus, modeling, bpmnRules,
   // monkey-patch selection saved in dragging in order to not re-select non-existing connection
   function cleanDraggingSelection(oldConnection, newConnection) {
     var context = dragging.context(),
-        previousSelection = context && context.payload.previousSelection,
-        index;
+      previousSelection = context && context.payload.previousSelection,
+      index;
 
     // do nothing if not dragging or no selection was present
     if (!previousSelection || !previousSelection.length) {
@@ -138,25 +135,28 @@ export default function ReplaceConnectionBehavior(eventBus, modeling, bpmnRules,
 
   // lifecycle hooks
 
-  this.postExecuted('elements.move', function(context) {
-
-    var closure = context.closure,
+  this.postExecuted(
+    "elements.move",
+    function(context) {
+      var closure = context.closure,
         allConnections = closure.allConnections;
 
-    forEach(allConnections, fixConnection);
-  }, true);
+      forEach(allConnections, fixConnection);
+    },
+    true
+  );
 
-  this.preExecute([
-    'connection.reconnectStart',
-    'connection.reconnectEnd'
-  ], replaceReconnectedConnection);
+  this.preExecute(
+    ["connection.reconnectStart", "connection.reconnectEnd"],
+    replaceReconnectedConnection
+  );
 
-  this.postExecuted('element.updateProperties', function(event) {
+  this.postExecuted("element.updateProperties", function(event) {
     var context = event.context,
-        properties = context.properties,
-        element = context.element,
-        businessObject = element.businessObject,
-        connection;
+      properties = context.properties,
+      element = context.element,
+      businessObject = element.businessObject,
+      connection;
 
     // remove condition expression when morphing to default flow
     if (properties.default) {
@@ -166,12 +166,17 @@ export default function ReplaceConnectionBehavior(eventBus, modeling, bpmnRules,
       );
 
       if (connection) {
-        modeling.updateProperties(connection, { conditionExpression: undefined });
+        modeling.updateProperties(connection, {
+          conditionExpression: undefined
+        });
       }
     }
 
     // remove default property from source when morphing to conditional flow
-    if (properties.conditionExpression && businessObject.sourceRef.default === businessObject) {
+    if (
+      properties.conditionExpression &&
+      businessObject.sourceRef.default === businessObject
+    ) {
       modeling.updateProperties(element.source, { default: undefined });
     }
   });
@@ -180,8 +185,8 @@ export default function ReplaceConnectionBehavior(eventBus, modeling, bpmnRules,
 inherits(ReplaceConnectionBehavior, CommandInterceptor);
 
 ReplaceConnectionBehavior.$inject = [
-  'eventBus',
-  'modeling',
-  'bpmnRules',
-  'injector'
+  "eventBus",
+  "modeling",
+  "bpmnRules",
+  "injector"
 ];

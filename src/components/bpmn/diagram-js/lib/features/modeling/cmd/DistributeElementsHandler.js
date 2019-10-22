@@ -1,8 +1,4 @@
-import {
-  forEach,
-  sortBy
-} from 'min-dash';
-
+import { forEach, sortBy } from "min-dash";
 
 /**
  * A handler that distributes elements evenly.
@@ -11,23 +7,26 @@ export default function DistributeElements(modeling) {
   this._modeling = modeling;
 }
 
-DistributeElements.$inject = [ 'modeling' ];
+DistributeElements.$inject = ["modeling"];
 
 var OFF_AXIS = {
-  x: 'y',
-  y: 'x'
+  x: "y",
+  y: "x"
 };
 
 DistributeElements.prototype.preExecute = function(context) {
   var modeling = this._modeling;
 
   var groups = context.groups,
-      axis = context.axis,
-      dimension = context.dimension;
+    axis = context.axis,
+    dimension = context.dimension;
 
   function updateRange(group, element) {
     group.range.min = Math.min(element[axis], group.range.min);
-    group.range.max = Math.max(element[axis] + element[dimension], group.range.max);
+    group.range.max = Math.max(
+      element[axis] + element[dimension],
+      group.range.max
+    );
   }
 
   function center(element) {
@@ -48,25 +47,22 @@ DistributeElements.prototype.preExecute = function(context) {
     delta[axis] = refCenter - center(element);
 
     if (delta[axis]) {
-
       delta[OFF_AXIS[axis]] = 0;
 
-      modeling.moveElements([ element ], delta, element.parent);
+      modeling.moveElements([element], delta, element.parent);
     }
   }
 
   var firstGroup = groups[0],
-      lastGroupIdx = lastIdx(groups),
-      lastGroup = groups[ lastGroupIdx ];
+    lastGroupIdx = lastIdx(groups),
+    lastGroup = groups[lastGroupIdx];
 
   var margin,
-      spaceInBetween,
-      groupsSize = 0; // the size of each range
+    spaceInBetween,
+    groupsSize = 0; // the size of each range
 
   forEach(groups, function(group, idx) {
-    var sortedElements,
-        refElem,
-        refCenter;
+    var sortedElements, refElem, refCenter;
 
     if (group.elements.length < 2) {
       if (idx && idx !== groups.length - 1) {
@@ -91,7 +87,6 @@ DistributeElements.prototype.preExecute = function(context) {
     group.range = null;
 
     forEach(sortedElements, function(element) {
-
       centerElement(refCenter, element);
 
       if (group.range === null) {
@@ -122,7 +117,7 @@ DistributeElements.prototype.preExecute = function(context) {
 
   forEach(groups, function(group, groupIdx) {
     var delta = {},
-        prevGroup;
+      prevGroup;
 
     if (group === firstGroup || group === lastGroup) {
       return;
@@ -134,21 +129,22 @@ DistributeElements.prototype.preExecute = function(context) {
 
     forEach(group.elements, function(element, idx) {
       delta[OFF_AXIS[axis]] = 0;
-      delta[axis] = (prevGroup.range.max - element[axis]) + margin;
+      delta[axis] = prevGroup.range.max - element[axis] + margin;
 
       if (group.range.min !== element[axis]) {
         delta[axis] += element[axis] - group.range.min;
       }
 
       if (delta[axis]) {
-        modeling.moveElements([ element ], delta, element.parent);
+        modeling.moveElements([element], delta, element.parent);
       }
 
-      group.range.max = Math.max(element[axis] + element[dimension], idx ? group.range.max : 0);
+      group.range.max = Math.max(
+        element[axis] + element[dimension],
+        idx ? group.range.max : 0
+      );
     });
   });
 };
 
-DistributeElements.prototype.postExecute = function(context) {
-
-};
+DistributeElements.prototype.postExecute = function(context) {};

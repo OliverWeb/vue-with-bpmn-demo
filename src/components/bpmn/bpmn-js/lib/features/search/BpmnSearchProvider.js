@@ -1,31 +1,18 @@
-import {
-  map,
-  filter,
-  sortBy
-} from 'min-dash';
+import { map, filter, sortBy } from "min-dash";
 
-import {
-  getLabel
-} from '../label-editing/LabelUtil';
-
+import { getLabel } from "../label-editing/LabelUtil";
 
 /**
  * Provides ability to search through BPMN elements
  */
 export default function BpmnSearchProvider(elementRegistry, searchPad, canvas) {
-
   this._elementRegistry = elementRegistry;
   this._canvas = canvas;
 
   searchPad.registerProvider(this);
 }
 
-BpmnSearchProvider.$inject = [
-  'elementRegistry',
-  'searchPad',
-  'canvas'
-];
-
+BpmnSearchProvider.$inject = ["elementRegistry", "searchPad", "canvas"];
 
 /**
  * Finds all elements that match given pattern
@@ -70,7 +57,9 @@ BpmnSearchProvider.prototype.find = function(pattern) {
 
   // exclude non-matched elements
   elements = filter(elements, function(element) {
-    return hasMatched(element.primaryTokens) || hasMatched(element.secondaryTokens);
+    return (
+      hasMatched(element.primaryTokens) || hasMatched(element.secondaryTokens)
+    );
   });
 
   elements = sortBy(elements, function(element) {
@@ -80,7 +69,6 @@ BpmnSearchProvider.prototype.find = function(pattern) {
   return elements;
 };
 
-
 function hasMatched(tokens) {
   var matched = filter(tokens, function(t) {
     return !!t.matched;
@@ -89,10 +77,9 @@ function hasMatched(tokens) {
   return matched.length > 0;
 }
 
-
 function matchAndSplit(text, pattern) {
   var tokens = [],
-      originalText = text;
+    originalText = text;
 
   if (!text) {
     return tokens;

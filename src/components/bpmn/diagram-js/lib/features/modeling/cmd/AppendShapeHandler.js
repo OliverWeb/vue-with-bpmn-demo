@@ -1,5 +1,4 @@
-import { some } from 'min-dash';
-
+import { some } from "min-dash";
 
 /**
  * A handler that implements reversible appending of shapes
@@ -13,11 +12,9 @@ export default function AppendShapeHandler(modeling) {
   this._modeling = modeling;
 }
 
-AppendShapeHandler.$inject = [ 'modeling' ];
-
+AppendShapeHandler.$inject = ["modeling"];
 
 // api //////////////////////
-
 
 /**
  * Creates a new shape
@@ -29,21 +26,21 @@ AppendShapeHandler.$inject = [ 'modeling' ];
  * @param {Point} context.position position of the new element
  */
 AppendShapeHandler.prototype.preExecute = function(context) {
-
   var source = context.source;
 
   if (!source) {
-    throw new Error('source required');
+    throw new Error("source required");
   }
 
   var target = context.target || source.parent,
-      shape = context.shape;
+    shape = context.shape;
 
-  shape = context.shape =
-    this._modeling.createShape(
-      shape,
-      context.position,
-      target, { attach: context.attach });
+  shape = context.shape = this._modeling.createShape(
+    shape,
+    context.position,
+    target,
+    { attach: context.attach }
+  );
 
   context.shape = shape;
 };
@@ -52,12 +49,15 @@ AppendShapeHandler.prototype.postExecute = function(context) {
   var parent = context.connectionParent || context.shape.parent;
 
   if (!existsConnection(context.source, context.shape)) {
-
     // create connection
-    this._modeling.connect(context.source, context.shape, context.connection, parent);
+    this._modeling.connect(
+      context.source,
+      context.shape,
+      context.connection,
+      parent
+    );
   }
 };
-
 
 function existsConnection(source, target) {
   return some(source.outgoing, function(c) {

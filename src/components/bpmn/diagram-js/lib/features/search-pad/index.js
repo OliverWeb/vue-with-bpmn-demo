@@ -1,12 +1,9 @@
-import OverlaysModule from '../overlays';
-import SelectionModule from '../selection';
+import OverlaysModule from "../overlays";
+import SelectionModule from "../selection";
 
-import SearchPad from './SearchPad';
+import SearchPad from "./SearchPad";
 
 export default {
-  __depends__: [
-    OverlaysModule,
-    SelectionModule
-  ],
-  searchPad: [ 'type', SearchPad ]
+  __depends__: [OverlaysModule, SelectionModule],
+  searchPad: ["type", SearchPad]
 };

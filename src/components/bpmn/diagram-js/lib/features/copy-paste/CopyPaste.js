@@ -7,28 +7,24 @@ import {
   findIndex,
   sortBy,
   reduce
-} from 'min-dash';
+} from "min-dash";
 
-import { getBBox } from '../../util/Elements';
+import { getBBox } from "../../util/Elements";
 
-import {
-  center,
-  delta as posDelta
-} from '../../util/PositionUtil';
+import { center, delta as posDelta } from "../../util/PositionUtil";
 
-import {
-  getTopLevel
-} from '../../util/CopyPasteUtil';
+import { getTopLevel } from "../../util/CopyPasteUtil";
 
-import {
-  eachElement
-} from '../../util/Elements';
-
+import { eachElement } from "../../util/Elements";
 
 export default function CopyPaste(
-    eventBus, modeling, elementFactory,
-    rules, clipboard, canvas) {
-
+  eventBus,
+  modeling,
+  elementFactory,
+  rules,
+  clipboard,
+  canvas
+) {
   this._eventBus = eventBus;
   this._modeling = modeling;
   this._elementFactory = elementFactory;
@@ -38,7 +34,6 @@ export default function CopyPaste(
   this._clipboard = clipboard;
 
   this._descriptors = [];
-
 
   // Element creation priorities:
   // - 1: Independent shapes
@@ -67,7 +62,7 @@ export default function CopyPaste(
       descriptor.host = element.host.id;
     }
 
-    if (typeof element.x === 'number') {
+    if (typeof element.x === "number") {
       descriptor.x = element.x;
       descriptor.y = element.y;
     }
@@ -109,14 +104,13 @@ export default function CopyPaste(
 }
 
 CopyPaste.$inject = [
-  'eventBus',
-  'modeling',
-  'elementFactory',
-  'rules',
-  'clipboard',
-  'canvas'
+  "eventBus",
+  "modeling",
+  "elementFactory",
+  "rules",
+  "clipboard",
+  "canvas"
 ];
-
 
 /**
  * Copy a number of elements.
@@ -127,10 +121,11 @@ CopyPaste.$inject = [
  */
 CopyPaste.prototype.copy = function(selectedElements) {
   var clipboard = this._clipboard,
-      tree, bbox;
+    tree,
+    bbox;
 
   if (!isArray(selectedElements)) {
-    selectedElements = selectedElements ? [ selectedElements ] : [];
+    selectedElements = selectedElements ? [selectedElements] : [];
   }
 
   if (!selectedElements.length) {
@@ -145,7 +140,6 @@ CopyPaste.prototype.copy = function(selectedElements) {
   delete tree.allShapes;
 
   forEach(tree, function(elements) {
-
     forEach(elements, function(element) {
       var delta, labelTarget;
 
@@ -159,9 +153,7 @@ CopyPaste.prototype.copy = function(selectedElements) {
         } else {
           delta = posDelta(element, labelTarget);
         }
-
-      } else
-      if (element.priority === 3) {
+      } else if (element.priority === 3) {
         // connections have priority 3
         delta = [];
 
@@ -178,7 +170,7 @@ CopyPaste.prototype.copy = function(selectedElements) {
     });
   });
 
-  this._eventBus.fire('elements.copy', { context: { tree: tree } });
+  this._eventBus.fire("elements.copy", { context: { tree: tree } });
 
   // if tree is empty, means that nothing can be or is allowed to be copied
   if (Object.keys(tree).length === 0) {
@@ -187,48 +179,51 @@ CopyPaste.prototype.copy = function(selectedElements) {
     clipboard.set(tree);
   }
 
-  this._eventBus.fire('elements.copied', { context: { tree: tree } });
+  this._eventBus.fire("elements.copied", { context: { tree: tree } });
 
   return tree;
 };
 
-
 // Allow pasting under the cursor
 CopyPaste.prototype.paste = function(context) {
   var clipboard = this._clipboard,
-      modeling = this._modeling,
-      eventBus = this._eventBus,
-      rules = this._rules;
+    modeling = this._modeling,
+    eventBus = this._eventBus,
+    rules = this._rules;
 
   var tree = clipboard.get(),
-      topParent = context.element,
-      position = context.point,
-      newTree, canPaste;
+    topParent = context.element,
+    position = context.point,
+    newTree,
+    canPaste;
 
   if (clipboard.isEmpty()) {
     return;
   }
 
-  newTree = reduce(tree, function(pasteTree, elements, depthStr) {
-    var depth = parseInt(depthStr, 10);
+  newTree = reduce(
+    tree,
+    function(pasteTree, elements, depthStr) {
+      var depth = parseInt(depthStr, 10);
 
-    if (isNaN(depth)) {
+      if (isNaN(depth)) {
+        return pasteTree;
+      }
+
+      pasteTree[depth] = elements;
+
       return pasteTree;
-    }
+    },
+    {}
+  );
 
-    pasteTree[depth] = elements;
-
-    return pasteTree;
-  }, {});
-
-
-  canPaste = rules.allowed('elements.paste', {
+  canPaste = rules.allowed("elements.paste", {
     tree: newTree,
     target: topParent
   });
 
   if (!canPaste) {
-    eventBus.fire('elements.paste.rejected', {
+    eventBus.fire("elements.paste.rejected", {
       context: {
         tree: newTree,
         position: position,
@@ -242,10 +237,9 @@ CopyPaste.prototype.paste = function(context) {
   modeling.pasteElements(newTree, topParent, position);
 };
 
-
 CopyPaste.prototype._computeDelta = function(elements, element) {
   var bbox = this._bbox,
-      delta = {};
+    delta = {};
 
   // set label's relative position to their label target
   if (element.labelTarget) {
@@ -267,7 +261,6 @@ CopyPaste.prototype._computeDelta = function(elements, element) {
 
   return delta;
 };
-
 
 /**
  * Checks if the element in question has a relations to other elements.
@@ -301,19 +294,17 @@ CopyPaste.prototype.hasRelations = function(elements, element) {
   return true;
 };
 
-
 CopyPaste.prototype.registerDescriptor = function(descriptor) {
-  if (typeof descriptor !== 'function') {
-    throw new Error('the descriptor must be a function');
+  if (typeof descriptor !== "function") {
+    throw new Error("the descriptor must be a function");
   }
 
   if (this._descriptors.indexOf(descriptor) !== -1) {
-    throw new Error('this descriptor is already registered');
+    throw new Error("this descriptor is already registered");
   }
 
   this._descriptors.push(descriptor);
 };
-
 
 CopyPaste.prototype._executeDescriptors = function(data) {
   if (!data.descriptor) {
@@ -345,26 +336,29 @@ CopyPaste.prototype._executeDescriptors = function(data) {
  */
 CopyPaste.prototype.createTree = function(elements) {
   var rules = this._rules,
-      self = this;
+    self = this;
 
   var tree = {},
-      includedElements = [],
-      _elements;
+    includedElements = [],
+    _elements;
 
   var topLevel = getTopLevel(elements);
 
   tree.allShapes = [];
 
   function canCopy(collection, element) {
-    return rules.allowed('element.copy', {
+    return rules.allowed("element.copy", {
       collection: collection,
       element: element
     });
   }
 
   function includeElement(data) {
-    var idx = findIndex(includedElements, matchPattern({ element: data.element })),
-        element;
+    var idx = findIndex(
+        includedElements,
+        matchPattern({ element: data.element })
+      ),
+      element;
 
     if (idx !== -1) {
       element = includedElements[idx];
@@ -380,7 +374,6 @@ CopyPaste.prototype.createTree = function(elements) {
     }
   }
 
-
   eachElement(topLevel, function(element, i, depth) {
     var nestedChildren = element.children;
 
@@ -392,9 +385,7 @@ CopyPaste.prototype.createTree = function(elements) {
     function getNested(lists) {
       forEach(lists, function(list) {
         if (list && list.length) {
-
           forEach(list, function(elem) {
-
             forEach(elem.labels, function(label) {
               includeElement({
                 element: label,
@@ -413,14 +404,13 @@ CopyPaste.prototype.createTree = function(elements) {
 
     // fetch element's labels
     forEach(element.labels, function(label) {
-
       includeElement({
         element: label,
         depth: depth
       });
     });
 
-    getNested([ element.attachers, element.incoming, element.outgoing ]);
+    getNested([element.attachers, element.incoming, element.outgoing]);
 
     includeElement({
       element: element,

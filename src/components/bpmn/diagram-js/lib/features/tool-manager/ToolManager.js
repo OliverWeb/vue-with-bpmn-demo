@@ -1,10 +1,6 @@
-import {
-  forEach
-} from 'min-dash';
+import { forEach } from "min-dash";
 
-import {
-  closest as domClosest
-} from 'min-dom';
+import { closest as domClosest } from "min-dom";
 
 var LOW_PRIORITY = 250;
 
@@ -23,7 +19,7 @@ export default function ToolManager(eventBus, dragging) {
   this._active = null;
 }
 
-ToolManager.$inject = [ 'eventBus', 'dragging' ];
+ToolManager.$inject = ["eventBus", "dragging"];
 
 ToolManager.prototype.registerTool = function(name, events) {
   var tools = this._tools;
@@ -51,51 +47,62 @@ ToolManager.prototype.setActive = function(tool) {
   if (this._active !== tool) {
     this._active = tool;
 
-    eventBus.fire('tool-manager.update', { tool: tool });
+    eventBus.fire("tool-manager.update", { tool: tool });
   }
 };
 
 ToolManager.prototype.bindEvents = function(name, events) {
   var eventBus = this._eventBus,
-      dragging = this._dragging;
+    dragging = this._dragging;
 
   var eventsToRegister = [];
 
-  eventBus.on(events.tool + '.init', function(event) {
-    var context = event.context;
+  eventBus.on(
+    events.tool + ".init",
+    function(event) {
+      var context = event.context;
 
-    // Active tools that want to reactivate themselves must do this explicitly
-    if (!context.reactivate && this.isActive(name)) {
-      this.setActive(null);
+      // Active tools that want to reactivate themselves must do this explicitly
+      if (!context.reactivate && this.isActive(name)) {
+        this.setActive(null);
 
-      dragging.cancel();
-      return;
-    }
+        dragging.cancel();
+        return;
+      }
 
-    this.setActive(name);
-
-  }, this);
+      this.setActive(name);
+    },
+    this
+  );
 
   // Todo[ricardo]: add test cases
   forEach(events, function(event) {
-    eventsToRegister.push(event + '.ended');
-    eventsToRegister.push(event + '.canceled');
+    eventsToRegister.push(event + ".ended");
+    eventsToRegister.push(event + ".canceled");
   });
 
-  eventBus.on(eventsToRegister, LOW_PRIORITY, function(event) {
-    var originalEvent = event.originalEvent;
+  eventBus.on(
+    eventsToRegister,
+    LOW_PRIORITY,
+    function(event) {
+      var originalEvent = event.originalEvent;
 
-    // We defer the de-activation of the tool to the .activate phase,
-    // so we're able to check if we want to toggle off the current
-    // active tool or switch to a new one
-    if (!this._active) {
-      return;
-    }
+      // We defer the de-activation of the tool to the .activate phase,
+      // so we're able to check if we want to toggle off the current
+      // active tool or switch to a new one
+      if (!this._active) {
+        return;
+      }
 
-    if (originalEvent && domClosest(originalEvent.target, '.group[data-group="tools"]')) {
-      return;
-    }
+      if (
+        originalEvent &&
+        domClosest(originalEvent.target, '.group[data-group="tools"]')
+      ) {
+        return;
+      }
 
-    this.setActive(null);
-  }, this);
+      this.setActive(null);
+    },
+    this
+  );
 };

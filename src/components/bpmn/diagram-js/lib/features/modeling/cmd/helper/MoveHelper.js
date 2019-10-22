@@ -1,14 +1,8 @@
-import {
-  forEach
-} from 'min-dash';
+import { forEach } from "min-dash";
 
-import {
-  getMovedSourceAnchor,
-  getMovedTargetAnchor
-} from './AnchorsHelper';
+import { getMovedSourceAnchor, getMovedTargetAnchor } from "./AnchorsHelper";
 
-import MoveClosure from './MoveClosure';
-
+import MoveClosure from "./MoveClosure";
 
 /**
  * A helper that is able to carry out serialized move
@@ -48,14 +42,20 @@ MoveHelper.prototype.moveRecursive = function(elements, delta, newParent) {
  * @param {djs.model.Base} [newParent]
  * @param {djs.model.Base} [newHost]
  */
-MoveHelper.prototype.moveClosure = function(closure, delta, newParent, newHost, primaryShape) {
+MoveHelper.prototype.moveClosure = function(
+  closure,
+  delta,
+  newParent,
+  newHost,
+  primaryShape
+) {
   var modeling = this._modeling;
 
   var allShapes = closure.allShapes,
-      allConnections = closure.allConnections,
-      enclosedConnections = closure.enclosedConnections,
-      topLevel = closure.topLevel,
-      keepParent = false;
+    allConnections = closure.allConnections,
+    enclosedConnections = closure.enclosedConnections,
+    topLevel = closure.topLevel,
+    keepParent = false;
 
   if (primaryShape && primaryShape.parent === newParent) {
     keepParent = true;
@@ -63,25 +63,33 @@ MoveHelper.prototype.moveClosure = function(closure, delta, newParent, newHost, 
 
   // move all shapes
   forEach(allShapes, function(shape) {
-
     // move the element according to the given delta
-    modeling.moveShape(shape, delta, topLevel[shape.id] && !keepParent && newParent, {
-      recurse: false,
-      layout: false
-    });
+    modeling.moveShape(
+      shape,
+      delta,
+      topLevel[shape.id] && !keepParent && newParent,
+      {
+        recurse: false,
+        layout: false
+      }
+    );
   });
 
   // move all child connections / layout external connections
   forEach(allConnections, function(c) {
-
     var sourceMoved = !!allShapes[c.source.id],
-        targetMoved = !!allShapes[c.target.id];
+      targetMoved = !!allShapes[c.target.id];
 
     if (enclosedConnections[c.id] && sourceMoved && targetMoved) {
-      modeling.moveConnection(c, delta, topLevel[c.id] && !keepParent && newParent);
+      modeling.moveConnection(
+        c,
+        delta,
+        topLevel[c.id] && !keepParent && newParent
+      );
     } else {
       modeling.layoutConnection(c, {
-        connectionStart: sourceMoved && getMovedSourceAnchor(c, c.source, delta),
+        connectionStart:
+          sourceMoved && getMovedSourceAnchor(c, c.source, delta),
         connectionEnd: targetMoved && getMovedTargetAnchor(c, c.target, delta)
       });
     }

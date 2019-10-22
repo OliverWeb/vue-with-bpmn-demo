@@ -1,6 +1,5 @@
 var LOW_PRIORITY = 740;
 
-
 /**
  * Shows connection preview during create.
  *
@@ -8,14 +7,14 @@ var LOW_PRIORITY = 740;
  * @param {ConnectionPreview} connectionPreview
  */
 export default function CreateConnectPreview(injector, eventBus) {
-  var connectionPreview = injector.get('connectionPreview', false);
+  var connectionPreview = injector.get("connectionPreview", false);
 
-  eventBus.on('create.move', LOW_PRIORITY, function(event) {
+  eventBus.on("create.move", LOW_PRIORITY, function(event) {
     var context = event.context,
-        source = context.source,
-        shape = context.shape,
-        canExecute = context.canExecute,
-        canConnect = canExecute && canExecute.connect;
+      source = context.source,
+      shape = context.shape,
+      canExecute = context.canExecute,
+      canConnect = canExecute && canExecute.connect;
 
     // don't draw connection preview if not appending a shape
     if (!connectionPreview || !source) {
@@ -34,16 +33,11 @@ export default function CreateConnectPreview(injector, eventBus) {
     });
   });
 
-
-  eventBus.on('create.cleanup', function(event) {
+  eventBus.on("create.cleanup", function(event) {
     if (connectionPreview) {
       connectionPreview.cleanUp(event.context);
     }
   });
-
 }
 
-CreateConnectPreview.$inject = [
-  'injector',
-  'eventBus'
-];
+CreateConnectPreview.$inject = ["injector", "eventBus"];

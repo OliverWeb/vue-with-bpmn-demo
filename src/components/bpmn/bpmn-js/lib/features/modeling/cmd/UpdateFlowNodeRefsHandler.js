@@ -1,24 +1,16 @@
-import {
-  collectLanes,
-  getLanesRoot
-} from '../util/LaneUtil';
+import { collectLanes, getLanesRoot } from "../util/LaneUtil";
 
-import {
-  is
-} from '../../../util/ModelUtil';
+import { is } from "../../../util/ModelUtil";
 
 import {
   add as collectionAdd,
   remove as collectionRemove
-} from './../../../../../diagram-js/lib/util/Collections';
+} from "./../../../../../diagram-js/lib/util/Collections";
 
-import {
-  asTRBL
-} from './../../../../../diagram-js/lib/layout/LayoutUtil';
+import { asTRBL } from "./../../../../../diagram-js/lib/layout/LayoutUtil";
 
-var FLOW_NODE_REFS_ATTR = 'flowNodeRef',
-    LANES_ATTR = 'lanes';
-
+var FLOW_NODE_REFS_ATTR = "flowNodeRef",
+  LANES_ATTR = "lanes";
 
 /**
  * A handler that updates lane refs on changed elements
@@ -27,13 +19,12 @@ export default function UpdateFlowNodeRefsHandler(elementRegistry) {
   this._elementRegistry = elementRegistry;
 }
 
-UpdateFlowNodeRefsHandler.$inject = [
-  'elementRegistry'
-];
+UpdateFlowNodeRefsHandler.$inject = ["elementRegistry"];
 
-
-UpdateFlowNodeRefsHandler.prototype.computeUpdates = function(flowNodeShapes, laneShapes) {
-
+UpdateFlowNodeRefsHandler.prototype.computeUpdates = function(
+  flowNodeShapes,
+  laneShapes
+) {
   var handledNodes = {};
 
   var updates = [];
@@ -43,7 +34,6 @@ UpdateFlowNodeRefsHandler.prototype.computeUpdates = function(flowNodeShapes, la
   var allFlowNodeShapes = [];
 
   function isInLaneShape(element, laneShape) {
-
     var laneTrbl = asTRBL(laneShape);
 
     var elementMid = {
@@ -51,10 +41,12 @@ UpdateFlowNodeRefsHandler.prototype.computeUpdates = function(flowNodeShapes, la
       y: element.y + element.height / 2
     };
 
-    return elementMid.x > laneTrbl.left &&
-           elementMid.x < laneTrbl.right &&
-           elementMid.y > laneTrbl.top &&
-           elementMid.y < laneTrbl.bottom;
+    return (
+      elementMid.x > laneTrbl.left &&
+      elementMid.x < laneTrbl.right &&
+      elementMid.y > laneTrbl.top &&
+      elementMid.y < laneTrbl.bottom
+    );
   }
 
   function addFlowNodeShape(flowNodeShape) {
@@ -65,7 +57,6 @@ UpdateFlowNodeRefsHandler.prototype.computeUpdates = function(flowNodeShapes, la
   }
 
   function getAllLaneShapes(flowNodeShape) {
-
     var root = getLanesRoot(flowNodeShape);
 
     if (!participantCache[root.id]) {
@@ -82,11 +73,13 @@ UpdateFlowNodeRefsHandler.prototype.computeUpdates = function(flowNodeShapes, la
 
     var allLaneShapes = getAllLaneShapes(flowNodeShape);
 
-    return allLaneShapes.filter(function(l) {
-      return isInLaneShape(flowNodeShape, l);
-    }).map(function(shape) {
-      return shape.businessObject;
-    });
+    return allLaneShapes
+      .filter(function(l) {
+        return isInLaneShape(flowNodeShape, l);
+      })
+      .map(function(shape) {
+        return shape.businessObject;
+      });
   }
 
   laneShapes.forEach(function(laneShape) {
@@ -97,7 +90,7 @@ UpdateFlowNodeRefsHandler.prototype.computeUpdates = function(flowNodeShapes, la
     }
 
     var children = root.children.filter(function(c) {
-      return is(c, 'bpmn:FlowNode');
+      return is(c, "bpmn:FlowNode");
     });
 
     children.forEach(addFlowNodeShape);
@@ -107,26 +100,23 @@ UpdateFlowNodeRefsHandler.prototype.computeUpdates = function(flowNodeShapes, la
 
   flowNodeShapes.forEach(addFlowNodeShape);
 
-
   allFlowNodeShapes.forEach(function(flowNodeShape) {
-
     var flowNode = flowNodeShape.businessObject;
 
     var lanes = flowNode.get(LANES_ATTR),
-        remove = lanes.slice(),
-        add = getNewLanes(flowNodeShape);
+      remove = lanes.slice(),
+      add = getNewLanes(flowNodeShape);
 
     updates.push({ flowNode: flowNode, remove: remove, add: add });
   });
 
   laneShapes.forEach(function(laneShape) {
-
     var lane = laneShape.businessObject;
 
     // lane got removed XX-)
     if (!laneShape.parent) {
       lane.get(FLOW_NODE_REFS_ATTR).forEach(function(flowNode) {
-        updates.push({ flowNode: flowNode, remove: [ lane ], add: [] });
+        updates.push({ flowNode: flowNode, remove: [lane], add: [] });
       });
     }
   });
@@ -135,18 +125,18 @@ UpdateFlowNodeRefsHandler.prototype.computeUpdates = function(flowNodeShapes, la
 };
 
 UpdateFlowNodeRefsHandler.prototype.execute = function(context) {
-
   var updates = context.updates;
 
   if (!updates) {
-    updates = context.updates = this.computeUpdates(context.flowNodeShapes, context.laneShapes);
+    updates = context.updates = this.computeUpdates(
+      context.flowNodeShapes,
+      context.laneShapes
+    );
   }
 
-
   updates.forEach(function(update) {
-
     var flowNode = update.flowNode,
-        lanes = flowNode.get(LANES_ATTR);
+      lanes = flowNode.get(LANES_ATTR);
 
     // unwire old
     update.remove.forEach(function(oldLane) {
@@ -165,15 +155,12 @@ UpdateFlowNodeRefsHandler.prototype.execute = function(context) {
   // return [ ... ];
 };
 
-
 UpdateFlowNodeRefsHandler.prototype.revert = function(context) {
-
   var updates = context.updates;
 
   updates.forEach(function(update) {
-
     var flowNode = update.flowNode,
-        lanes = flowNode.get(LANES_ATTR);
+      lanes = flowNode.get(LANES_ATTR);
 
     // unwire new
     update.add.forEach(function(newLane) {

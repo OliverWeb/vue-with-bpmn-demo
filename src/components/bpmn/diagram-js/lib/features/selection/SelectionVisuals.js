@@ -1,10 +1,7 @@
-import {
-  forEach
-} from 'min-dash';
+import { forEach } from "min-dash";
 
-var MARKER_HOVER = 'hover',
-    MARKER_SELECTED = 'selected';
-
+var MARKER_HOVER = "hover",
+  MARKER_SELECTED = "selected";
 
 /**
  * A plugin that adds a visible selection UI to shapes and connections
@@ -19,7 +16,6 @@ var MARKER_HOVER = 'hover',
  * @param {Canvas} canvas
  */
 export default function SelectionVisuals(events, canvas, selection, styles) {
-
   this._multiSelectionBox = null;
 
   function addMarker(e, cls) {
@@ -30,16 +26,15 @@ export default function SelectionVisuals(events, canvas, selection, styles) {
     canvas.removeMarker(e, cls);
   }
 
-  events.on('element.hover', function(event) {
+  events.on("element.hover", function(event) {
     addMarker(event.element, MARKER_HOVER);
   });
 
-  events.on('element.out', function(event) {
+  events.on("element.out", function(event) {
     removeMarker(event.element, MARKER_HOVER);
   });
 
-  events.on('selection.changed', function(event) {
-
+  events.on("selection.changed", function(event) {
     function deselect(s) {
       removeMarker(s, MARKER_SELECTED);
     }
@@ -49,7 +44,7 @@ export default function SelectionVisuals(events, canvas, selection, styles) {
     }
 
     var oldSelection = event.oldSelection,
-        newSelection = event.newSelection;
+      newSelection = event.newSelection;
 
     forEach(oldSelection, function(e) {
       if (newSelection.indexOf(e) === -1) {
@@ -65,9 +60,4 @@ export default function SelectionVisuals(events, canvas, selection, styles) {
   });
 }
 
-SelectionVisuals.$inject = [
-  'eventBus',
-  'canvas',
-  'selection',
-  'styles'
-];
+SelectionVisuals.$inject = ["eventBus", "canvas", "selection", "styles"];

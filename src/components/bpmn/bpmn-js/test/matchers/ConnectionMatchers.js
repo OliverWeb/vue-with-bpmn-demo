@@ -1,20 +1,16 @@
-import {
-  pick
-} from 'min-dash';
+import { pick } from "min-dash";
 
-var POSITION_ATTRS = [ 'x', 'y' ];
+var POSITION_ATTRS = ["x", "y"];
 
 function extractPoints(point) {
   return pick(point, POSITION_ATTRS);
 }
 
-
 export default function(chai, utils) {
-
   var Assertion = chai.Assertion;
 
   function inspect(obj) {
-    return utils.inspect(obj).replace(/\n /g, '');
+    return utils.inspect(obj).replace(/\n /g, "");
   }
 
   /**
@@ -29,16 +25,16 @@ export default function(chai, utils) {
    *
    * @param {Connection|Array<Point>} exp
    */
-  Assertion.addMethod('waypoints', function(exp) {
+  Assertion.addMethod("waypoints", function(exp) {
     var obj = this._obj;
 
     var strippedWaypoints = obj.waypoints.map(extractPoints),
-        strippedExpectedWaypoints = exp.map(extractPoints);
+      strippedExpectedWaypoints = exp.map(extractPoints);
 
     var matches = utils.eql(strippedWaypoints, strippedExpectedWaypoints);
 
     var strippedWaypointsStr = inspect(strippedWaypoints),
-        strippedExpectedWaypointsStr = inspect(strippedExpectedWaypoints);
+      strippedExpectedWaypointsStr = inspect(strippedExpectedWaypoints);
 
     var theAssert = new Assertion(strippedWaypoints);
 
@@ -47,11 +43,18 @@ export default function(chai, utils) {
 
     theAssert.assert(
       matches,
-      'expected <' + obj.id + '#waypoints> ' +
-          'to equal \n  ' + strippedExpectedWaypointsStr +
-          '\nbut got\n  ' + strippedWaypointsStr,
-      'expected <' + obj.id + '#waypoints> ' +
-          'not to equal \n  ' + strippedExpectedWaypoints
+      "expected <" +
+        obj.id +
+        "#waypoints> " +
+        "to equal \n  " +
+        strippedExpectedWaypointsStr +
+        "\nbut got\n  " +
+        strippedWaypointsStr,
+      "expected <" +
+        obj.id +
+        "#waypoints> " +
+        "not to equal \n  " +
+        strippedExpectedWaypoints
     );
   });
 
@@ -65,16 +68,16 @@ export default function(chai, utils) {
    *
    * @param {Point} exp
    */
-  Assertion.addMethod('startDocking', function(exp) {
+  Assertion.addMethod("startDocking", function(exp) {
     var obj = this._obj;
 
     var startPoint = obj.waypoints[0],
-        startDocking = startPoint && startPoint.original;
+      startDocking = startPoint && startPoint.original;
 
     var matches = utils.eql(startDocking, exp);
 
     var startDockingStr = inspect(startDocking),
-        expectedStartDockingStr = inspect(exp);
+      expectedStartDockingStr = inspect(exp);
 
     var theAssert = new Assertion(startDocking);
 
@@ -83,8 +86,12 @@ export default function(chai, utils) {
 
     theAssert.assert(
       matches,
-      'expected <' + obj.id + '> to have startDocking ' +
-        expectedStartDockingStr + ' but got ' + startDockingStr
+      "expected <" +
+        obj.id +
+        "> to have startDocking " +
+        expectedStartDockingStr +
+        " but got " +
+        startDockingStr
     );
   });
 
@@ -98,16 +105,16 @@ export default function(chai, utils) {
    *
    * @param {Point} exp
    */
-  Assertion.addMethod('endDocking', function(exp) {
+  Assertion.addMethod("endDocking", function(exp) {
     var obj = this._obj;
 
     var endPoint = obj.waypoints[obj.waypoints.length - 1],
-        endDocking = endPoint && endPoint.original;
+      endDocking = endPoint && endPoint.original;
 
     var matches = utils.eql(endDocking, exp);
 
     var endDockingStr = inspect(endDocking),
-        expectedEndDockingStr = inspect(exp);
+      expectedEndDockingStr = inspect(exp);
 
     var theAssert = new Assertion(endDocking);
 
@@ -116,9 +123,12 @@ export default function(chai, utils) {
 
     theAssert.assert(
       matches,
-      'expected <' + obj.id + '> to have endDocking ' +
-        expectedEndDockingStr + ' but got ' + endDockingStr
+      "expected <" +
+        obj.id +
+        "> to have endDocking " +
+        expectedEndDockingStr +
+        " but got " +
+        endDockingStr
     );
   });
-
 }

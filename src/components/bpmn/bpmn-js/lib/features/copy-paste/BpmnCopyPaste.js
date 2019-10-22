@@ -1,19 +1,13 @@
-import {
-  getBusinessObject,
-  is
-} from '../../util/ModelUtil';
+import { getBusinessObject, is } from "../../util/ModelUtil";
 
-import ModelCloneHelper from '../../util/model/ModelCloneHelper';
+import ModelCloneHelper from "../../util/model/ModelCloneHelper";
 
 import {
   getProperties,
   IGNORED_PROPERTIES
-} from '../../util/model/ModelCloneUtils';
+} from "../../util/model/ModelCloneUtils";
 
-import {
-  filter,
-  forEach
-} from 'min-dash';
+import { filter, forEach } from "min-dash";
 
 function setProperties(descriptor, data, properties) {
   forEach(properties, function(property) {
@@ -32,31 +26,37 @@ function removeProperties(element, properties) {
 }
 
 export default function BpmnCopyPaste(
-    bpmnFactory, eventBus, copyPaste,
-    clipboard, canvas, bpmnRules) {
-
+  bpmnFactory,
+  eventBus,
+  copyPaste,
+  clipboard,
+  canvas,
+  bpmnRules
+) {
   var helper = new ModelCloneHelper(eventBus, bpmnFactory);
 
   copyPaste.registerDescriptor(function(element, descriptor) {
-    var businessObject = descriptor.oldBusinessObject = getBusinessObject(element);
+    var businessObject = (descriptor.oldBusinessObject = getBusinessObject(
+      element
+    ));
 
     var colors = {};
 
     descriptor.type = element.type;
 
-    setProperties(descriptor, businessObject.di, [ 'isExpanded' ]);
+    setProperties(descriptor, businessObject.di, ["isExpanded"]);
 
-    setProperties(colors, businessObject.di, [ 'fill', 'stroke' ]);
+    setProperties(colors, businessObject.di, ["fill", "stroke"]);
 
     descriptor.colors = colors;
 
-    if (element.type === 'label') {
+    if (element.type === "label") {
       return descriptor;
     }
 
     setProperties(descriptor, businessObject, [
-      'processRef',
-      'triggeredByEvent'
+      "processRef",
+      "triggeredByEvent"
     ]);
 
     if (businessObject.default) {
@@ -66,42 +66,50 @@ export default function BpmnCopyPaste(
     return descriptor;
   });
 
-  eventBus.on('element.paste', function(context) {
+  eventBus.on("element.paste", function(context) {
     var descriptor = context.descriptor,
-        createdElements = context.createdElements,
-        parent = descriptor.parent,
-        rootElement = canvas.getRootElement(),
-        oldBusinessObject = descriptor.oldBusinessObject,
-        newBusinessObject,
-        source,
-        target,
-        canConnect;
+      createdElements = context.createdElements,
+      parent = descriptor.parent,
+      rootElement = canvas.getRootElement(),
+      oldBusinessObject = descriptor.oldBusinessObject,
+      newBusinessObject,
+      source,
+      target,
+      canConnect;
 
     newBusinessObject = bpmnFactory.create(oldBusinessObject.$type);
 
     var properties = getProperties(oldBusinessObject.$descriptor);
 
     properties = filter(properties, function(property) {
-      return IGNORED_PROPERTIES.indexOf(property.replace(/bpmn:/, '')) === -1;
+      return IGNORED_PROPERTIES.indexOf(property.replace(/bpmn:/, "")) === -1;
     });
 
-    descriptor.businessObject = helper.clone(oldBusinessObject, newBusinessObject, properties);
+    descriptor.businessObject = helper.clone(
+      oldBusinessObject,
+      newBusinessObject,
+      properties
+    );
 
-    if (descriptor.type === 'label') {
+    if (descriptor.type === "label") {
       return;
     }
 
-    if (is(parent, 'bpmn:Process')) {
-      descriptor.parent = is(rootElement, 'bpmn:Collaboration') ? rootElement : parent;
+    if (is(parent, "bpmn:Process")) {
+      descriptor.parent = is(rootElement, "bpmn:Collaboration")
+        ? rootElement
+        : parent;
     }
 
-    if (descriptor.type === 'bpmn:DataOutputAssociation' ||
-        descriptor.type === 'bpmn:DataInputAssociation' ||
-        descriptor.type === 'bpmn:MessageFlow') {
+    if (
+      descriptor.type === "bpmn:DataOutputAssociation" ||
+      descriptor.type === "bpmn:DataInputAssociation" ||
+      descriptor.type === "bpmn:MessageFlow"
+    ) {
       descriptor.parent = rootElement;
     }
 
-    if (is(parent, 'bpmn:Lane')) {
+    if (is(parent, "bpmn:Lane")) {
       descriptor.parent = parent.parent;
     }
 
@@ -128,28 +136,26 @@ export default function BpmnCopyPaste(
     // assign an ID
     bpmnFactory._ensureId(newBusinessObject);
 
-    if (descriptor.type === 'bpmn:Participant' && descriptor.processRef) {
-      descriptor.processRef = newBusinessObject.processRef = bpmnFactory.create('bpmn:Process');
+    if (descriptor.type === "bpmn:Participant" && descriptor.processRef) {
+      descriptor.processRef = newBusinessObject.processRef = bpmnFactory.create(
+        "bpmn:Process"
+      );
     }
 
     setProperties(newBusinessObject, descriptor, [
-      'isExpanded',
-      'triggeredByEvent'
+      "isExpanded",
+      "triggeredByEvent"
     ]);
 
-    removeProperties(descriptor, [
-      'triggeredByEvent'
-    ]);
+    removeProperties(descriptor, ["triggeredByEvent"]);
   });
-
 }
 
-
 BpmnCopyPaste.$inject = [
-  'bpmnFactory',
-  'eventBus',
-  'copyPaste',
-  'clipboard',
-  'canvas',
-  'bpmnRules'
+  "bpmnFactory",
+  "eventBus",
+  "copyPaste",
+  "clipboard",
+  "canvas",
+  "bpmnRules"
 ];

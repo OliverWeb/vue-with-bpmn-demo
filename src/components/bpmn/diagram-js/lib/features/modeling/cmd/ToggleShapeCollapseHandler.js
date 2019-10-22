@@ -8,13 +8,11 @@ export default function ToggleShapeCollapseHandler(modeling) {
   this._modeling = modeling;
 }
 
-ToggleShapeCollapseHandler.$inject = [ 'modeling' ];
-
+ToggleShapeCollapseHandler.$inject = ["modeling"];
 
 ToggleShapeCollapseHandler.prototype.execute = function(context) {
-
   var shape = context.shape,
-      children = shape.children;
+    children = shape.children;
 
   // remember previous visibility of children
   context.oldChildrenVisibility = getElementsVisibility(children);
@@ -28,11 +26,9 @@ ToggleShapeCollapseHandler.prototype.execute = function(context) {
   return [shape].concat(children);
 };
 
-
 ToggleShapeCollapseHandler.prototype.revert = function(context) {
-
   var shape = context.shape,
-      oldChildrenVisibility = context.oldChildrenVisibility;
+    oldChildrenVisibility = context.oldChildrenVisibility;
 
   var children = shape.children;
 
@@ -45,7 +41,6 @@ ToggleShapeCollapseHandler.prototype.revert = function(context) {
   return [shape].concat(children);
 };
 
-
 // helpers //////////////////////
 
 /**
@@ -56,7 +51,6 @@ ToggleShapeCollapseHandler.prototype.revert = function(context) {
  * @return {Object}
  */
 function getElementsVisibility(elements) {
-
   var result = {};
 
   elements.forEach(function(e) {
@@ -65,7 +59,6 @@ function getElementsVisibility(elements) {
 
   return result;
 }
-
 
 function setHidden(elements, newHidden) {
   elements.forEach(function(element) {

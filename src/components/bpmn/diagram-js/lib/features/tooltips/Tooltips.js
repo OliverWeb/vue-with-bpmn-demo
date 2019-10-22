@@ -1,8 +1,4 @@
-import {
-  isString,
-  assign,
-  forEach
-} from 'min-dash';
+import { isString, assign, forEach } from "min-dash";
 
 import {
   domify,
@@ -10,13 +6,12 @@ import {
   classes as domClasses,
   remove as domRemove,
   delegate as domDelegate
-} from 'min-dom';
+} from "min-dom";
 
-import Ids from '../../util/IdGenerator';
+import Ids from "../../util/IdGenerator";
 
 // document wide unique tooltip ids
-var ids = new Ids('tt');
-
+var ids = new Ids("tt");
 
 function createRoot(parentNode) {
   var root = domify(
@@ -28,18 +23,16 @@ function createRoot(parentNode) {
   return root;
 }
 
-
 function setPosition(el, x, y) {
-  assign(el.style, { left: x + 'px', top: y + 'px' });
+  assign(el.style, { left: x + "px", top: y + "px" });
 }
 
 function setVisible(el, visible) {
-  el.style.display = visible === false ? 'none' : '';
+  el.style.display = visible === false ? "none" : "";
 }
 
-
-var tooltipClass = 'djs-tooltip',
-    tooltipSelector = '.' + tooltipClass;
+var tooltipClass = "djs-tooltip",
+  tooltipSelector = "." + tooltipClass;
 
 /**
  * A service that allows users to render tool tips on the diagram.
@@ -79,7 +72,6 @@ var tooltipClass = 'djs-tooltip',
  * @param {Canvas} canvas
  */
 export default function Tooltips(eventBus, canvas) {
-
   this._eventBus = eventBus;
   this._canvas = canvas;
 
@@ -100,27 +92,30 @@ export default function Tooltips(eventBus, canvas) {
   // root html element for all tooltips
   this._tooltipRoot = createRoot(canvas.getContainer());
 
-
   var self = this;
 
-  domDelegate.bind(this._tooltipRoot, tooltipSelector, 'mousedown', function(event) {
+  domDelegate.bind(this._tooltipRoot, tooltipSelector, "mousedown", function(
+    event
+  ) {
     event.stopPropagation();
   });
 
-  domDelegate.bind(this._tooltipRoot, tooltipSelector, 'mouseover', function(event) {
-    self.trigger('mouseover', event);
+  domDelegate.bind(this._tooltipRoot, tooltipSelector, "mouseover", function(
+    event
+  ) {
+    self.trigger("mouseover", event);
   });
 
-  domDelegate.bind(this._tooltipRoot, tooltipSelector, 'mouseout', function(event) {
-    self.trigger('mouseout', event);
+  domDelegate.bind(this._tooltipRoot, tooltipSelector, "mouseout", function(
+    event
+  ) {
+    self.trigger("mouseout", event);
   });
 
   this._init();
 }
 
-
-Tooltips.$inject = [ 'eventBus', 'canvas' ];
-
+Tooltips.$inject = ["eventBus", "canvas"];
 
 /**
  * Adds a HTML tooltip to the diagram
@@ -141,13 +136,12 @@ Tooltips.$inject = [ 'eventBus', 'canvas' ];
  * @return {String}              id that may be used to reference the tooltip for update or removal
  */
 Tooltips.prototype.add = function(tooltip) {
-
   if (!tooltip.position) {
-    throw new Error('must specifiy tooltip position');
+    throw new Error("must specifiy tooltip position");
   }
 
   if (!tooltip.html) {
-    throw new Error('must specifiy tooltip html');
+    throw new Error("must specifiy tooltip html");
   }
 
   var id = this._ids.next();
@@ -166,20 +160,19 @@ Tooltips.prototype.add = function(tooltip) {
 };
 
 Tooltips.prototype.trigger = function(action, event) {
-
   var node = event.delegateTarget || event.target;
 
-  var tooltip = this.get(domAttr(node, 'data-tooltip-id'));
+  var tooltip = this.get(domAttr(node, "data-tooltip-id"));
 
   if (!tooltip) {
     return;
   }
 
-  if (action === 'mouseover' && tooltip.timeout) {
+  if (action === "mouseover" && tooltip.timeout) {
     this.clearTimeout(tooltip);
   }
 
-  if (action === 'mouseout' && tooltip.timeout) {
+  if (action === "mouseout" && tooltip.timeout) {
     // cut timeout after mouse out
     tooltip.timeout = 1000;
 
@@ -193,8 +186,7 @@ Tooltips.prototype.trigger = function(action, event) {
  * @param {String} id
  */
 Tooltips.prototype.get = function(id) {
-
-  if (typeof id !== 'string') {
+  if (typeof id !== "string") {
     id = id.id;
   }
 
@@ -202,7 +194,6 @@ Tooltips.prototype.get = function(id) {
 };
 
 Tooltips.prototype.clearTimeout = function(tooltip) {
-
   tooltip = this.get(tooltip);
 
   if (!tooltip) {
@@ -218,7 +209,6 @@ Tooltips.prototype.clearTimeout = function(tooltip) {
 };
 
 Tooltips.prototype.setTimeout = function(tooltip) {
-
   tooltip = this.get(tooltip);
 
   if (!tooltip) {
@@ -240,7 +230,6 @@ Tooltips.prototype.setTimeout = function(tooltip) {
  * @param {String} id
  */
 Tooltips.prototype.remove = function(id) {
-
   var tooltip = this.get(id);
 
   if (tooltip) {
@@ -253,34 +242,38 @@ Tooltips.prototype.remove = function(id) {
   }
 };
 
-
 Tooltips.prototype.show = function() {
   setVisible(this._tooltipRoot);
 };
-
 
 Tooltips.prototype.hide = function() {
   setVisible(this._tooltipRoot, false);
 };
 
-
 Tooltips.prototype._updateRoot = function(viewbox) {
   var a = viewbox.scale || 1;
   var d = viewbox.scale || 1;
 
-  var matrix = 'matrix(' + a + ',0,0,' + d + ',' + (-1 * viewbox.x * a) + ',' + (-1 * viewbox.y * d) + ')';
+  var matrix =
+    "matrix(" +
+    a +
+    ",0,0," +
+    d +
+    "," +
+    -1 * viewbox.x * a +
+    "," +
+    -1 * viewbox.y * d +
+    ")";
 
   this._tooltipRoot.style.transform = matrix;
-  this._tooltipRoot.style['-ms-transform'] = matrix;
+  this._tooltipRoot.style["-ms-transform"] = matrix;
 };
 
-
 Tooltips.prototype._addTooltip = function(tooltip) {
-
   var id = tooltip.id,
-      html = tooltip.html,
-      htmlContainer,
-      tooltipRoot = this._tooltipRoot;
+    html = tooltip.html,
+    htmlContainer,
+    tooltipRoot = this._tooltipRoot;
 
   // unwrap jquery (for those who need it)
   if (html.get && html.constructor.prototype.jquery) {
@@ -293,12 +286,18 @@ Tooltips.prototype._addTooltip = function(tooltip) {
     html = domify(html);
   }
 
-  htmlContainer = domify('<div data-tooltip-id="' + id + '" class="' + tooltipClass + '" style="position: absolute">');
+  htmlContainer = domify(
+    '<div data-tooltip-id="' +
+      id +
+      '" class="' +
+      tooltipClass +
+      '" style="position: absolute">'
+  );
 
   htmlContainer.appendChild(html);
 
   if (tooltip.type) {
-    domClasses(htmlContainer).add('djs-tooltip-' + tooltip.type);
+    domClasses(htmlContainer).add("djs-tooltip-" + tooltip.type);
   }
 
   if (tooltip.className) {
@@ -314,28 +313,23 @@ Tooltips.prototype._addTooltip = function(tooltip) {
   this._updateTooltip(tooltip);
 };
 
-
 Tooltips.prototype._updateTooltip = function(tooltip) {
-
   var position = tooltip.position,
-      htmlContainer = tooltip.htmlContainer;
+    htmlContainer = tooltip.htmlContainer;
 
   // update overlay html based on tooltip x, y
 
   setPosition(htmlContainer, position.x, position.y);
 };
 
-
 Tooltips.prototype._updateTooltipVisibilty = function(viewbox) {
-
   forEach(this._tooltips, function(tooltip) {
     var show = tooltip.show,
-        htmlContainer = tooltip.htmlContainer,
-        visible = true;
+      htmlContainer = tooltip.htmlContainer,
+      visible = true;
 
     if (show) {
-      if (show.minZoom > viewbox.scale ||
-          show.maxZoom < viewbox.scale) {
+      if (show.minZoom > viewbox.scale || show.maxZoom < viewbox.scale) {
         visible = false;
       }
 
@@ -345,7 +339,6 @@ Tooltips.prototype._updateTooltipVisibilty = function(viewbox) {
 };
 
 Tooltips.prototype._init = function() {
-
   var self = this;
 
   // scroll/zoom integration
@@ -357,11 +350,11 @@ Tooltips.prototype._init = function() {
     self.show();
   }
 
-  this._eventBus.on('canvas.viewbox.changing', function(event) {
+  this._eventBus.on("canvas.viewbox.changing", function(event) {
     self.hide();
   });
 
-  this._eventBus.on('canvas.viewbox.changed', function(event) {
+  this._eventBus.on("canvas.viewbox.changed", function(event) {
     updateViewbox(event.viewbox);
   });
 };

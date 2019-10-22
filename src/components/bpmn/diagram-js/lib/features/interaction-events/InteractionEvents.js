@@ -1,26 +1,20 @@
-import {
-  forEach
-} from 'min-dash';
+import { forEach } from "min-dash";
 
-import {
-  delegate as domDelegate,
-  query as domQuery
-} from 'min-dom';
+import { delegate as domDelegate, query as domQuery } from "min-dom";
 
-import { isPrimaryButton } from '../../util/Mouse';
+import { isPrimaryButton } from "../../util/Mouse";
 
 import {
   append as svgAppend,
   attr as svgAttr,
   create as svgCreate
-} from 'tiny-svg';
+} from "tiny-svg";
 
-import {
-  createLine,
-  updateLine
-} from '../../util/RenderUtil';
+import { createLine, updateLine } from "../../util/RenderUtil";
 
-function allowAll(e) { return true; }
+function allowAll(e) {
+  return true;
+}
 
 var LOW_PRIORITY = 500;
 
@@ -44,9 +38,8 @@ var LOW_PRIORITY = 500;
  * @param {EventBus} eventBus
  */
 export default function InteractionEvents(eventBus, elementRegistry, styles) {
-
-  var HIT_STYLE = styles.cls('djs-hit', [ 'no-fill', 'no-border' ], {
-    stroke: 'white',
+  var HIT_STYLE = styles.cls("djs-hit", ["no-fill", "no-border"], {
+    stroke: "white",
     strokeWidth: 15
   });
 
@@ -59,7 +52,6 @@ export default function InteractionEvents(eventBus, elementRegistry, styles) {
    *                                   defaults to the event target
    */
   function fire(type, event, element) {
-
     if (isIgnored(type, event)) {
       return;
     }
@@ -101,7 +93,6 @@ export default function InteractionEvents(eventBus, elementRegistry, styles) {
   }
 
   function isIgnored(localEventName, event) {
-
     var filter = ignoredFilters[localEventName] || isPrimaryButton;
 
     // only react on left mouse button interactions
@@ -111,20 +102,19 @@ export default function InteractionEvents(eventBus, elementRegistry, styles) {
   }
 
   var bindings = {
-    mouseover: 'element.hover',
-    mouseout: 'element.out',
-    click: 'element.click',
-    dblclick: 'element.dblclick',
-    mousedown: 'element.mousedown',
-    mousemove: 'element.mousemove',
-    mouseup: 'element.mouseup',
-    contextmenu: 'element.contextmenu'
+    mouseover: "element.hover",
+    mouseout: "element.out",
+    click: "element.click",
+    dblclick: "element.dblclick",
+    mousedown: "element.mousedown",
+    mousemove: "element.mousemove",
+    mouseup: "element.mouseup",
+    contextmenu: "element.contextmenu"
   };
 
   var ignoredFilters = {
-    'element.contextmenu': allowAll
+    "element.contextmenu": allowAll
   };
-
 
   // manual event trigger
 
@@ -137,27 +127,24 @@ export default function InteractionEvents(eventBus, elementRegistry, styles) {
    * @param {djs.model.Base} targetElement
    */
   function triggerMouseEvent(eventName, event, targetElement) {
-
     // i.e. element.mousedown...
     var localEventName = bindings[eventName];
 
     if (!localEventName) {
-      throw new Error('unmapped DOM event name <' + eventName + '>');
+      throw new Error("unmapped DOM event name <" + eventName + ">");
     }
 
     return fire(localEventName, event, targetElement);
   }
 
-
-  var elementSelector = 'svg, .djs-element';
+  var elementSelector = "svg, .djs-element";
 
   // event registration
 
   function registerEvent(node, event, localEvent, ignoredFilter) {
-
-    var handler = handlers[localEvent] = function(event) {
+    var handler = (handlers[localEvent] = function(event) {
       fire(localEvent, event);
-    };
+    });
 
     if (ignoredFilter) {
       ignoredFilters[localEvent] = ignoredFilter;
@@ -167,7 +154,6 @@ export default function InteractionEvents(eventBus, elementRegistry, styles) {
   }
 
   function unregisterEvent(node, event, localEvent) {
-
     var handler = mouseHandler(localEvent);
 
     if (!handler) {
@@ -189,24 +175,23 @@ export default function InteractionEvents(eventBus, elementRegistry, styles) {
     });
   }
 
-  eventBus.on('canvas.destroy', function(event) {
+  eventBus.on("canvas.destroy", function(event) {
     unregisterEvents(event.svg);
   });
 
-  eventBus.on('canvas.init', function(event) {
+  eventBus.on("canvas.init", function(event) {
     registerEvents(event.svg);
   });
 
-
-  eventBus.on([ 'shape.added', 'connection.added' ], function(event) {
+  eventBus.on(["shape.added", "connection.added"], function(event) {
     var element = event.element,
-        gfx = event.gfx,
-        hit;
+      gfx = event.gfx,
+      hit;
 
     if (element.waypoints) {
       hit = createLine(element.waypoints);
     } else {
-      hit = svgCreate('rect');
+      hit = svgCreate("rect");
       svgAttr(hit, {
         x: 0,
         y: 0,
@@ -223,11 +208,10 @@ export default function InteractionEvents(eventBus, elementRegistry, styles) {
   // Update djs-hit on change.
   // A low priortity is necessary, because djs-hit of labels has to be updated
   // after the label bounds have been updated in the renderer.
-  eventBus.on('shape.changed', LOW_PRIORITY, function(event) {
-
+  eventBus.on("shape.changed", LOW_PRIORITY, function(event) {
     var element = event.element,
-        gfx = event.gfx,
-        hit = domQuery('.djs-hit', gfx);
+      gfx = event.gfx,
+      hit = domQuery(".djs-hit", gfx);
 
     svgAttr(hit, {
       width: element.width,
@@ -235,15 +219,13 @@ export default function InteractionEvents(eventBus, elementRegistry, styles) {
     });
   });
 
-  eventBus.on('connection.changed', function(event) {
-
+  eventBus.on("connection.changed", function(event) {
     var element = event.element,
-        gfx = event.gfx,
-        hit = domQuery('.djs-hit', gfx);
+      gfx = event.gfx,
+      hit = domQuery(".djs-hit", gfx);
 
     updateLine(hit, element.waypoints);
   });
-
 
   // API
 
@@ -257,13 +239,7 @@ export default function InteractionEvents(eventBus, elementRegistry, styles) {
   this.unregisterEvent = unregisterEvent;
 }
 
-
-InteractionEvents.$inject = [
-  'eventBus',
-  'elementRegistry',
-  'styles'
-];
-
+InteractionEvents.$inject = ["eventBus", "elementRegistry", "styles"];
 
 /**
  * An event indicating that the mouse hovered over an element

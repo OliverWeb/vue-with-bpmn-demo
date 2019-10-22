@@ -6,16 +6,14 @@ import {
   debounce,
   bind,
   reduce
-} from 'min-dash';
+} from "min-dash";
 
 import {
   add as collectionAdd,
   remove as collectionRemove
-} from '../util/Collections';
+} from "../util/Collections";
 
-import {
-  getType
-} from '../util/Elements';
+import { getType } from "../util/Elements";
 
 import {
   append as svgAppend,
@@ -23,17 +21,16 @@ import {
   classes as svgClasses,
   create as svgCreate,
   transform as svgTransform
-} from 'tiny-svg';
+} from "tiny-svg";
 
-import { createMatrix as createMatrix } from 'tiny-svg';
-
+import { createMatrix } from "tiny-svg";
 
 function round(number, resolution) {
   return Math.round(number * resolution) / resolution;
 }
 
 function ensurePx(number) {
-  return isNumber(number) ? number + 'px' : number;
+  return isNumber(number) ? number + "px" : number;
 }
 
 /**
@@ -44,20 +41,19 @@ function ensurePx(number) {
  * @return {HTMLElement} the container element
  */
 function createContainer(options) {
-
-  options = assign({}, { width: '100%', height: '100%' }, options);
+  options = assign({}, { width: "100%", height: "100%" }, options);
 
   var container = options.container || document.body;
 
   // create a <div> around the svg element with the respective size
   // this way we can always get the correct container size
   // (this is impossible for <svg> elements at the moment)
-  var parent = document.createElement('div');
-  parent.setAttribute('class', 'djs-container');
+  var parent = document.createElement("div");
+  parent.setAttribute("class", "djs-container");
 
   assign(parent.style, {
-    position: 'relative',
-    overflow: 'hidden',
+    position: "relative",
+    overflow: "hidden",
     width: ensurePx(options.width),
     height: ensurePx(options.height)
   });
@@ -68,10 +64,11 @@ function createContainer(options) {
 }
 
 function createGroup(parent, cls, childIndex) {
-  var group = svgCreate('g');
+  var group = svgCreate("g");
   svgClasses(group).add(cls);
 
-  var index = childIndex !== undefined ? childIndex : parent.childNodes.length - 1;
+  var index =
+    childIndex !== undefined ? childIndex : parent.childNodes.length - 1;
 
   // must ensure second argument is node or _null_
   // cf. https://developer.mozilla.org/en-US/docs/Web/API/Node/insertBefore
@@ -80,12 +77,11 @@ function createGroup(parent, cls, childIndex) {
   return group;
 }
 
-var BASE_LAYER = 'base';
-
+var BASE_LAYER = "base";
 
 var REQUIRED_MODEL_ATTRS = {
-  shape: [ 'x', 'y', 'width', 'height' ],
-  connection: [ 'waypoints' ]
+  shape: ["x", "y", "width", "height"],
+  connection: ["waypoints"]
 };
 
 /**
@@ -101,8 +97,12 @@ var REQUIRED_MODEL_ATTRS = {
  * @param {GraphicsFactory} graphicsFactory
  * @param {ElementRegistry} elementRegistry
  */
-export default function Canvas(config, eventBus, graphicsFactory, elementRegistry) {
-
+export default function Canvas(
+  config,
+  eventBus,
+  graphicsFactory,
+  elementRegistry
+) {
   this._eventBus = eventBus;
   this._elementRegistry = elementRegistry;
   this._graphicsFactory = graphicsFactory;
@@ -111,15 +111,13 @@ export default function Canvas(config, eventBus, graphicsFactory, elementRegistr
 }
 
 Canvas.$inject = [
-  'config.canvas',
-  'eventBus',
-  'graphicsFactory',
-  'elementRegistry'
+  "config.canvas",
+  "eventBus",
+  "graphicsFactory",
+  "elementRegistry"
 ];
 
-
 Canvas.prototype._init = function(config) {
-
   var eventBus = this._eventBus;
 
   // Creates a <svg> element that is wrapped into a <div>.
@@ -135,14 +133,14 @@ Canvas.prototype._init = function(config) {
   // </div>
 
   // html container
-  var container = this._container = createContainer(config);
+  var container = (this._container = createContainer(config));
 
-  var svg = this._svg = svgCreate('svg');
-  svgAttr(svg, { width: '100%', height: '100%' });
+  var svg = (this._svg = svgCreate("svg"));
+  svgAttr(svg, { width: "100%", height: "100%" });
 
   svgAppend(container, svg);
 
-  var viewport = this._viewport = createGroup(svg, 'viewport');
+  var viewport = (this._viewport = createGroup(svg, "viewport"));
 
   this._layers = {};
 
@@ -152,44 +150,50 @@ Canvas.prototype._init = function(config) {
     this._viewboxChanged = debounce(bind(this._viewboxChanged, this), 300);
   }
 
-  eventBus.on('diagram.init', function() {
-
-    /**
-     * An event indicating that the canvas is ready to be drawn on.
-     *
-     * @memberOf Canvas
-     *
-     * @event canvas.init
-     *
-     * @type {Object}
-     * @property {SVGElement} svg the created svg element
-     * @property {SVGElement} viewport the direct parent of diagram elements and shapes
-     */
-    eventBus.fire('canvas.init', {
-      svg: svg,
-      viewport: viewport
-    });
-
-  }, this);
+  eventBus.on(
+    "diagram.init",
+    function() {
+      /**
+       * An event indicating that the canvas is ready to be drawn on.
+       *
+       * @memberOf Canvas
+       *
+       * @event canvas.init
+       *
+       * @type {Object}
+       * @property {SVGElement} svg the created svg element
+       * @property {SVGElement} viewport the direct parent of diagram elements and shapes
+       */
+      eventBus.fire("canvas.init", {
+        svg: svg,
+        viewport: viewport
+      });
+    },
+    this
+  );
 
   // reset viewbox on shape changes to
   // recompute the viewbox
-  eventBus.on([
-    'shape.added',
-    'connection.added',
-    'shape.removed',
-    'connection.removed',
-    'elements.changed'
-  ], function() {
-    delete this._cachedViewbox;
-  }, this);
+  eventBus.on(
+    [
+      "shape.added",
+      "connection.added",
+      "shape.removed",
+      "connection.removed",
+      "elements.changed"
+    ],
+    function() {
+      delete this._cachedViewbox;
+    },
+    this
+  );
 
-  eventBus.on('diagram.destroy', 500, this._destroy, this);
-  eventBus.on('diagram.clear', 500, this._clear, this);
+  eventBus.on("diagram.destroy", 500, this._destroy, this);
+  eventBus.on("diagram.clear", 500, this._clear, this);
 };
 
 Canvas.prototype._destroy = function(emit) {
-  this._eventBus.fire('canvas.destroy', {
+  this._eventBus.fire("canvas.destroy", {
     svg: this._svg,
     viewport: this._viewport
   });
@@ -208,7 +212,6 @@ Canvas.prototype._destroy = function(emit) {
 };
 
 Canvas.prototype._clear = function() {
-
   var self = this;
 
   var allElements = this._elementRegistry.getAll();
@@ -217,7 +220,7 @@ Canvas.prototype._clear = function() {
   allElements.forEach(function(element) {
     var type = getType(element);
 
-    if (type === 'root') {
+    if (type === "root") {
       self.setRootElement(null, true);
     } else {
       self._removeElement(element, type);
@@ -254,9 +257,8 @@ Canvas.prototype.getDefaultLayer = function() {
  * @returns {SVGElement}
  */
 Canvas.prototype.getLayer = function(name, index) {
-
   if (!name) {
-    throw new Error('must specify a name');
+    throw new Error("must specify a name");
   }
 
   var layer = this._layers[name];
@@ -267,8 +269,10 @@ Canvas.prototype.getLayer = function(name, index) {
 
   // throw an error if layer creation / retrival is
   // requested on different index
-  if (typeof index !== 'undefined' && layer.index !== index) {
-    throw new Error('layer <' + name + '> already created at index <' + index + '>');
+  if (typeof index !== "undefined" && layer.index !== index) {
+    throw new Error(
+      "layer <" + name + "> already created at index <" + index + ">"
+    );
   }
 
   return layer.group;
@@ -283,24 +287,26 @@ Canvas.prototype.getLayer = function(name, index) {
  * @return {Object} layer descriptor with { index, group: SVGGroup }
  */
 Canvas.prototype._createLayer = function(name, index) {
-
   if (!index) {
     index = 0;
   }
 
-  var childIndex = reduce(this._layers, function(childIndex, layer) {
-    if (index >= layer.index) {
-      childIndex++;
-    }
+  var childIndex = reduce(
+    this._layers,
+    function(childIndex, layer) {
+      if (index >= layer.index) {
+        childIndex++;
+      }
 
-    return childIndex;
-  }, 0);
+      return childIndex;
+    },
+    0
+  );
 
   return {
-    group: createGroup(this._viewport, 'layer-' + name, childIndex),
+    group: createGroup(this._viewport, "layer-" + name, childIndex),
     index: index
   };
-
 };
 
 /**
@@ -312,7 +318,6 @@ Canvas.prototype._createLayer = function(name, index) {
 Canvas.prototype.getContainer = function() {
   return this._container;
 };
-
 
 // markers //////////////////////
 
@@ -330,7 +335,7 @@ Canvas.prototype._updateMarker = function(element, marker, add) {
     return;
   }
 
-  forEach([ container.gfx, container.secondaryGfx ], function(gfx) {
+  forEach([container.gfx, container.secondaryGfx], function(gfx) {
     if (gfx) {
       // invoke either addClass or removeClass based on mode
       if (add) {
@@ -351,9 +356,13 @@ Canvas.prototype._updateMarker = function(element, marker, add) {
    * @property {String} marker
    * @property {Boolean} add true if the marker was added, false if it got removed
    */
-  this._eventBus.fire('element.marker.update', { element: element, gfx: container.gfx, marker: marker, add: !!add });
+  this._eventBus.fire("element.marker.update", {
+    element: element,
+    gfx: container.gfx,
+    marker: marker,
+    add: !!add
+  });
 };
-
 
 /**
  * Adds a marker to an element (basically a css class).
@@ -374,7 +383,6 @@ Canvas.prototype._updateMarker = function(element, marker, add) {
 Canvas.prototype.addMarker = function(element, marker) {
   this._updateMarker(element, marker, true);
 };
-
 
 /**
  * Remove a marker from an element.
@@ -424,13 +432,11 @@ Canvas.prototype.toggleMarker = function(element, marker) {
 
 Canvas.prototype.getRootElement = function() {
   if (!this._rootElement) {
-    this.setRootElement({ id: '__implicitroot', children: [] });
+    this.setRootElement({ id: "__implicitroot", children: [] });
   }
 
   return this._rootElement;
 };
-
-
 
 // root element handling //////////////////////
 
@@ -444,23 +450,22 @@ Canvas.prototype.getRootElement = function() {
  * @return {Object|djs.model.Root} new root element
  */
 Canvas.prototype.setRootElement = function(element, override) {
-
   if (element) {
-    this._ensureValid('root', element);
+    this._ensureValid("root", element);
   }
 
   var currentRoot = this._rootElement,
-      elementRegistry = this._elementRegistry,
-      eventBus = this._eventBus;
+    elementRegistry = this._elementRegistry,
+    eventBus = this._eventBus;
 
   if (currentRoot) {
     if (!override) {
-      throw new Error('rootElement already set, need to specify override');
+      throw new Error("rootElement already set, need to specify override");
     }
 
     // simulate element remove event sequence
-    eventBus.fire('root.remove', { element: currentRoot });
-    eventBus.fire('root.removed', { element: currentRoot });
+    eventBus.fire("root.remove", { element: currentRoot });
+    eventBus.fire("root.removed", { element: currentRoot });
 
     elementRegistry.remove(currentRoot);
   }
@@ -469,11 +474,11 @@ Canvas.prototype.setRootElement = function(element, override) {
     var gfx = this.getDefaultLayer();
 
     // resemble element add event sequence
-    eventBus.fire('root.add', { element: element });
+    eventBus.fire("root.add", { element: element });
 
     elementRegistry.add(element, gfx, this._svg);
 
-    eventBus.fire('root.added', { element: element, gfx: gfx });
+    eventBus.fire("root.added", { element: element, gfx: gfx });
   }
 
   this._rootElement = element;
@@ -481,28 +486,27 @@ Canvas.prototype.setRootElement = function(element, override) {
   return element;
 };
 
-
-
 // add functionality //////////////////////
 
 Canvas.prototype._ensureValid = function(type, element) {
   if (!element.id) {
-    throw new Error('element must have an id');
+    throw new Error("element must have an id");
   }
 
   if (this._elementRegistry.get(element.id)) {
-    throw new Error('element with id ' + element.id + ' already exists');
+    throw new Error("element with id " + element.id + " already exists");
   }
 
   var requiredAttrs = REQUIRED_MODEL_ATTRS[type];
 
   var valid = every(requiredAttrs, function(attr) {
-    return typeof element[attr] !== 'undefined';
+    return typeof element[attr] !== "undefined";
   });
 
   if (!valid) {
     throw new Error(
-      'must supply { ' + requiredAttrs.join(', ') + ' } with ' + type);
+      "must supply { " + requiredAttrs.join(", ") + " } with " + type
+    );
   }
 };
 
@@ -532,15 +536,14 @@ Canvas.prototype._setParent = function(element, parent, parentIndex) {
  * @return {Object|djs.model.Base} the added element
  */
 Canvas.prototype._addElement = function(type, element, parent, parentIndex) {
-
   parent = parent || this.getRootElement();
 
   var eventBus = this._eventBus,
-      graphicsFactory = this._graphicsFactory;
+    graphicsFactory = this._graphicsFactory;
 
   this._ensureValid(type, element);
 
-  eventBus.fire(type + '.add', { element: element, parent: parent });
+  eventBus.fire(type + ".add", { element: element, parent: parent });
 
   this._setParent(element, parent, parentIndex);
 
@@ -552,7 +555,7 @@ Canvas.prototype._addElement = function(type, element, parent, parentIndex) {
   // update its visual
   graphicsFactory.update(type, element, gfx);
 
-  eventBus.fire(type + '.added', { element: element, gfx: gfx });
+  eventBus.fire(type + ".added", { element: element, gfx: gfx });
 
   return element;
 };
@@ -567,7 +570,7 @@ Canvas.prototype._addElement = function(type, element, parent, parentIndex) {
  * @return {djs.model.Shape} the added shape
  */
 Canvas.prototype.addShape = function(shape, parent, parentIndex) {
-  return this._addElement('shape', shape, parent, parentIndex);
+  return this._addElement("shape", shape, parent, parentIndex);
 };
 
 /**
@@ -580,18 +583,16 @@ Canvas.prototype.addShape = function(shape, parent, parentIndex) {
  * @return {djs.model.Connection} the added connection
  */
 Canvas.prototype.addConnection = function(connection, parent, parentIndex) {
-  return this._addElement('connection', connection, parent, parentIndex);
+  return this._addElement("connection", connection, parent, parentIndex);
 };
-
 
 /**
  * Internal remove element
  */
 Canvas.prototype._removeElement = function(element, type) {
-
   var elementRegistry = this._elementRegistry,
-      graphicsFactory = this._graphicsFactory,
-      eventBus = this._eventBus;
+    graphicsFactory = this._graphicsFactory,
+    eventBus = this._eventBus;
 
   element = elementRegistry.get(element.id || element);
 
@@ -600,7 +601,7 @@ Canvas.prototype._removeElement = function(element, type) {
     return;
   }
 
-  eventBus.fire(type + '.remove', { element: element });
+  eventBus.fire(type + ".remove", { element: element });
 
   graphicsFactory.remove(element);
 
@@ -608,13 +609,12 @@ Canvas.prototype._removeElement = function(element, type) {
   collectionRemove(element.parent && element.parent.children, element);
   element.parent = null;
 
-  eventBus.fire(type + '.removed', { element: element });
+  eventBus.fire(type + ".removed", { element: element });
 
   elementRegistry.remove(element);
 
   return element;
 };
-
 
 /**
  * Removes a shape from the canvas
@@ -624,7 +624,6 @@ Canvas.prototype._removeElement = function(element, type) {
  * @return {djs.model.Shape} the removed shape
  */
 Canvas.prototype.removeShape = function(shape) {
-
   /**
    * An event indicating that a shape is about to be removed from the canvas.
    *
@@ -646,9 +645,8 @@ Canvas.prototype.removeShape = function(shape) {
    * @property {djs.model.Shape} element the shape descriptor
    * @property {Object} gfx the graphical representation of the shape
    */
-  return this._removeElement(shape, 'shape');
+  return this._removeElement(shape, "shape");
 };
-
 
 /**
  * Removes a connection from the canvas
@@ -658,7 +656,6 @@ Canvas.prototype.removeShape = function(shape) {
  * @return {djs.model.Connection} the removed connection
  */
 Canvas.prototype.removeConnection = function(connection) {
-
   /**
    * An event indicating that a connection is about to be removed from the canvas.
    *
@@ -680,9 +677,8 @@ Canvas.prototype.removeConnection = function(connection) {
    * @property {djs.model.Connection} element the connection descriptor
    * @property {Object} gfx the graphical representation of the connection
    */
-  return this._removeElement(connection, 'connection');
+  return this._removeElement(connection, "connection");
 };
-
 
 /**
  * Return the graphical object underlaying a certain diagram element
@@ -696,16 +692,14 @@ Canvas.prototype.getGraphics = function(element, secondary) {
   return this._elementRegistry.getGraphics(element, secondary);
 };
 
-
 /**
  * Perform a viewbox update via a given change function.
  *
  * @param {Function} changeFn
  */
 Canvas.prototype._changeViewbox = function(changeFn) {
-
   // notify others of the upcoming viewbox change
-  this._eventBus.fire('canvas.viewbox.changing');
+  this._eventBus.fire("canvas.viewbox.changing");
 
   // perform actual change
   changeFn.apply(this);
@@ -721,9 +715,8 @@ Canvas.prototype._changeViewbox = function(changeFn) {
 };
 
 Canvas.prototype._viewboxChanged = function() {
-  this._eventBus.fire('canvas.viewbox.changed', { viewbox: this.viewbox() });
+  this._eventBus.fire("canvas.viewbox.changed", { viewbox: this.viewbox() });
 };
-
 
 /**
  * Gets or sets the view box of the canvas, i.e. the
@@ -771,18 +764,18 @@ Canvas.prototype._viewboxChanged = function() {
  * @return {Object} the current view box
  */
 Canvas.prototype.viewbox = function(box) {
-
   if (box === undefined && this._cachedViewbox) {
     return this._cachedViewbox;
   }
 
   var viewport = this._viewport,
-      innerBox,
-      outerBox = this.getSize(),
-      matrix,
-      transform,
-      scale,
-      x, y;
+    innerBox,
+    outerBox = this.getSize(),
+    matrix,
+    transform,
+    scale,
+    x,
+    y;
 
   if (!box) {
     // compute the inner box based on the
@@ -814,11 +807,14 @@ Canvas.prototype.viewbox = function(box) {
 
     return box;
   } else {
-
     this._changeViewbox(function() {
-      scale = Math.min(outerBox.width / box.width, outerBox.height / box.height);
+      scale = Math.min(
+        outerBox.width / box.width,
+        outerBox.height / box.height
+      );
 
-      var matrix = this._svg.createSVGMatrix()
+      var matrix = this._svg
+        .createSVGMatrix()
         .scale(scale)
         .translate(-box.x, -box.y);
 
@@ -829,7 +825,6 @@ Canvas.prototype.viewbox = function(box) {
   return box;
 };
 
-
 /**
  * Gets or sets the scroll of the canvas.
  *
@@ -839,7 +834,6 @@ Canvas.prototype.viewbox = function(box) {
  * @param {Number} [delta.dy]
  */
 Canvas.prototype.scroll = function(delta) {
-
   var node = this._viewport;
   var matrix = node.getCTM();
 
@@ -847,7 +841,10 @@ Canvas.prototype.scroll = function(delta) {
     this._changeViewbox(function() {
       delta = assign({ dx: 0, dy: 0 }, delta || {});
 
-      matrix = this._svg.createSVGMatrix().translate(delta.dx, delta.dy).multiply(matrix);
+      matrix = this._svg
+        .createSVGMatrix()
+        .translate(delta.dx, delta.dy)
+        .multiply(matrix);
 
       setCTM(node, matrix);
     });
@@ -855,7 +852,6 @@ Canvas.prototype.scroll = function(delta) {
 
   return { x: matrix.e, y: matrix.f };
 };
-
 
 /**
  * Gets or sets the current zoom of the canvas, optionally zooming
@@ -871,21 +867,18 @@ Canvas.prototype.scroll = function(delta) {
  * @return {Number} the current scale
  */
 Canvas.prototype.zoom = function(newScale, center) {
-
   if (!newScale) {
     return this.viewbox(newScale).scale;
   }
 
-  if (newScale === 'fit-viewport') {
+  if (newScale === "fit-viewport") {
     return this._fitViewport(center);
   }
 
-  var outer,
-      matrix;
+  var outer, matrix;
 
   this._changeViewbox(function() {
-
-    if (typeof center !== 'object') {
+    if (typeof center !== "object") {
       outer = this.viewbox().outer;
 
       center = {
@@ -901,17 +894,29 @@ Canvas.prototype.zoom = function(newScale, center) {
 };
 
 function setCTM(node, m) {
-  var mstr = 'matrix(' + m.a + ',' + m.b + ',' + m.c + ',' + m.d + ',' + m.e + ',' + m.f + ')';
-  node.setAttribute('transform', mstr);
+  var mstr =
+    "matrix(" +
+    m.a +
+    "," +
+    m.b +
+    "," +
+    m.c +
+    "," +
+    m.d +
+    "," +
+    m.e +
+    "," +
+    m.f +
+    ")";
+  node.setAttribute("transform", mstr);
 }
 
 Canvas.prototype._fitViewport = function(center) {
-
   var vbox = this.viewbox(),
-      outer = vbox.outer,
-      inner = vbox.inner,
-      newScale,
-      newViewbox;
+    outer = vbox.outer,
+    inner = vbox.inner,
+    newScale,
+    newViewbox;
 
   // display the complete diagram without zooming in.
   // instead of relying on internal zoom, we perform a
@@ -920,12 +925,13 @@ Canvas.prototype._fitViewport = function(center) {
   // if diagram does not need to be zoomed in, we focus it around
   // the diagram origin instead
 
-  if (inner.x >= 0 &&
-      inner.y >= 0 &&
-      inner.x + inner.width <= outer.width &&
-      inner.y + inner.height <= outer.height &&
-      !center) {
-
+  if (
+    inner.x >= 0 &&
+    inner.y >= 0 &&
+    inner.x + inner.width <= outer.width &&
+    inner.y + inner.height <= outer.height &&
+    !center
+  ) {
     newViewbox = {
       x: 0,
       y: 0,
@@ -933,11 +939,15 @@ Canvas.prototype._fitViewport = function(center) {
       height: Math.max(inner.height + inner.y, outer.height)
     };
   } else {
-
-    newScale = Math.min(1, outer.width / inner.width, outer.height / inner.height);
+    newScale = Math.min(
+      1,
+      outer.width / inner.width,
+      outer.height / inner.height
+    );
     newViewbox = {
       x: inner.x + (center ? inner.width / 2 - outer.width / newScale / 2 : 0),
-      y: inner.y + (center ? inner.height / 2 - outer.height / newScale / 2 : 0),
+      y:
+        inner.y + (center ? inner.height / 2 - outer.height / newScale / 2 : 0),
       width: outer.width / newScale,
       height: outer.height / newScale
     };
@@ -948,20 +958,14 @@ Canvas.prototype._fitViewport = function(center) {
   return this.viewbox(false).scale;
 };
 
-
 Canvas.prototype._setZoom = function(scale, center) {
-
   var svg = this._svg,
-      viewport = this._viewport;
+    viewport = this._viewport;
 
   var matrix = svg.createSVGMatrix();
   var point = svg.createSVGPoint();
 
-  var centerPoint,
-      originalPoint,
-      currentMatrix,
-      scaleMatrix,
-      newMatrix;
+  var centerPoint, originalPoint, currentMatrix, scaleMatrix, newMatrix;
 
   currentMatrix = viewport.getCTM();
 
@@ -976,7 +980,7 @@ Canvas.prototype._setZoom = function(scale, center) {
     // create scale matrix
     scaleMatrix = matrix
       .translate(originalPoint.x, originalPoint.y)
-      .scale(1 / currentScale * scale)
+      .scale((1 / currentScale) * scale)
       .translate(-originalPoint.x, -originalPoint.y);
 
     newMatrix = currentMatrix.multiply(scaleMatrix);
@@ -989,7 +993,6 @@ Canvas.prototype._setZoom = function(scale, center) {
   return newMatrix;
 };
 
-
 /**
  * Returns the size of the canvas
  *
@@ -1001,7 +1004,6 @@ Canvas.prototype.getSize = function() {
     height: this._container.clientHeight
   };
 };
-
 
 /**
  * Return the absolute bounding box for the given element
@@ -1049,9 +1051,8 @@ Canvas.prototype.getAbsoluteBBox = function(element) {
  * canvas resizing
  */
 Canvas.prototype.resized = function() {
-
   // force recomputation of view box
   delete this._cachedViewbox;
 
-  this._eventBus.fire('canvas.resized');
+  this._eventBus.fire("canvas.resized");
 };

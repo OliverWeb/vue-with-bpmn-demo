@@ -1,12 +1,8 @@
-import inherits from 'inherits';
+import inherits from "inherits";
 
-import CommandInterceptor from '../../../command/CommandInterceptor';
+import CommandInterceptor from "../../../command/CommandInterceptor";
 
-import {
-  assign,
-  isString
-} from 'min-dash';
-
+import { assign, isString } from "min-dash";
 
 /**
  * Integrates resizing with grid snapping.
@@ -18,17 +14,17 @@ export default function ResizeBehavior(eventBus, gridSnapping) {
 
   var self = this;
 
-  this.preExecute('shape.resize', function(event) {
+  this.preExecute("shape.resize", function(event) {
     var context = event.context,
-        hints = context.hints || {},
-        autoResize = hints.autoResize;
+      hints = context.hints || {},
+      autoResize = hints.autoResize;
 
     if (!autoResize) {
       return;
     }
 
     var shape = context.shape,
-        newBounds = context.newBounds;
+      newBounds = context.newBounds;
 
     if (isString(autoResize)) {
       context.newBounds = self.snapComplex(newBounds, autoResize);
@@ -38,11 +34,7 @@ export default function ResizeBehavior(eventBus, gridSnapping) {
   });
 }
 
-ResizeBehavior.$inject = [
-  'eventBus',
-  'gridSnapping',
-  'modeling'
-];
+ResizeBehavior.$inject = ["eventBus", "gridSnapping", "modeling"];
 
 inherits(ResizeBehavior, CommandInterceptor);
 
@@ -65,8 +57,8 @@ ResizeBehavior.prototype.snapSimple = function(shape, newBounds) {
     min: newBounds.height
   });
 
-  newBounds.x = shape.x + (shape.width / 2) - (newBounds.width / 2);
-  newBounds.y = shape.y + (shape.height / 2) - (newBounds.height / 2);
+  newBounds.x = shape.x + shape.width / 2 - newBounds.width / 2;
+  newBounds.y = shape.y + shape.height / 2 - newBounds.height / 2;
 
   return newBounds;
 };
@@ -101,8 +93,8 @@ ResizeBehavior.prototype.snapComplex = function(newBounds, directions) {
  */
 ResizeBehavior.prototype.snapHorizontally = function(newBounds, directions) {
   var gridSnapping = this._gridSnapping,
-      west = /w/.test(directions),
-      east = /e/.test(directions);
+    west = /w/.test(directions),
+    east = /e/.test(directions);
 
   var snappedNewBounds = {};
 
@@ -111,16 +103,18 @@ ResizeBehavior.prototype.snapHorizontally = function(newBounds, directions) {
   });
 
   if (east) {
-
     // handle <we>
     if (west) {
       snappedNewBounds.x = gridSnapping.snapValue(newBounds.x, {
         max: newBounds.x
       });
 
-      snappedNewBounds.width += gridSnapping.snapValue(newBounds.x - snappedNewBounds.x, {
-        min: newBounds.x - snappedNewBounds.x
-      });
+      snappedNewBounds.width += gridSnapping.snapValue(
+        newBounds.x - snappedNewBounds.x,
+        {
+          min: newBounds.x - snappedNewBounds.x
+        }
+      );
     }
 
     // handle <e>
@@ -145,8 +139,8 @@ ResizeBehavior.prototype.snapHorizontally = function(newBounds, directions) {
  */
 ResizeBehavior.prototype.snapVertically = function(newBounds, directions) {
   var gridSnapping = this._gridSnapping,
-      north = /n/.test(directions),
-      south = /s/.test(directions);
+    north = /n/.test(directions),
+    south = /s/.test(directions);
 
   var snappedNewBounds = {};
 
@@ -155,16 +149,18 @@ ResizeBehavior.prototype.snapVertically = function(newBounds, directions) {
   });
 
   if (north) {
-
     // handle <ns>
     if (south) {
       snappedNewBounds.y = gridSnapping.snapValue(newBounds.y, {
         max: newBounds.y
       });
 
-      snappedNewBounds.height += gridSnapping.snapValue(newBounds.y - snappedNewBounds.y, {
-        min: newBounds.y - snappedNewBounds.y
-      });
+      snappedNewBounds.height += gridSnapping.snapValue(
+        newBounds.y - snappedNewBounds.y,
+        {
+          min: newBounds.y - snappedNewBounds.y
+        }
+      );
     }
 
     // handle <n>

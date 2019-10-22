@@ -1,25 +1,18 @@
-import {
-  isArray,
-  assign,
-  reduce
-} from 'min-dash';
-
+import { isArray, assign, reduce } from "min-dash";
 
 /**
  * A component that manages shape styles
  */
 export default function Styles() {
-
   var defaultTraits = {
-
-    'no-fill': {
-      fill: 'none'
+    "no-fill": {
+      fill: "none"
     },
-    'no-border': {
+    "no-border": {
       strokeOpacity: 0.0
     },
-    'no-events': {
-      pointerEvents: 'none'
+    "no-events": {
+      pointerEvents: "none"
     }
   };
 
@@ -37,7 +30,7 @@ export default function Styles() {
   this.cls = function(className, traits, additionalAttrs) {
     var attrs = this.style(traits, additionalAttrs);
 
-    return assign(attrs, { 'class': className });
+    return assign(attrs, { class: className });
   };
 
   /**
@@ -49,15 +42,18 @@ export default function Styles() {
    * @return {Object} the style defintion
    */
   this.style = function(traits, additionalAttrs) {
-
     if (!isArray(traits) && !additionalAttrs) {
       additionalAttrs = traits;
       traits = [];
     }
 
-    var attrs = reduce(traits, function(attrs, t) {
-      return assign(attrs, defaultTraits[t] || {});
-    }, {});
+    var attrs = reduce(
+      traits,
+      function(attrs, t) {
+        return assign(attrs, defaultTraits[t] || {});
+      },
+      {}
+    );
 
     return additionalAttrs ? assign(attrs, additionalAttrs) : attrs;
   };

@@ -2,20 +2,17 @@ import {
   append as svgAppend,
   attr as svgAttr,
   create as svgCreate
-} from 'tiny-svg';
-
+} from "tiny-svg";
 
 export default function TouchFix(canvas, eventBus) {
-
   var self = this;
 
-  eventBus.on('canvas.init', function(e) {
+  eventBus.on("canvas.init", function(e) {
     self.addBBoxMarker(e.svg);
   });
 }
 
-TouchFix.$inject = [ 'canvas', 'eventBus' ];
-
+TouchFix.$inject = ["canvas", "eventBus"];
 
 /**
  * Safari mobile (iOS 7) does not fire touchstart event in <SVG> element
@@ -25,13 +22,12 @@ TouchFix.$inject = [ 'canvas', 'eventBus' ];
  * Putting an element over and below the 'viewport' fixes that behavior.
  */
 TouchFix.prototype.addBBoxMarker = function(svg) {
-
   var markerStyle = {
-    fill: 'none',
-    class: 'outer-bound-marker'
+    fill: "none",
+    class: "outer-bound-marker"
   };
 
-  var rect1 = svgCreate('rect');
+  var rect1 = svgCreate("rect");
   svgAttr(rect1, {
     x: -10000,
     y: 10000,
@@ -42,7 +38,7 @@ TouchFix.prototype.addBBoxMarker = function(svg) {
 
   svgAppend(svg, rect1);
 
-  var rect2 = svgCreate('rect');
+  var rect2 = svgCreate("rect");
   svgAttr(rect2, {
     x: 10000,
     y: 10000,

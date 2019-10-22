@@ -1,6 +1,4 @@
-import {
-  log10
-} from '../../util/Math';
+import { log10 } from "../../util/Math";
 
 /**
  * Get step size for given range and number of steps.
@@ -10,9 +8,8 @@ import {
  * @param {number} range.max
  */
 export function getStepSize(range, steps) {
-
   var minLinearRange = log10(range.min),
-      maxLinearRange = log10(range.max);
+    maxLinearRange = log10(range.max);
 
   var absoluteLinearRange = Math.abs(minLinearRange) + Math.abs(maxLinearRange);
 

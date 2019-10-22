@@ -1,20 +1,24 @@
-import { is } from '../../../util/ModelUtil';
+import { is } from "../../../util/ModelUtil";
 
 var HIGHER_PRIORITY = 1750;
 
-
-export default function CreateParticipantBehavior(canvas, eventBus, gridSnapping) {
-  eventBus.on([
-    'create.start',
-    'shape.move.start'
-  ], HIGHER_PRIORITY, function(event) {
+export default function CreateParticipantBehavior(
+  canvas,
+  eventBus,
+  gridSnapping
+) {
+  eventBus.on(["create.start", "shape.move.start"], HIGHER_PRIORITY, function(
+    event
+  ) {
     var context = event.context,
-        shape = context.shape,
-        rootElement = canvas.getRootElement();
+      shape = context.shape,
+      rootElement = canvas.getRootElement();
 
-    if (!is(shape, 'bpmn:Participant') ||
-      !is(rootElement, 'bpmn:Process') ||
-      !rootElement.children.length) {
+    if (
+      !is(shape, "bpmn:Participant") ||
+      !is(rootElement, "bpmn:Process") ||
+      !rootElement.children.length
+    ) {
       return;
     }
 
@@ -29,8 +33,4 @@ export default function CreateParticipantBehavior(canvas, eventBus, gridSnapping
   });
 }
 
-CreateParticipantBehavior.$inject = [
-  'canvas',
-  'eventBus',
-  'gridSnapping'
-];
+CreateParticipantBehavior.$inject = ["canvas", "eventBus", "gridSnapping"];

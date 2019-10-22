@@ -1,9 +1,6 @@
-import { assign } from 'min-dash';
+import { assign } from "min-dash";
 
-import {
-  toPoint
-} from '../../util/Event';
-
+import { toPoint } from "../../util/Event";
 
 /**
  * Initiates canvas scrolling if current cursor point is close to a border.
@@ -20,37 +17,38 @@ import {
  *   [ left, top, right, bottom ]
  */
 export default function AutoScroll(config, eventBus, canvas, mouseTracking) {
-
   this._canvas = canvas;
   this._mouseTracking = mouseTracking;
 
-  this._opts = assign({
-    scrollThresholdIn: [ 20, 20, 20, 20 ],
-    scrollThresholdOut: [ 0, 0, 0, 0 ],
-    scrollRepeatTimeout: 15,
-    scrollStep: 10
-  }, config);
+  this._opts = assign(
+    {
+      scrollThresholdIn: [20, 20, 20, 20],
+      scrollThresholdOut: [0, 0, 0, 0],
+      scrollRepeatTimeout: 15,
+      scrollStep: 10
+    },
+    config
+  );
 
   var self = this;
 
-  eventBus.on('drag.move', function(e) {
+  eventBus.on("drag.move", function(e) {
     var point = self._toBorderPoint(e);
 
     self.startScroll(point);
   });
 
-  eventBus.on([ 'drag.cleanup' ], function() {
+  eventBus.on(["drag.cleanup"], function() {
     self.stopScroll();
   });
 }
 
 AutoScroll.$inject = [
-  'config.autoScroll',
-  'eventBus',
-  'canvas',
-  'mouseTracking'
+  "config.autoScroll",
+  "eventBus",
+  "canvas",
+  "mouseTracking"
 ];
-
 
 /**
  * Starts scrolling loop.
@@ -59,7 +57,6 @@ AutoScroll.$inject = [
  * @param  {Object} point { x: X, y: Y }
  */
 AutoScroll.prototype.startScroll = function(point) {
-
   var canvas = this._canvas;
   var opts = this._opts;
   var self = this;
@@ -76,10 +73,12 @@ AutoScroll.prototype.startScroll = function(point) {
   this.stopScroll();
 
   var dx = 0,
-      dy = 0;
+    dy = 0;
 
   for (var i = 0; i < 4; i++) {
-    if (between(diff[i], opts.scrollThresholdOut[i], opts.scrollThresholdIn[i])) {
+    if (
+      between(diff[i], opts.scrollThresholdOut[i], opts.scrollThresholdIn[i])
+    ) {
       if (i === 0) {
         dx = opts.scrollStep;
       } else if (i == 1) {
@@ -109,14 +108,12 @@ function between(val, start, end) {
   return false;
 }
 
-
 /**
  * Stops scrolling loop.
  */
 AutoScroll.prototype.stopScroll = function() {
   clearTimeout(this._scrolling);
 };
-
 
 /**
  * Overrides defaults options.
@@ -126,7 +123,6 @@ AutoScroll.prototype.stopScroll = function() {
 AutoScroll.prototype.setOptions = function(options) {
   this._opts = assign({}, this._opts, options);
 };
-
 
 /**
  * Converts event to a point in canvas container plane in global scale.
